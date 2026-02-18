@@ -77,7 +77,13 @@ jobs:
           echo "$AUR_SSH_KEY" > ~/.ssh/aur
           chmod 600 ~/.ssh/aur
           ssh-keyscan -t ed25519 aur.archlinux.org >> ~/.ssh/known_hosts 2>/dev/null
-          echo "GIT_SSH_COMMAND=ssh -i ~/.ssh/aur -o StrictHostKeyChecking=accept-new" >> "$GITHUB_ENV"
+          printf '%s\n' \
+            "Host aur.archlinux.org" \
+            "  User aur" \
+            "  IdentityFile ~/.ssh/aur" \
+            "  PreferredAuthentications publickey" \
+            > ~/.ssh/config
+          chmod 600 ~/.ssh/config
 
       - name: Configure git identity
         env:
