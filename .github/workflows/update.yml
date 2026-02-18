@@ -1,0 +1,159 @@
+name: Check & Update AUR packages
+
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    name: Check for updates
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    outputs:
+      matrix: ${{ steps.detect.outputs.matrix }}
+      has_updates: ${{ steps.detect.outputs.has_updates }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          pacman -Syu --noconfirm nvchecker
+
+      - name: Run nvchecker
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo -e "[keys]\ngithub = \"$GITHUB_TOKEN\"" > keyfile.toml
+          nvchecker --file nvchecker.toml --keyfile keyfile.toml
+
+      - name: Detect outdated packages
+        id: detect
+        run: |
+          updates=$(nvcmp --file nvchecker.toml --json)
+          echo "Raw nvcmp output: $updates"
+
+          if [ "$updates" = "[]" ]; then
+            echo "All packages up to date"
+            echo "has_updates=false" >> "$GITHUB_OUTPUT"
+            echo "matrix={\"include\":[]}" >> "$GITHUB_OUTPUT"
+          else
+            # Build matrix: [{pkg: "name", version: "X.Y.Z"}, ...]
+            matrix=$(echo "$updates" | python3 -c "
+          import json, sys
+          updates = json.load(sys.stdin)
+          includes = [{'pkg': u['name'], 'version': u['newver']} for u in updates]
+          print(json.dumps({'include': includes}))
+          ")
+            echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+            echo "has_updates=true" >> "$GITHUB_OUTPUT"
+            echo "Updates found: $matrix"
+          fi
+
+  update:
+    name: Update ${{ matrix.pkg }}
+    needs: check
+    if: needs.check.outputs.has_updates == 'true'
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.check.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          pacman -Syu --noconfirm pacman-contrib openssh git
+
+      - name: Setup SSH for AUR
+        env:
+          AUR_SSH_KEY: ${{ secrets.AUR_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$AUR_SSH_KEY" > ~/.ssh/aur
+          chmod 600 ~/.ssh/aur
+          ssh-keyscan -t ed25519 aur.archlinux.org >> ~/.ssh/known_hosts 2>/dev/null
+          echo "GIT_SSH_COMMAND=ssh -i ~/.ssh/aur -o StrictHostKeyChecking=accept-new" >> "$GITHUB_ENV"
+
+      - name: Configure git identity
+        env:
+          AUR_USER_NAME: ${{ secrets.AUR_USER_NAME }}
+          AUR_USER_EMAIL: ${{ secrets.AUR_USER_EMAIL }}
+        run: |
+          git config --global user.name "$AUR_USER_NAME"
+          git config --global user.email "$AUR_USER_EMAIL"
+
+      - name: Setup build user
+        run: |
+          # makepkg and updpkgsums refuse to run as root
+          useradd -m builder
+          echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+          chown -R builder:builder .
+
+      - name: Update package version
+        run: |
+          su builder -c "scripts/update-version.sh '${{ matrix.pkg }}' '${{ matrix.version }}'"
+
+      - name: Build package
+        run: |
+          su builder -c "cd packages/${{ matrix.pkg }} && makepkg --syncdeps --noconfirm --noarchive"
+
+      - name: Publish to AUR
+        run: |
+          scripts/publish.sh "${{ matrix.pkg }}"
+
+      - name: Upload updated files
+        uses: actions/upload-artifact@v4
+        with:
+          name: updated-${{ matrix.pkg }}
+          path: |
+            packages/${{ matrix.pkg }}/PKGBUILD
+            packages/${{ matrix.pkg }}/.SRCINFO
+
+  commit:
+    name: Commit changes
+    needs: [check, update]
+    if: needs.check.outputs.has_updates == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all updated packages
+        uses: actions/download-artifact@v4
+        with:
+          pattern: updated-*
+          merge-multiple: true
+
+      - name: Update nvchecker state
+        run: |
+          # Merge new versions into old.json for packages that were updated
+          matrix='${{ needs.check.outputs.matrix }}'
+          echo "$matrix" | python3 -c "
+          import json, sys
+
+          matrix = json.load(sys.stdin)
+          with open('old.json') as f:
+              old = json.load(f)
+
+          for entry in matrix.get('include', []):
+              pkg = entry['pkg']
+              ver = entry['version']
+              old['data'][pkg] = {'version': ver}
+
+          with open('old.json', 'w') as f:
+              json.dump(old, f, indent=2)
+              f.write('\n')
+          "
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add packages/ old.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Update packages to latest upstream versions"
+          git push

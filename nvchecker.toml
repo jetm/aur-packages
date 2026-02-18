@@ -1,0 +1,46 @@
+[__config__]
+oldver = "old.json"
+newver = "new.json"
+
+[c]
+source = "github"
+github = "ryanmjacobs/c"
+use_max_tag = true
+prefix = "v"
+
+[difi]
+source = "github"
+github = "oug-t/difi"
+use_max_tag = true
+prefix = "v"
+
+[difi-bin]
+source = "github"
+github = "oug-t/difi"
+use_max_tag = true
+prefix = "v"
+
+[easy-conflict]
+source = "github"
+github = "chojs23/ec"
+use_max_tag = true
+prefix = "v"
+
+[easy-conflict-bin]
+source = "github"
+github = "chojs23/ec"
+use_max_tag = true
+prefix = "v"
+
+[git-add-interactive]
+source = "github"
+github = "cwarden/git-add--interactive"
+use_max_tag = true
+prefix = "v"
+
+[lavacli]
+source = "gitlab"
+gitlab = "lava/lavacli"
+host = "gitlab.com"
+use_max_tag = true
+prefix = "v"
