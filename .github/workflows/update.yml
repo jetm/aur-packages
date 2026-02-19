@@ -82,6 +82,7 @@ jobs:
             "  User aur" \
             "  IdentityFile ~/.ssh/aur" \
             "  PreferredAuthentications publickey" \
+            "  StrictHostKeyChecking accept-new" \
             > ~/.ssh/config
           chmod 600 ~/.ssh/config
 
