@@ -110,6 +110,10 @@ jobs:
           su builder -c "cd packages/${{ matrix.pkg }} && makepkg --syncdeps --noconfirm --noarchive"
 
       - name: Publish to AUR
+        env:
+          AUR_SSH_KEY: ${{ secrets.AUR_SSH_KEY }}
+          AUR_USER_NAME: ${{ secrets.AUR_USER_NAME }}
+          AUR_USER_EMAIL: ${{ secrets.AUR_USER_EMAIL }}
         run: |
           scripts/publish.sh "${{ matrix.pkg }}"
 
