@@ -69,31 +69,6 @@ jobs:
         run: |
           pacman -Syu --noconfirm pacman-contrib openssh git
 
-      - name: Setup SSH for AUR
-        env:
-          AUR_SSH_KEY: ${{ secrets.AUR_SSH_KEY }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$AUR_SSH_KEY" > ~/.ssh/aur
-          chmod 600 ~/.ssh/aur
-          ssh-keyscan -t ed25519 aur.archlinux.org >> ~/.ssh/known_hosts 2>/dev/null
-          printf '%s\n' \
-            "Host aur.archlinux.org" \
-            "  User aur" \
-            "  IdentityFile ~/.ssh/aur" \
-            "  PreferredAuthentications publickey" \
-            "  StrictHostKeyChecking accept-new" \
-            > ~/.ssh/config
-          chmod 600 ~/.ssh/config
-
-      - name: Configure git identity
-        env:
-          AUR_USER_NAME: ${{ secrets.AUR_USER_NAME }}
-          AUR_USER_EMAIL: ${{ secrets.AUR_USER_EMAIL }}
-        run: |
-          git config --global user.name "$AUR_USER_NAME"
-          git config --global user.email "$AUR_USER_EMAIL"
-
       - name: Setup build user
         run: |
           # makepkg and updpkgsums refuse to run as root

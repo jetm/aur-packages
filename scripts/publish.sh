@@ -23,18 +23,10 @@ fi
 # SSH setup (idempotent - safe to call multiple times)
 setup_ssh() {
 	if [[ -n "${AUR_SSH_KEY:-}" ]]; then
-		mkdir -p ~/.ssh
-		echo "$AUR_SSH_KEY" >~/.ssh/aur
-		chmod 600 ~/.ssh/aur
-		ssh-keyscan -t ed25519 aur.archlinux.org >>~/.ssh/known_hosts 2>/dev/null
-		cat >~/.ssh/config <<'SSHEOF'
-Host aur.archlinux.org
-    User aur
-    IdentityFile ~/.ssh/aur
-    PreferredAuthentications publickey
-    StrictHostKeyChecking accept-new
-SSHEOF
-		chmod 600 ~/.ssh/config
+		local keyfile="/tmp/aur_ssh_key"
+		echo "$AUR_SSH_KEY" >"$keyfile"
+		chmod 600 "$keyfile"
+		export GIT_SSH_COMMAND="ssh -i $keyfile -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 	fi
 }
 
