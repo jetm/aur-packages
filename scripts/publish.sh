@@ -53,14 +53,13 @@ git clone "ssh://aur@aur.archlinux.org/$pkg.git" "$tmp/$pkg"
 cp "$pkgdir/PKGBUILD" "$tmp/$pkg/"
 cp "$pkgdir/.SRCINFO" "$tmp/$pkg/"
 
-# Copy any extra files (install scripts, changelogs), skip directories
-for f in "$pkgdir"/*; do
-	[[ -f "$f" ]] || continue
-	name=$(basename "$f")
+# Copy any extra tracked files (install scripts, changelogs), skip build artifacts
+while IFS= read -r relpath; do
+	name=$(basename "$relpath")
 	if [[ "$name" != "PKGBUILD" ]] && [[ "$name" != ".SRCINFO" ]]; then
-		cp "$f" "$tmp/$pkg/"
+		cp "$pkgdir/$name" "$tmp/$pkg/"
 	fi
-done
+done < <(git -C "$REPO_ROOT" ls-files "packages/$pkg/")
 
 cd "$tmp/$pkg"
 
