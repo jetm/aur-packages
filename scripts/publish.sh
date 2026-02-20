@@ -53,8 +53,9 @@ git clone "ssh://aur@aur.archlinux.org/$pkg.git" "$tmp/$pkg"
 cp "$pkgdir/PKGBUILD" "$tmp/$pkg/"
 cp "$pkgdir/.SRCINFO" "$tmp/$pkg/"
 
-# Copy any extra files (install scripts, changelogs)
+# Copy any extra files (install scripts, changelogs), skip directories
 for f in "$pkgdir"/*; do
+	[[ -f "$f" ]] || continue
 	name=$(basename "$f")
 	if [[ "$name" != "PKGBUILD" ]] && [[ "$name" != ".SRCINFO" ]]; then
 		cp "$f" "$tmp/$pkg/"
