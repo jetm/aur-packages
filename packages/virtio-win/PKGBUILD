@@ -1,4 +1,4 @@
-# Maintainer: Javier Tia <javier dot tia at gmail dot com>
+# Maintainer: Javier Tia <floss@jetm.me>
 
 pkgname=virtio-win
 _ver=0.1.285
