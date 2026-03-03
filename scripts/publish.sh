@@ -54,6 +54,9 @@ trap 'rm -rf "$tmp"' EXIT
 
 git clone "ssh://aur@aur.archlinux.org/$pkg.git" "$tmp/$pkg"
 
+# AUR only accepts pushes to master; ensure correct branch for new (empty) repos
+git -C "$tmp/$pkg" checkout -B master 2>/dev/null || true
+
 cp "$pkgdir/PKGBUILD" "$tmp/$pkg/"
 cp "$pkgdir/.SRCINFO" "$tmp/$pkg/"
 
