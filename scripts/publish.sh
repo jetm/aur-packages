@@ -30,14 +30,18 @@ setup_ssh() {
 	fi
 }
 
-# Git identity (idempotent)
+# Git identity: use env vars, fall back to existing git config
 setup_git_identity() {
-	if [[ -n "${AUR_USER_NAME:-}" ]]; then
-		git config --global user.name "$AUR_USER_NAME"
+	: "${AUR_USER_NAME:=$(git config user.name 2>/dev/null || true)}"
+	: "${AUR_USER_EMAIL:=$(git config user.email 2>/dev/null || true)}"
+
+	if [[ -z "$AUR_USER_NAME" ]] || [[ -z "$AUR_USER_EMAIL" ]]; then
+		echo "error: git user.name/user.email not configured and AUR_USER_NAME/AUR_USER_EMAIL not set" >&2
+		exit 1
 	fi
-	if [[ -n "${AUR_USER_EMAIL:-}" ]]; then
-		git config --global user.email "$AUR_USER_EMAIL"
-	fi
+
+	git config --global user.name "$AUR_USER_NAME"
+	git config --global user.email "$AUR_USER_EMAIL"
 }
 
 setup_ssh
