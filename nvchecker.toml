@@ -44,3 +44,9 @@ gitlab = "lava/lavacli"
 host = "gitlab.com"
 use_max_tag = true
 prefix = "v"
+
+[pkgtrack]
+source = "github"
+github = "jetm/pkgtrack"
+use_max_tag = true
+prefix = "v"
