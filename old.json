@@ -4,12 +4,6 @@
     "c": {
       "version": "0.15.1"
     },
-    "difi": {
-      "version": "0.1.7"
-    },
-    "difi-bin": {
-      "version": "0.1.7"
-    },
     "easy-conflict": {
       "version": "0.2.3"
     },

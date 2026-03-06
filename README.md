@@ -14,8 +14,6 @@ AUR package automation with nvchecker + GitHub Actions.
 | Package | Upstream | Auto-update |
 |---------|----------|-------------|
 | c | [ryanmjacobs/c](https://github.com/ryanmjacobs/c) | Yes |
-| difi | [oug-t/difi](https://github.com/oug-t/difi) | Yes |
-| difi-bin | [oug-t/difi](https://github.com/oug-t/difi) | Yes |
 | easy-conflict | [chojs23/ec](https://github.com/chojs23/ec) | Yes |
 | easy-conflict-bin | [chojs23/ec](https://github.com/chojs23/ec) | Yes |
 | git-add-interactive | [cwarden/git-add--interactive](https://github.com/cwarden/git-add--interactive) | Yes |
