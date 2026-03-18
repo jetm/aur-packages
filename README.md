@@ -18,7 +18,7 @@ AUR package automation with nvchecker + GitHub Actions.
 | easy-conflict-bin | [chojs23/ec](https://github.com/chojs23/ec) | Yes |
 | git-add-interactive | [cwarden/git-add--interactive](https://github.com/cwarden/git-add--interactive) | Yes |
 | lavacli | [lava/lavacli](https://gitlab.com/lava/lavacli) | Yes |
-| include-what-you-use | [include-what-you-use](https://github.com/include-what-you-use/include-what-you-use) | No (clang coupling) |
+| include-what-you-use | [include-what-you-use](https://github.com/include-what-you-use/include-what-you-use) | Yes |
 | virtio-win | Fedora infra | No (manual) |
 
 ## Secrets required
