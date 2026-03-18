@@ -10,6 +10,9 @@
     "easy-conflict-bin": {
       "version": "0.3.0"
     },
+    "include-what-you-use": {
+      "version": "0.25"
+    },
     "git-add-interactive": {
       "version": "0.5.0"
     },

@@ -8,6 +8,10 @@ github = "ryanmjacobs/c"
 use_max_tag = true
 prefix = "v"
 
+[include-what-you-use]
+source = "cmd"
+cmd = "scripts/check-iwyu.sh"
+
 [easy-conflict]
 source = "github"
 github = "chojs23/ec"
