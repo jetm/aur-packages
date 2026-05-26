@@ -42,3 +42,9 @@ source = "github"
 github = "jetm/pkgtrack"
 use_max_tag = true
 prefix = "v"
+
+[markless-bin]
+source = "github"
+github = "jvanderberg/markless"
+use_max_tag = true
+prefix = "v"
