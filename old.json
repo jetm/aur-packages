@@ -21,6 +21,9 @@
     },
     "pkgtrack": {
       "version": "0.1.0"
+    },
+    "markless-bin": {
+      "version": "0.9.29"
     }
   }
 }
