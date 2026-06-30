@@ -19,6 +19,7 @@ AUR package automation with nvchecker + GitHub Actions.
 | git-add-interactive | [cwarden/git-add--interactive](https://github.com/cwarden/git-add--interactive) | Yes |
 | lavacli | [lava/lavacli](https://gitlab.com/lava/lavacli) | Yes |
 | include-what-you-use | [include-what-you-use](https://github.com/include-what-you-use/include-what-you-use) | Yes |
+| ytcui | [MilkmanAbi/ytcui](https://github.com/MilkmanAbi/ytcui) | Yes |
 | virtio-win | Fedora infra | No (manual) |
 
 ## Secrets required

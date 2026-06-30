@@ -48,3 +48,8 @@ source = "github"
 github = "jvanderberg/markless"
 use_max_tag = true
 prefix = "v"
+
+[ytcui]
+source = "regex"
+url = "https://raw.githubusercontent.com/MilkmanAbi/ytcui/main/VERSION"
+regex = '[\d.]+'

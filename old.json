@@ -24,6 +24,9 @@
     },
     "markless-bin": {
       "version": "0.9.29"
+    },
+    "ytcui": {
+      "version": "3.5.7"
     }
   }
 }
