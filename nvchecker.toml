@@ -53,3 +53,8 @@ prefix = "v"
 source = "regex"
 url = "https://raw.githubusercontent.com/MilkmanAbi/ytcui/main/VERSION"
 regex = '[\d.]+'
+
+[avocado-cli]
+source = "github"
+github = "avocado-linux/avocado-cli"
+use_max_tag = true

@@ -21,6 +21,7 @@ AUR package automation with nvchecker + GitHub Actions.
 | include-what-you-use | [include-what-you-use](https://github.com/include-what-you-use/include-what-you-use) | Yes |
 | ytcui | [MilkmanAbi/ytcui](https://github.com/MilkmanAbi/ytcui) | Yes |
 | virtio-win | Fedora infra | No (manual) |
+| avocado-cli | [avocado-linux/avocado-cli](https://github.com/avocado-linux/avocado-cli) | Yes |
 
 ## Secrets required
 
