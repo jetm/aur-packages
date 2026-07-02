@@ -27,6 +27,9 @@
     },
     "ytcui": {
       "version": "3.5.7"
+    },
+    "avocado-cli": {
+      "version": "0.41.2"
     }
   }
 }
