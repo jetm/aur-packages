@@ -17,7 +17,7 @@ jobs:
       matrix: ${{ steps.detect.outputs.matrix }}
       has_updates: ${{ steps.detect.outputs.has_updates }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install tools
         run: |
@@ -63,7 +63,7 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.check.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install tools
         run: |
@@ -93,7 +93,7 @@ jobs:
           scripts/publish.sh "${{ matrix.pkg }}"
 
       - name: Upload updated files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: updated-${{ matrix.pkg }}
           path: |
@@ -106,10 +106,10 @@ jobs:
     if: needs.check.outputs.has_updates == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Download all updated packages
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: updated-*
           merge-multiple: true
