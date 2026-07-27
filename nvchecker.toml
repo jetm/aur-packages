@@ -61,3 +61,7 @@ use_max_tag = true
 # Upstream tags prereleases (1.0.0-rc.1) and junk backup/* refs; a hyphenated
 # pkgver makes makepkg fail. Restrict to stable X.Y.Z tags only.
 include_regex = "[0-9.]+"
+
+[yocto-uninative-tarball]
+source = "cmd"
+cmd = "scripts/check-uninative.sh"
