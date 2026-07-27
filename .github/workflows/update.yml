@@ -82,7 +82,7 @@ jobs:
 
       - name: Build package
         run: |
-          su builder -c "cd packages/${{ matrix.pkg }} && makepkg --syncdeps --noconfirm --noarchive"
+          su builder -c "cd packages/${{ matrix.pkg }} && CI=1 makepkg --syncdeps --noconfirm --noarchive"
 
       - name: Publish to AUR
         env:
