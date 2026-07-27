@@ -30,6 +30,9 @@
     },
     "avocado-cli": {
       "version": "0.41.2"
+    },
+    "yocto-uninative-tarball": {
+      "version": "5.1_5.1+2.44"
     }
   }
 }
