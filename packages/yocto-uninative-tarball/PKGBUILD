@@ -1,0 +1,64 @@
+# Maintainer: Javier Tia <floss@jetm.me>
+
+pkgname=yocto-uninative-tarball
+# <master uninative>_<lts uninative>+<arch glibc>
+pkgver=5.1_5.1+2.44
+pkgrel=1
+pkgdesc='Yocto Project uninative libc tarball mirrored for offline bitbake builds'
+arch=('x86_64')
+url='https://downloads.yoctoproject.org/releases/uninative/'
+# Enumerated from the payload: glibc and libxcrypt (LGPL-2.1-or-later),
+# libstdc++ and libgcc_s (GPL-3.0-or-later WITH GCC-exception), libtirpc
+# (BSD-3-Clause) and relocate_sdk.py (GPL-2.0-only). The tarball ships no
+# license files of its own.
+license=('LGPL-2.1-or-later' 'GPL-3.0-or-later WITH GCC-exception'
+         'BSD-3-Clause' 'GPL-2.0-only')
+makedepends=('curl')
+
+# Refuse to raise the ceiling when the host glibc runs more than this many
+# minor releases ahead of the mirrored payload's.
+_max_glibc_skew=1
+
+# The mirrored set is a function of pkgver alone. oe-core master and the LTS
+# branch adopt a uninative release at different times, so both declared
+# versions are carried in pkgver and both payloads are mirrored while they
+# disagree. Nothing here may be hand-maintained: update-version.sh rewrites
+# pkgver and nothing else.
+_uninative_ver=${pkgver%%_*}
+_lts_ver=${pkgver#*_}
+_lts_ver=${_lts_ver%+*}
+_uninative_vers=("$_uninative_ver")
+if [[ $_lts_ver != "$_uninative_ver" ]]; then
+  _uninative_vers+=("$_lts_ver")
+fi
+
+_mirror=/usr/share/yocto-uninative/mirror
+_baseurl=https://downloads.yoctoproject.org/releases/uninative
+
+source=()
+for _v in "${_uninative_vers[@]}"; do
+  source+=("${_baseurl}/${_v}/x86_64-nativesdk-libc-${_v}.tar.xz")
+done
+unset _v
+sha256sums=('2b63a078c26535e0786e87f81ae69509df30f4dce40693004c527bd5e4ab2b85')
+
+package() {
+  local _v _tarball _sha
+
+  for _v in "${_uninative_vers[@]}"; do
+    _tarball="x86_64-nativesdk-libc-${_v}.tar.xz"
+    # Computed here, not in build(): makepkg re-execs under fakeroot and
+    # re-sources this file, discarding anything build() assigned.
+    _sha=$(sha256sum "$srcdir/$_tarball" | cut -d' ' -f1)
+
+    # Two premirror mechanisms resolve to two different shapes. The class
+    # appends a checksum-addressed mapping; the fragment's own entry resolves
+    # to the flat basename. Install both so neither is load-bearing alone.
+    install -Dm644 "$srcdir/$_tarball" \
+      "${pkgdir}${_mirror}/uninative/${_sha}/${_tarball}"
+    install -Dm644 "$srcdir/$_tarball" \
+      "${pkgdir}${_mirror}/${_tarball}"
+  done
+}
+
+# vim:set ts=2 sw=2 et:
