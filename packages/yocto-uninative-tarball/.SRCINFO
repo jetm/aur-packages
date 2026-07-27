@@ -1,0 +1,16 @@
+pkgbase = yocto-uninative-tarball
+	pkgdesc = Yocto Project uninative libc tarball mirrored for offline bitbake builds
+	pkgver = 5.1_5.1+2.44
+	pkgrel = 1
+	url = https://downloads.yoctoproject.org/releases/uninative/
+	arch = x86_64
+	license = LGPL-2.1-or-later
+	license = GPL-3.0-or-later WITH GCC-exception
+	license = BSD-3-Clause
+	license = GPL-2.0-only
+	makedepends = curl
+	noextract = x86_64-nativesdk-libc-5.1.tar.xz
+	source = https://downloads.yoctoproject.org/releases/uninative/5.1/x86_64-nativesdk-libc-5.1.tar.xz
+	sha256sums = 2b63a078c26535e0786e87f81ae69509df30f4dce40693004c527bd5e4ab2b85
+
+pkgname = yocto-uninative-tarball
