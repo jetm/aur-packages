@@ -33,6 +33,9 @@
     },
     "yocto-uninative-tarball": {
       "version": "5.1_5.1+2.44"
+    },
+    "linux-cachyos-jetm": {
+      "version": "7.1.5-1"
     }
   }
 }
