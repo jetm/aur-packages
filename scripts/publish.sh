@@ -24,9 +24,26 @@ fi
 setup_ssh() {
 	if [[ -n "${AUR_SSH_KEY:-}" ]]; then
 		local keyfile="/tmp/aur_ssh_key"
-		echo "$AUR_SSH_KEY" >"$keyfile"
+		# Strip CR: a key pasted through a Windows editor or some web forms
+		# arrives CRLF, which ssh rejects as "invalid format" - a message that
+		# reads like an auth problem rather than a mangled secret. echo supplies
+		# the trailing newline OpenSSH also requires.
+		printf '%s\n' "$AUR_SSH_KEY" | tr -d '\r' >"$keyfile"
 		chmod 600 "$keyfile"
-		export GIT_SSH_COMMAND="ssh -i $keyfile -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+		# Fail here rather than letting git report "Permission denied
+		# (publickey)", which sends you looking at the AUR account when the
+		# problem is the secret itself. The key must also be passphrase-less:
+		# ssh runs with no agent below and nothing can answer a prompt.
+		if ! ssh-keygen -y -f "$keyfile" >/dev/null 2>&1; then
+			echo "error: AUR_SSH_KEY is not a usable private key." >&2
+			echo "  It must be the PRIVATE half (not .pub), unencrypted, with newlines intact." >&2
+			echo "  Set it straight from the file to avoid copy-paste damage:" >&2
+			echo "    gh secret set AUR_SSH_KEY < ~/.ssh/aur" >&2
+			exit 1
+		fi
+
+		export GIT_SSH_COMMAND="ssh -i $keyfile -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 	fi
 }
 
