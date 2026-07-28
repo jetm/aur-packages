@@ -107,6 +107,14 @@
 # - "native" (use compiler autodetection)
 # - "zen4" (Use znver4 compiler optimizations)
 # - "generic" (kernel's default - to share the package between machines with different CPU µarch as long as they are x86-64)
+#
+# Left empty on purpose, which enables CONFIG_X86_NATIVE_CPU and compiles for
+# whichever CPU ran the build. That is only safe because every machine builds
+# this package itself from the AUR - the fleet is not uniform (Zen 5 and Zen 4),
+# so a binary built on one and installed on the other could execute an
+# instruction the target lacks. INVARIANT: do not ship a built package between
+# machines. If that ever changes, pin this to "zen4", which the whole fleet
+# runs natively and which costs the newer host well under a percent.
 : "${_processor_opt:=}"
 
 # Clang LTO mode, only available with the "llvm" compiler - options are "none", "full" or "thin".
@@ -488,6 +496,26 @@ prepare() {
         scripts/config -d CC_OPTIMIZE_FOR_PERFORMANCE \
             -e CC_OPTIMIZE_FOR_PERFORMANCE_O3
     fi
+
+    ### Size the CPU masks for this fleet
+    # Upstream ships MAXSMP, which pins NR_CPUS to 8192 and pulls in
+    # CPUMASK_OFFSTACK - so every cpumask_var_t becomes a heap allocation and
+    # every mask walk covers a kilobyte, on machines with 32 threads. 64 leaves
+    # room to spare and lets the masks sit on the stack again. CPUMASK_OFFSTACK
+    # is selected by MAXSMP, so it falls away on its own once that is off; the
+    # `make config` below resolves it.
+    echo "Sizing NR_CPUS for this fleet rather than MAXSMP..."
+    scripts/config -d MAXSMP --set-val NR_CPUS 64
+
+    ### Do not boot with zswap in front of zram
+    # Swap here is zram, and zswap ahead of it would compress every page twice
+    # while breaking the compressed-page accounting zramctl reports. The
+    # cmdline already carries zswap.enabled=0 and 30-zram.rules disables it on
+    # zram0 init, but both are mitigations for a default this build controls
+    # directly - and the udev rule in particular races anything swapped between
+    # swapon and the rule firing.
+    echo "Disabling zswap by default..."
+    scripts/config -d ZSWAP_DEFAULT_ON -d ZSWAP_SHRINKER_DEFAULT_ON
 
     ### CI-only stuff
     if _is_ci_build; then
