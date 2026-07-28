@@ -33,14 +33,12 @@ pkgbase = linux-cachyos-jetm
 	source = https://github.com/CachyOS/linux/releases/download/cachyos-7.1.5-1/cachyos-7.1.5-1.tar.gz
 	source = https://github.com/CachyOS/linux/releases/download/cachyos-7.1.5-1/cachyos-7.1.5-1.tar.gz.asc
 	source = config
-	source = 0001-xfs-fix-nofs-context-corruption-in-xfs_btree_split_worker.patch
 	source = https://raw.githubusercontent.com/cachyos/kernel-patches/master/7.1/misc/dkms-clang.patch
 	validpgpkeys = E18447AC260021D31F3FF6C4C8A2A4774B8B63C4
 	validpgpkeys = E8B9AA39F054E30E8290D492C3C4820857F654FE
 	b2sums = d7f63f5c0926d98d27dd9f405dbdcdd0d8cbcf0d07185615edbe62b242a09f2f0074bedfc466e3a43d8e12b15d0d1860f5a6ff89a4b583b81ca677b33d3c0072
 	b2sums = SKIP
 	b2sums = a81b1a49b7fd277a8a1395e38696c435489808399527dc49436c9b36940d5c652c523622efe68d34dd191669d8838ab4c041000331279ccf77cdc11dc4baaca2
-	b2sums = c44afe8881f47aa2d086cac2da339a125039180258a3011f3e3802b36501c7b9370e60858f95e2c16afda3837f682395cc9547bc8db038f246232a34904dc3d0
 	b2sums = c992567bd7dd8553432be496ffa1c17e2f5ebe9c7edb51945cf977e1b742dd6517c210d8843bb82744ca705efd07f8027cd7dde41b50215ebd707a34aa81462e
 
 pkgname = linux-cachyos-jetm
