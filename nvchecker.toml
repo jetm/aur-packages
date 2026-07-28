@@ -65,3 +65,18 @@ include_regex = "[0-9.]+"
 [yocto-uninative-tarball]
 source = "cmd"
 cmd = "scripts/check-uninative.sh"
+
+# Personal fork of CachyOS's linux-cachyos PKGBUILD (adds an XFS nofs patch and
+# a -jetm package suffix so pacman's `Replaces: linux-cachyos-lto` cannot remove
+# it). Tracks the SOURCE TARBALL repo, not CachyOS/linux-cachyos: the packaging
+# repo's tags are stale (6.17.9 while the kernel is 7.1.5), whereas
+# CachyOS/linux releases are exactly what _srcname consumes (cachyos-7.1.5-1).
+# Tags there are inherited upstream Linux tags (v5.18-rc5...), so use releases.
+# CachyOS does NOT flag rc releases as prerelease, so exclude them explicitly or
+# this tracks 7.2-rc5 instead of 7.1.5.
+[linux-cachyos-jetm]
+source = "github"
+github = "CachyOS/linux"
+use_max_release = true
+exclude_regex = ".*-rc[0-9]+-.*"
+prefix = "cachyos-"

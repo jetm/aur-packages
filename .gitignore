@@ -4,3 +4,11 @@ keyfile.toml
 *.log
 src/
 pkg/
+
+# linux-cachyos-jetm: upstream source tarball and signature (makepkg re-downloads),
+# patches fetched from cachyos/kernel-patches, and the per-build config snapshots.
+# The tracked sources are PKGBUILD, .SRCINFO, config and the local XFS backport.
+packages/linux-cachyos-jetm/cachyos-*.tar.gz
+packages/linux-cachyos-jetm/cachyos-*.tar.gz.asc
+packages/linux-cachyos-jetm/dkms-clang.patch
+packages/linux-cachyos-jetm/config-*-cachyos-jetm

@@ -23,6 +23,7 @@ AUR package automation with nvchecker + GitHub Actions.
 | virtio-win | Fedora infra | No (manual) |
 | avocado-cli | [avocado-linux/avocado-cli](https://github.com/avocado-linux/avocado-cli) | Yes |
 | yocto-uninative-tarball | [Yocto uninative releases](https://downloads.yoctoproject.org/releases/uninative/) | Yes |
+| linux-cachyos-jetm | [CachyOS/linux](https://github.com/CachyOS/linux) releases | Yes |
 
 ## Secrets required
 
