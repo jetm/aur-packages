@@ -133,9 +133,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # The job runs in archlinux:base-devel, which has no gh. Install it
+          # here rather than in the shared tools step so only this package pays
+          # for it. No --label: a label that does not exist fails the call, and
+          # the notification matters more than the tag.
+          pacman -S --noconfirm --needed github-cli
           gh issue create \
             --title "linux-cachyos-jetm ${{ matrix.version }}: rebuild on each host" \
-            --label kernel \
             --body "$(cat <<'EOF'
           nvchecker picked up a new CachyOS release and the PKGBUILD has been
           bumped and published to the AUR. CI does not build this package - see
