@@ -138,7 +138,11 @@ jobs:
           # for it. No --label: a label that does not exist fails the call, and
           # the notification matters more than the tag.
           pacman -S --noconfirm --needed github-cli
+          # --repo, so gh does not infer it from git: the checkout belongs to
+          # builder while this step runs as root, and git refuses to read a tree
+          # it considers unowned - which gh surfaces as "not a git repository".
           gh issue create \
+            --repo "${{ github.repository }}" \
             --title "linux-cachyos-jetm ${{ matrix.version }}: rebuild on each host" \
             --body "$(cat <<'EOF'
           nvchecker picked up a new CachyOS release and the PKGBUILD has been
