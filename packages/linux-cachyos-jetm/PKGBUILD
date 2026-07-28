@@ -245,6 +245,14 @@ _tagrel=1
 # -cachyos-jetm suffix: `uname -r` reads 7.1.5-1-cachyos-jetm vs stock's
 # 7.1.5-1-cachyos, which makes /var/crash/<ts>/uname.txt unambiguous about which
 # base a dump came from. Re-pin whenever the distro package's pkgrel moves.
+#
+# HAZARD, because the pin causes it: rebuilding without changing pkgrel means
+# installing REINSTALLS over the running kernel's own /usr/lib/modules/$(uname -r)
+# tree. The kernel in memory is then the old build while the modules on disk are
+# the new one, so anything not already loaded fails to load - which shows up as a
+# graphical login that will not start while root on a TTY still works. A normal
+# version bump is safe because the running kernel keeps its own directory; this
+# does not. Install only when the reboot follows immediately.
 pkgrel=1
 _srcname=cachyos-${_major}.${_minor}-${_tagrel}
 # Kept short: the split packages append their own suffixes to this string
