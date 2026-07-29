@@ -77,13 +77,57 @@ git -C "$tmp/$pkg" checkout -B master 2>/dev/null || true
 cp "$pkgdir/PKGBUILD" "$tmp/$pkg/"
 cp "$pkgdir/.SRCINFO" "$tmp/$pkg/"
 
-# Copy any extra tracked files (install scripts, changelogs), skip build artifacts
-while IFS= read -r relpath; do
-	name=$(basename "$relpath")
-	if [[ "$name" != "PKGBUILD" ]] && [[ "$name" != ".SRCINFO" ]]; then
-		cp "$pkgdir/$name" "$tmp/$pkg/"
-	fi
-done < <(git -C "$REPO_ROOT" ls-files "packages/$pkg/")
+# Collect the local files this package needs alongside PKGBUILD/.SRCINFO:
+# every `source =` entry that is not a URL, plus `install =` and `changelog =`.
+#
+# Read from .SRCINFO rather than `git ls-files` (which this used to do) for two
+# reasons. The workspace often has no .git at all: the CI container is
+# archlinux:base-devel, which ships no git, so actions/checkout falls back to a
+# REST-API tarball ("The repository will be downloaded using the GitHub REST
+# API"). `git ls-files` then failed with "not a git repository" - and because it
+# sat in a process substitution, set -e did not fire, so the loop read nothing
+# and the AUR commit silently went out with only PKGBUILD and .SRCINFO. That was
+# invisible for years because every other package has no extra files; the first
+# package carrying patches got rejected by AUR's hook instead.
+#
+# .SRCINFO is also the more precise source of truth: it lists exactly the files
+# AUR's server-side hook checks for, and a downloaded tarball sitting in the
+# package directory is never a local source entry, so build artifacts are
+# excluded by construction rather than by pattern-matching them out.
+#
+# An entry containing "://" is remote (makepkg fetches it). The `name::target`
+# rename form keeps the on-disk name after the last "::".
+mapfile -t wanted < <(
+	awk -F' = ' '
+		$1 ~ /^[[:space:]]*(source(_[a-zA-Z0-9_]+)?|install|changelog)$/ {
+			v = $2
+			if (v ~ /:\/\//) next
+			sub(/^.*::/, "", v)
+			if (v != "") print v
+		}
+	' "$pkgdir/.SRCINFO" | sort -u
+)
+
+missing=()
+if ((${#wanted[@]} > 0)); then
+	for name in "${wanted[@]}"; do
+		if [[ -f "$pkgdir/$name" ]]; then
+			cp "$pkgdir/$name" "$tmp/$pkg/"
+		else
+			missing+=("$name")
+		fi
+	done
+fi
+
+# Fail here rather than letting AUR reject the push. The remote's message
+# ("missing source file: ...", "hook declined to update refs/heads/master")
+# arrives after the build has already run and reads like a permissions problem.
+if ((${#missing[@]} > 0)); then
+	echo "error: .SRCINFO lists local files that are not in $pkgdir:" >&2
+	printf '  %s\n' "${missing[@]}" >&2
+	echo "  AUR rejects any commit whose source files are not included." >&2
+	exit 1
+fi
 
 cd "$tmp/$pkg"
 
