@@ -194,19 +194,29 @@ build() {
   # binaries link against libstdc++/libgcc_s, and libcrypt/libtirpc/libnsl are
   # the split-out pieces glibc no longer ships. Taken from the host's own
   # packages, which are built against this exact glibc version.
-  # libgomp: rpm-native's librpmbuild.so and librpmio.so carry a DT_NEEDED on
-  # libgomp.so.1 (rpm builds with OpenMP). Under uninative the loader searches
-  # only this tree plus RUNPATH, so without it rpmdeps dies with
-  #   rpmdeps: error while loading shared libraries: libgomp.so.1
-  # and since EVERY recipe's do_package runs rpmdeps, a single missing library
-  # fails unrelated recipes wholesale - observed taking out base-files,
-  # hicolor-icon-theme, linux-libc-headers and wayland-protocols in one run.
-  # Same category as libstdc++/libgcc_s below: a GCC runtime library that
-  # native binaries link against and glibc does not provide.
+  # libgomp and libatomic are GCC runtime libraries in the same category as
+  # libstdc++/libgcc_s: native binaries link against them, glibc does not
+  # provide them, and OE stages neither for the native architecture (it builds
+  # gcc-runtime for the TARGET only). Under uninative the loader searches just
+  # this tree plus each object's RUNPATH, so a missing one is fatal - and both
+  # were reached transitively, where DT_RUNPATH does not help, which is why the
+  # failures looked unrelated to the libraries themselves:
+  #
+  #   libgomp.so.1   <- rpm-native's librpmbuild.so/librpmio.so (rpm builds with
+  #                     OpenMP). rpmdeps could not start, and since EVERY
+  #                     recipe's do_package runs rpmdeps this took out
+  #                     base-files, hicolor-icon-theme, linux-libc-headers and
+  #                     wayland-protocols in a single run.
+  #   libatomic.so.1 <- libcxx-native's libc++.so.1, loaded by gn. Chromium's
+  #                     do_configure died with
+  #                     "gn: error while loading shared libraries:
+  #                      libatomic.so.1" while gn's own DT_NEEDED never
+  #                     mentions it.
   install -Dm755 -t "$_tree/usr/lib" \
     /usr/lib/libstdc++.so.6 \
     /usr/lib/libgcc_s.so.1 \
     /usr/lib/libgomp.so.1 \
+    /usr/lib/libatomic.so.1 \
     /usr/lib/libcrypt.so.2 \
     /usr/lib/libtirpc.so.3 \
     /usr/lib/libnsl.so.3
