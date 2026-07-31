@@ -75,6 +75,8 @@ source=(
   '0006-nativesdk-glibc-Make-relocatable-install-for-locales.patch'
   '0007-nativesdk-glibc-Fall-back-to-faccessat-on-faccess2-r.patch'
   'relocate_sdk.py'
+  'glibc-upgrade-check.sh'
+  'yocto-uninative-glibc.hook'
 )
 # SKIP applies to the git source only: #commit= already pins it by hash.
 sha256sums=('SKIP'
@@ -83,7 +85,9 @@ sha256sums=('SKIP'
             'c21269c1b1c12dd9c59ca71a5bf1df7bd3d2359e38003e198fcfae479a617f5d'
             'd3902264bb4ded821fbc3dd1dba045c6335f27b68af444179b48a9387a54ea12'
             'c2653e464b775f492d88f33561fff9f6648faa0d870554991bb5ee959a5dcb69'
-            'f99662254a8ccfb87b2cbea8677d7bef29b452158e036123a64453ee71cc6288')
+            'f99662254a8ccfb87b2cbea8677d7bef29b452158e036123a64453ee71cc6288'
+            '726b902fd38efa483ba3147ce4644564ad8a480ba70d278d3e8747a3e5f5de9b'
+            '7edf7d3195dc5a4a740bd9c0e716cadf48e6055b4525c5dd7bb0278b694d503c')
 
 prepare() {
   # pkgver carries only the 12-char short sha, so _commit cannot be derived
@@ -501,6 +505,19 @@ package() {
     printf 'UNINATIVE_CHECKSUM[x86_64] = "%s"\n' "$_sha"
     printf 'UNINATIVE_MAXGLIBCVERSION:forcevariable = "%s"\n' "$_glibc"
   } >"${pkgdir}/usr/share/yocto-uninative/uninative.inc"
+
+  # The fragment pins UNINATIVE_MAXGLIBCVERSION to the glibc this tarball was
+  # built from, and nothing re-checks it afterwards. When the host later moves
+  # to a new glibc MINOR, uninative.bbclass disables itself with a bb.warn that
+  # is easy to lose in a build log. This hook says so at the moment of the
+  # glibc upgrade instead, which is the point where the user can act.
+  #
+  # A hook rather than an .install: an .install fires when THIS package
+  # changes, and the event that invalidates the tarball is glibc changing.
+  install -Dm755 "$srcdir/glibc-upgrade-check.sh" \
+    "${pkgdir}/usr/share/yocto-uninative/glibc-upgrade-check"
+  install -Dm644 "$srcdir/yocto-uninative-glibc.hook" \
+    "${pkgdir}/usr/share/libalpm/hooks/90-yocto-uninative-glibc.hook"
 }
 
 # vim:set ts=2 sw=2 et:
