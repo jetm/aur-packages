@@ -44,12 +44,34 @@ setup_ssh() {
 		# (publickey)", which sends you looking at the AUR account when the
 		# problem is the secret itself. The key must also be passphrase-less:
 		# ssh runs with no agent below and nothing can answer a prompt.
-		if ! ssh-keygen -y -f "$keyfile" >/dev/null 2>&1; then
+		local derived
+		if ! derived=$(ssh-keygen -y -f "$keyfile" 2>/dev/null); then
 			echo "error: AUR_SSH_KEY is not a usable private key." >&2
 			echo "  It must be the PRIVATE half (not .pub), unencrypted, with newlines intact." >&2
 			echo "  Set it straight from the file to avoid copy-paste damage:" >&2
 			echo "    gh secret set AUR_SSH_KEY < ~/.ssh/aur" >&2
 			exit 1
+		fi
+
+		# The public half of the key registered on the AUR account. Public key
+		# material, so safe to keep in the repo.
+		#
+		# A warning rather than an error: if the secret really is the wrong key
+		# the push fails on its own a few seconds later, and this explains why
+		# instead of leaving "Permission denied (publickey)" to be read as an
+		# AUR-account problem. Failing hard here would instead break the
+		# legitimate case where the key was rotated and the secret updated but
+		# this line was not - turning a rotation into a broken pipeline.
+		#
+		# Compare type and base64 only; ssh-keygen -y may append a comment
+		# carried over from the private key file.
+		local expected='ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM9hSWefUCCNjTdLmJqNibVIvdTYiIHh/wGh1CFIzIG/'
+		if [[ "$(printf '%s' "$derived" | cut -d' ' -f1,2)" != "$expected" ]]; then
+			echo "warning: AUR_SSH_KEY does not match the key recorded in publish.sh." >&2
+			echo "  expected: $expected" >&2
+			echo "  secret:   $(printf '%s' "$derived" | cut -d' ' -f1,2)" >&2
+			echo "  If the AUR key was rotated, update 'expected' above; otherwise the" >&2
+			echo "  secret is wrong and the push below will fail with 'Permission denied'." >&2
 		fi
 
 		export GIT_SSH_COMMAND="ssh -i $keyfile -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
