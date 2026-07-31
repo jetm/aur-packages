@@ -97,7 +97,12 @@ cp "$pkgdir/.SRCINFO" "$tmp/$pkg/"
 #
 # An entry containing "://" is remote (makepkg fetches it). The `name::target`
 # rename form keeps the on-disk name after the last "::".
-mapfile -t wanted < <(
+# NOT `mapfile -t wanted < <(awk ...)`: mapfile reports its own status, never
+# the process substitution's, so an awk that dies or matches nothing yields an
+# empty array and a clean exit - which is precisely how the `git ls-files`
+# version of this code shipped an AUR commit with no patches in it. Capture
+# first, check the status, then split.
+if ! wanted_raw=$(
 	awk -F' = ' '
 		$1 ~ /^[[:space:]]*(source(_[a-zA-Z0-9_]+)?|install|changelog)$/ {
 			v = $2
@@ -106,7 +111,28 @@ mapfile -t wanted < <(
 			if (v != "") print v
 		}
 	' "$pkgdir/.SRCINFO" | sort -u
-)
+); then
+	echo "error: failed to read the local source list from $pkgdir/.SRCINFO" >&2
+	exit 1
+fi
+
+wanted=()
+if [[ -n $wanted_raw ]]; then
+	mapfile -t wanted <<<"$wanted_raw"
+fi
+
+# Independent cross-check on the parse itself. If .SRCINFO declares local
+# sources but the parse produced none, the parse is wrong - a key spelling or
+# separator change in a future makepkg would otherwise silently reproduce the
+# original bug with a different cause.
+declared_local=$(grep -E \
+	'^[[:space:]]*(source(_[a-zA-Z0-9_]+)?|install|changelog) = ' \
+	"$pkgdir/.SRCINFO" 2>/dev/null | grep -vc '://' || true)
+if [[ ${declared_local:-0} -gt 0 ]] && ((${#wanted[@]} == 0)); then
+	echo "error: $pkgdir/.SRCINFO declares $declared_local local source file(s)" >&2
+	echo "  but the parser matched none. Refusing to publish an incomplete commit." >&2
+	exit 1
+fi
 
 missing=()
 if ((${#wanted[@]} > 0)); then
