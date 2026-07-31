@@ -6,6 +6,8 @@ AUR package automation with nvchecker + GitHub Actions.
 
 1. **Daily check**: nvchecker compares upstream releases against `old.json`
 2. **Update**: For each outdated package, bumps pkgver, recalculates checksums, regenerates .SRCINFO
+   (`yocto-uninative-tarball` skips the checksum step - its only remote source is a git commit pinned
+   by hash, and its other sources are local files whose sums a pkgver bump does not change)
 3. **Build**: Builds the package in an Arch container to verify it works
 4. **Publish**: Pushes to AUR via SSH
 
@@ -22,7 +24,7 @@ AUR package automation with nvchecker + GitHub Actions.
 | ytcui | [MilkmanAbi/ytcui](https://github.com/MilkmanAbi/ytcui) | Yes |
 | virtio-win | Fedora infra | No (manual) |
 | avocado-cli | [avocado-linux/avocado-cli](https://github.com/avocado-linux/avocado-cli) | Yes |
-| yocto-uninative-tarball | [Yocto uninative releases](https://downloads.yoctoproject.org/releases/uninative/) | Yes |
+| yocto-uninative-tarball | [Arch glibc packaging](https://gitlab.archlinux.org/archlinux/packaging/packages/glibc) | Yes |
 | linux-cachyos-jetm | [CachyOS/linux](https://github.com/CachyOS/linux) releases | Yes |
 
 ## Secrets required
