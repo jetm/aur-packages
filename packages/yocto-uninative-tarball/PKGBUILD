@@ -21,7 +21,8 @@ license=('LGPL-2.1-or-later' 'GPL-3.0-or-later WITH GCC-exception-3.1'
 # libstdc++ and libgcc, not gcc-libs: Arch split those shared objects out of
 # gcc-libs, and build() copies the .so files directly rather than linking.
 makedepends=('git' 'python' 'bison' 'patchelf' 'linux-api-headers'
-             'libstdc++' 'libgcc' 'libxcrypt' 'libtirpc' 'libnsl')
+             'libstdc++' 'libgcc' 'libxcrypt' 'libxcrypt-compat'
+             'libtirpc' 'libnsl')
 # Only two of these do anything here, and it is worth being precise because the
 # other two look like they are protecting the payload and are not:
 #   !lto    load-bearing - stops makepkg appending -flto. glibc does not build
@@ -307,6 +308,81 @@ build() {
   # Runs BEFORE patchelf-uninative is installed below, so it is not caught.
   rm -rf "$_tree/usr/bin" "$_tree/usr/sbin" "$_tree/bin" "$_tree/sbin"
 
+  # Prune lib/ to upstream's allowlist rather than deleting known-bad entries.
+  #
+  # This is the same class of fix as the usr/bin deletion above, generalised.
+  # Upstream defines its payload by an allowlist - FILES:${PN} is exactly
+  # ${libc_baselibs} (glibc-package.inc:17), a soname-by-soname enumeration -
+  # and everything `make install` produces that is not on it falls into a
+  # package uninative-tarball.bb never pulls. Ours was a denylist, and both
+  # production failures so far were denylist drift: files we did not know to
+  # remove (the shadowing binaries) and files we did not know to add (libgomp,
+  # libatomic). An allowlist degrades in the safe direction - a new glibc
+  # soname goes missing loudly at load time instead of being shipped silently.
+  #
+  # Copied from libc_baselibs verbatim so a diff against oe-core stays trivial.
+  # The non-glibc libraries added further down land in usr/lib and are not
+  # subject to this list.
+  local _keep=(
+    'libc.so.*' 'libc-*.so'
+    'libm*.so.*' 'libm-*.so' 'libmvec-*.so'
+    'ld*.so.*' 'ld-*.so'
+    'libpthread*.so.*' 'libpthread-*.so'
+    'libresolv*.so.*' 'libresolv-*.so'
+    'librt*.so.*' 'librt-*.so'
+    'libutil*.so.*' 'libutil-*.so'
+    'libnsl*.so.*' 'libnsl-*.so'
+    'libnss_files*.so.*' 'libnss_files-*.so'
+    'libnss_compat*.so.*' 'libnss_compat-*.so'
+    'libnss_dns*.so.*' 'libnss_dns-*.so'
+    'libdl*.so.*' 'libdl-*.so'
+    'libanl*.so.*' 'libanl-*.so'
+    'libBrokenLocale*.so.*' 'libBrokenLocale-*.so'
+  )
+  local _f _base _pat _hit _dropped=0
+  for _f in "$_tree/lib"/*; do
+    [[ -e $_f ]] || continue
+    _base=${_f##*/}
+    _hit=0
+    for _pat in "${_keep[@]}"; do
+      # shellcheck disable=SC2053 - glob match against the pattern is intended
+      if [[ $_base == $_pat ]]; then
+        _hit=1
+        break
+      fi
+    done
+    if ((_hit == 0)); then
+      rm -rf "$_f"
+      _dropped=$((_dropped + 1))
+    fi
+  done
+  msg2 "pruned %s lib/ entries outside upstream's libc_baselibs" "$_dropped"
+
+  # The loader is the one file the whole payload exists to deliver; a typo in
+  # the allowlist above would remove it and the failure would not surface until
+  # a consumer's build.
+  if [[ ! -e $_tree/lib/ld-linux-x86-64.so.2 || ! -e $_tree/lib/libc.so.6 ]]; then
+    error "lib/ prune removed the loader or libc - check the allowlist"
+    return 1
+  fi
+
+  # Development and documentation content upstream splits into -dev,
+  # -staticdev and -pic, none of which uninative-tarball.bb installs. Roughly
+  # 1150 of our 1600 payload entries. usr/share/i18n is consumed by the
+  # localedef step above, which ran against $_install, so dropping it from the
+  # assembled tree costs nothing. usr/lib/*.so are the dev symlinks and linker
+  # scripts - libc.so names unrelocated build paths, so it is a booby trap if
+  # anything ever puts this directory on a linker search path.
+  rm -rf \
+    "$_tree/usr/include" \
+    "$_tree/usr/share/i18n" \
+    "$_tree/usr/share/info" \
+    "$_tree/usr/share/locale" \
+    "$_tree/usr/lib/audit" \
+    "$_tree/usr/lib/getconf" \
+    "$_tree/usr/etc/rpc"
+  rm -f "$_tree"/usr/lib/*.a "$_tree"/usr/lib/*.o "$_tree"/usr/lib/*.so
+
   # glibc supplies neither of these and the payload needs both: native SDK
   # binaries link against libstdc++/libgcc_s, and libcrypt/libtirpc/libnsl are
   # the split-out pieces glibc no longer ships. Taken from the host's own
@@ -337,6 +413,14 @@ build() {
     /usr/lib/libcrypt.so.2 \
     /usr/lib/libtirpc.so.3 \
     /usr/lib/libnsl.so.3
+
+  # libcrypt.so.1 is the pre-libxcrypt ABI. Upstream ships it -
+  # uninative-tarball.bb pulls nativesdk-libxcrypt-compat alongside
+  # nativesdk-libxcrypt - and since the uninative tree is the loader's entire
+  # search scope, a native binary built against the old ABI is an outright
+  # load failure rather than something the host can satisfy. Cheap insurance
+  # for a payload that is meant to be a drop-in for upstream's.
+  install -Dm755 -t "$_tree/usr/lib" /usr/lib/libcrypt.so.1
 
   # bitbake prepends <tree>/usr/bin to PATH and relocates this binary, so it
   # must exist under that exact name. Its .interp is padded to 1024 bytes

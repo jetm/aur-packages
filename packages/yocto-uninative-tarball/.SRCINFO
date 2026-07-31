@@ -16,6 +16,7 @@ pkgbase = yocto-uninative-tarball
 	makedepends = libstdc++
 	makedepends = libgcc
 	makedepends = libxcrypt
+	makedepends = libxcrypt-compat
 	makedepends = libtirpc
 	makedepends = libnsl
 	options = staticlibs
