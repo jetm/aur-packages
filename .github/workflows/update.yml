@@ -181,13 +181,37 @@ jobs:
           EOF
           )"
 
+      # An artifact is rooted at the least common ancestor of its paths, so this
+      # one contains PKGBUILD/.SRCINFO at its root with no `packages/<pkg>/`
+      # prefix. That is fine - the commit job puts them back (see there) - but
+      # it is why the previous version silently failed: the download landed a
+      # bare PKGBUILD at the workspace root, `git add packages/` staged nothing,
+      # and every run committed old.json alone. The repo's PKGBUILD stayed at
+      # the pre-bump version while old.json recorded the new one as done, so
+      # nvchecker never retried and the AUR ran ahead of the repo indefinitely.
+      #
+      # Uploading the whole `packages/` tree instead would make the prefix
+      # correct but is wrong under a matrix: every job would upload every
+      # package, and merging those artifacts would clobber one job's bump with
+      # another job's stale copy.
+      #
+      # include-hidden-files is required for .SRCINFO: upload-artifact has
+      # excluded dotfiles by default since v4.4, so without it the AUR would
+      # get a PKGBUILD whose .SRCINFO never moved.
+      #
+      # The excludes keep the ~500 MB of makepkg output (and the built package)
+      # out of the artifact; they mirror what .gitignore already lists.
       - name: Upload updated files
         uses: actions/upload-artifact@v7
         with:
           name: updated-${{ matrix.pkg }}
+          include-hidden-files: true
           path: |
-            packages/${{ matrix.pkg }}/PKGBUILD
-            packages/${{ matrix.pkg }}/.SRCINFO
+            packages/${{ matrix.pkg }}/
+            !packages/${{ matrix.pkg }}/pkg/
+            !packages/${{ matrix.pkg }}/src/
+            !packages/${{ matrix.pkg }}/glibc/
+            !packages/${{ matrix.pkg }}/*.pkg.tar.*
 
   commit:
     name: Commit changes
@@ -197,11 +221,41 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      # No merge-multiple: each artifact is rooted at its package directory, so
+      # merging them into one place would collapse every package's PKGBUILD
+      # onto the same path. Downloading into .artifacts/ keeps one
+      # `updated-<pkg>/` subdirectory per artifact, which the next step maps
+      # back to `packages/<pkg>/`.
       - name: Download all updated packages
         uses: actions/download-artifact@v8
         with:
           pattern: updated-*
-          merge-multiple: true
+          path: .artifacts
+
+      - name: Restore updated files into the package tree
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          restored=0
+          for dir in .artifacts/updated-*/; do
+            pkg=$(basename "$dir")
+            pkg=${pkg#updated-}
+            if [[ ! -d "packages/$pkg" ]]; then
+              echo "error: artifact for unknown package '$pkg'" >&2
+              exit 1
+            fi
+            cp -a "$dir." "packages/$pkg/"
+            restored=$((restored + 1))
+          done
+          rm -rf .artifacts
+          # A run that reached this job had updates, so restoring nothing means
+          # the artifact contract broke again - fail rather than commit a
+          # bumped old.json with an unbumped PKGBUILD.
+          if ((restored == 0)); then
+            echo "error: no updated-* artifacts were restored" >&2
+            exit 1
+          fi
+          echo "restored $restored package(s)"
 
       - name: Update nvchecker state
         run: |
@@ -229,6 +283,13 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add packages/ old.json
-          git diff --cached --quiet && exit 0
+          # Say so rather than exiting 0 into silence: this job only runs when
+          # the check job found updates, so "nothing staged" means the restore
+          # step or the artifact contract is broken, not that there was no work.
+          if git diff --cached --quiet; then
+            echo "error: updates were detected but nothing is staged;" >&2
+            echo "  the PKGBUILD bump did not survive the artifact round-trip." >&2
+            exit 1
+          fi
           git commit -m "Update packages to latest upstream versions"
           git push
