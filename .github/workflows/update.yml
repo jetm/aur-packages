@@ -252,30 +252,46 @@ jobs:
           pattern: updated-*
           path: .artifacts
 
+      # Driven by the matrix, not by globbing the download directory, because
+      # download-artifact's layout depends on how many artifacts matched:
+      # several get one `updated-<pkg>/` subdirectory each, but a single one is
+      # extracted straight into `path` with no subdirectory at all. Globbing for
+      # the subdirectories therefore found nothing whenever exactly one package
+      # updated - which is the common case. Handle both, and say which layout
+      # was used so a future change in that behaviour is visible in the log.
       - name: Restore updated files into the package tree
+        env:
+          MATRIX: ${{ needs.check.outputs.matrix }}
         run: |
           set -euo pipefail
-          shopt -s nullglob
-          restored=0
-          for dir in .artifacts/updated-*/; do
-            pkg=$(basename "$dir")
-            pkg=${pkg#updated-}
-            if [[ ! -d "packages/$pkg" ]]; then
-              echo "error: artifact for unknown package '$pkg'" >&2
-              exit 1
-            fi
-            cp -a "$dir." "packages/$pkg/"
-            restored=$((restored + 1))
-          done
-          rm -rf .artifacts
-          # A run that reached this job had updates, so restoring nothing means
-          # the artifact contract broke again - fail rather than commit a
-          # bumped old.json with an unbumped PKGBUILD.
-          if ((restored == 0)); then
-            echo "error: no updated-* artifacts were restored" >&2
+          mapfile -t pkgs < <(printf '%s' "$MATRIX" | python3 -c \
+            "import json,sys; [print(e['pkg']) for e in json.load(sys.stdin).get('include', [])]")
+          if ((${#pkgs[@]} == 0)); then
+            echo "error: this job only runs when the check job found updates," >&2
+            echo "  but the matrix lists no packages." >&2
             exit 1
           fi
-          echo "restored $restored package(s)"
+          for pkg in "${pkgs[@]}"; do
+            if [[ -d ".artifacts/updated-$pkg" ]]; then
+              src=".artifacts/updated-$pkg"
+            elif ((${#pkgs[@]} == 1)); then
+              src=".artifacts"
+            else
+              echo "error: no artifact directory for '$pkg' and more than one" >&2
+              echo "  package updated, so the flat layout cannot be assumed." >&2
+              exit 1
+            fi
+            # The layout assumption above is the thing most likely to change
+            # under us; assert on it rather than silently copying an empty tree.
+            if [[ ! -f "$src/PKGBUILD" ]]; then
+              echo "error: '$src' contains no PKGBUILD - artifact layout changed" >&2
+              ls -la "$src" >&2 || true
+              exit 1
+            fi
+            cp -a "$src/." "packages/$pkg/"
+            echo "restored $pkg from $src"
+          done
+          rm -rf .artifacts
 
       - name: Update nvchecker state
         run: |
