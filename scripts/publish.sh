@@ -23,13 +23,22 @@ fi
 # SSH setup (idempotent - safe to call multiple times)
 setup_ssh() {
 	if [[ -n "${AUR_SSH_KEY:-}" ]]; then
-		local keyfile="/tmp/aur_ssh_key"
+		# Inside $tmp, which the EXIT trap removes. The previous fixed path
+		# (/tmp/aur_ssh_key) was covered by no trap at all, so a manual run left
+		# the deploy key readable on disk after the script finished.
+		local keyfile="$tmp/aur_ssh_key"
 		# Strip CR: a key pasted through a Windows editor or some web forms
 		# arrives CRLF, which ssh rejects as "invalid format" - a message that
 		# reads like an auth problem rather than a mangled secret. echo supplies
 		# the trailing newline OpenSSH also requires.
-		printf '%s\n' "$AUR_SSH_KEY" | tr -d '\r' >"$keyfile"
-		chmod 600 "$keyfile"
+		#
+		# umask in a subshell rather than a chmod afterwards: writing first and
+		# tightening second leaves the key briefly at the caller's umask, which
+		# on a permissive one is world-readable.
+		(
+			umask 077
+			printf '%s\n' "$AUR_SSH_KEY" | tr -d '\r' >"$keyfile"
+		)
 
 		# Fail here rather than letting git report "Permission denied
 		# (publickey)", which sends you looking at the AUR account when the
@@ -61,13 +70,15 @@ setup_git_identity() {
 	git config --global user.email "$AUR_USER_EMAIL"
 }
 
+# Before setup_ssh, not after: the deploy key is written inside $tmp so the
+# trap disposes of it, which means both have to exist first.
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
 setup_ssh
 setup_git_identity
 
 echo "Publishing $pkg to AUR..."
-
-tmp=$(mktemp -d)
-trap 'rm -rf "$tmp"' EXIT
 
 git clone "ssh://aur@aur.archlinux.org/$pkg.git" "$tmp/$pkg"
 
