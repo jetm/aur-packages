@@ -7,8 +7,8 @@ pkgname=yocto-uninative-tarball
 # glibc the same build, so the uninative-vs-host version check below can never
 # be a judgement call. update-version.sh rewrites pkgver and _commit together
 # from Arch's packaging PKGBUILD; neither is hand-maintained.
-pkgver=2.44+r3+g0b05bc142249
-_commit=0b05bc142249ac47e72be5cad5c37f33f4bb68d4
+pkgver=2.44+r5+g7cba77790f32
+_commit=7cba77790f3279bec3ac20e9c7632b021cd53f95
 pkgrel=1
 pkgdesc='Yocto uninative libc tarball built from the glibc commit Arch ships'
 arch=('x86_64')
@@ -22,9 +22,16 @@ license=('LGPL-2.1-or-later' 'GPL-3.0-or-later WITH GCC-exception-3.1'
 # gcc-libs, and build() copies the .so files directly rather than linking.
 makedepends=('git' 'python' 'bison' 'patchelf' 'linux-api-headers'
              'libstdc++' 'libgcc' 'libxcrypt' 'libtirpc' 'libnsl')
-# glibc must not be built with LTO, and the payload is assembled by hand in
-# build() - makepkg must not strip or split debug info out of the tarball's
-# contents on its way into the package.
+# Only two of these do anything here, and it is worth being precise because the
+# other two look like they are protecting the payload and are not:
+#   !lto    load-bearing - stops makepkg appending -flto. glibc does not build
+#           with LTO.
+#   !debug  load-bearing for a different reason - stops DEBUG_CFLAGS being
+#           appended when the invoking makepkg.conf enables the debug option.
+#   !strip / staticlibs  no-ops. Both act on $pkgdir, which holds one .tar.xz
+#           and one .inc; makepkg cannot see inside the tarball, so it was
+#           never going to strip the payload. Kept only as documentation of
+#           intent - do not rely on them to preserve anything.
 options=('staticlibs' '!lto' '!strip' '!debug')
 
 # sourceware.org is the upstream of record and is what Arch's own PKGBUILD
@@ -34,11 +41,28 @@ options=('staticlibs' '!lto' '!strip' '!debug')
 _glibc_url='https://git.launchpad.net/glibc'
 
 # The prefix baked into the loader at build time. relocate_sdk.py rewrites it
-# in .sysdirs and .interp when bitbake extracts the tarball, so this literal is
-# never used as a real path - it only has to match what relocate_sdk.py greps
-# for. Keep it identical to OE's SDKPATH or relocation silently finds nothing.
+# in .interp, .sysdirs, .ldsocache and .gccrelocprefix when bitbake extracts the
+# tarball, so this literal is never used as a real path.
+#
+# It does NOT have to match oe-core's SDKPATH. bitbake runs OUR relocate_sdk.py,
+# out of OUR tarball, with OUR value already substituted into it - there is no
+# coupling to upstream here at all. The only invariant is that this string is
+# byte-identical to the prefix glibc was configured with below, so the pattern
+# matches the strings actually baked into those sections.
+#
+# It must also stay free of regex metacharacters: relocate_sdk.py compiles the
+# substituted value with re.compile(), so a '.' or '+' in the path would become
+# a wildcard or a quantifier. Upstream escapes both (uninative-tarball.bb's
+# create_sdk_files sed) because SDKPATH contains a version number; we keep the
+# literal metacharacter-free instead and assert it, which is the same guarantee
+# with less machinery. A mismatch here does not fail - relocation silently
+# matches nothing and every native binary keeps the placeholder PT_INTERP.
 _sdkpath=/usr/local/oe-sdk-hardcoded-buildpath
 _sysroot=$_sdkpath/sysroots/x86_64-pokysdk-linux
+if [[ ! $_sysroot =~ ^[A-Za-z0-9/_-]+$ ]]; then
+  echo "PKGBUILD: _sysroot contains a regex metacharacter: $_sysroot" >&2
+  return 1 2>/dev/null || exit 1
+fi
 
 _tarball="x86_64-nativesdk-libc-${pkgver}.tar.xz"
 
@@ -77,10 +101,21 @@ prepare() {
   # onto glibc 2.44, where elf/dl-load.c replaced alloca with
   # dl_scratch_buffer_allocate; the buffer-sizing formula it guards is
   # unchanged, so the patch is still load-bearing and was not dropped.
-  local _p
-  for _p in "$srcdir"/000[34567]-nativesdk-glibc-*.patch; do
-    msg2 "applying %s" "$(basename "$_p")"
-    patch -p1 -i "$_p"
+  # Derived from source=(), not globbed: a glob has to be kept in sync with the
+  # array by hand, and adding 0008-*.patch to source= without touching the glob
+  # would fetch and checksum it and then never apply it, silently.
+  #
+  # -F0 forbids fuzz. GNU patch defaults to a fuzz factor of 2, so a hunk that
+  # has drifted still applies - at an offset, exit 0, no output. _commit is
+  # bumped unattended by CI on every Arch glibc rebuild, and 0004 has already
+  # had to be re-anchored by hand once; a silent fuzzy apply is exactly how a
+  # subtly-misplaced loader patch would reach the AUR.
+  local _s _p
+  for _s in "${source[@]}"; do
+    _p=${_s##*/}
+    [[ $_p == *.patch ]] || continue
+    msg2 "applying %s" "$_p"
+    patch -p1 -F0 --no-backup-if-mismatch -i "$srcdir/$_p"
   done
 
   mkdir -p "$srcdir/glibc-build"
@@ -111,7 +146,10 @@ build() {
 
   # Cannot be overridden by appending - it is a preprocessor define. Arch
   # strips the same flag; fortification is enabled via --enable-fortify-source.
+  # Both variables: Arch's makepkg.conf defines CXXFLAGS="$CFLAGS ...", so
+  # stripping CFLAGS alone leaves the flag alive on the C++ side.
   CFLAGS=${CFLAGS/-Wp,-D_FORTIFY_SOURCE=3/}
+  CXXFLAGS=${CXXFLAGS/-Wp,-D_FORTIFY_SOURCE=3/}
 
   # glibc's loader must be linked with GNU ld. CachyOS's makepkg.conf sets
   # -fuse-ld=mold, and mold ignores -z nomark-plt (warning only), which leaves
@@ -155,6 +193,85 @@ build() {
     make -O
     make install DESTDIR="$_install"
   )
+
+  # Compile the binary locales the payload has to ship. `make install` lays
+  # down only the i18n *sources* under usr/share/i18n; with nothing compiled in
+  # usr/lib/locale, setlocale() succeeds for C and POSIX and fails for every
+  # other locale - including C.UTF-8, which is not built into the library.
+  #
+  # That is not a cosmetic gap. bitbake forces LC_ALL into every task by two
+  # independent mechanisms, and BOTH are needed for the conclusion - do not
+  # simplify this comment down to the first one:
+  #   1. bb.utils.filter_environment sets os.environ["LC_ALL"] = "en_US.UTF-8"
+  #      ("Ideally we'd use C.UTF-8 but not all distros support that"), and
+  #      LC_ALL is in preserved_envvars_exported so it survives into the task
+  #      env. This path is skipped entirely when BB_PRESERVE_ENV is set -
+  #      clean_environment() returns early - so it is not unconditional.
+  #   2. oe-core's bitbake.conf carries a hard `export LC_ALL = "en_US.UTF-8"`,
+  #      which covers the BB_PRESERVE_ENV case.
+  # A native tool that calls
+  # setlocale(LC_ALL, "") then fails: dnf-native prints "Failed to set locale,
+  # defaulting to C", OE's RpmRootfs log_check matches that on "Fail", and
+  # do_rootfs aborts with the rootfs already fully and correctly assembled.
+  #
+  # Upstream ships this, but NOT via TOOLCHAIN_HOST_TASK - that list names only
+  # nativesdk-glibc{,-dbg,-gconvs} and friends, and glibc-package.inc's
+  # stash_locale_cleanup actively strips ${localedir} from nativesdk-glibc. The
+  # locale data arrives through the SDK machinery instead: uninative-tarball.bb
+  # does `inherit populate_sdk`, and populate_sdk_base.bbclass:120-122 adds
+  #     SDK_DEPENDS = "... cross-localedef-native"
+  #     SDK_DEPENDS += "nativesdk-glibc-locale"
+  # with SDKIMAGE_LINGUAS ?= "all" (:46). Verified against the published
+  # artifact rather than inferred: YP's x86_64-nativesdk-libc-5.1.tar.xz
+  # carries usr/lib/locale/locale-archive at 101,696,416 bytes holding 152
+  # locales, C.utf8 among them.
+  #
+  # We ship two of those 152, not all: en_US.UTF-8 because bitbake hardcodes
+  # it, and C.UTF-8 because bitbake.conf's `export LC_ALL` is a plain
+  # assignment a user CAN override to C.UTF-8 in local.conf - so the second
+  # locale covers that escape hatch rather than being decorative. The pair
+  # costs ~3 MB against upstream's ~97 MB uncompressed.
+  #
+  # Run the freshly built localedef through the freshly built loader. Its own
+  # PT_INTERP names the SDK path, which does not exist until bitbake relocates
+  # the tarball, so it cannot be exec'd directly; and borrowing the host's
+  # localedef would tie the archive format to whatever glibc the build machine
+  # happens to run rather than the one being packaged. --prefix prepends to
+  # localedef's compiled-in complocaledir, which is already under _sysroot, so
+  # passing _install lands the archive exactly where the mv below picks it up.
+  local _ldso="$_install$_sysroot/lib/ld-linux-x86-64.so.2"
+  local _libpath="$_install$_sysroot/lib:$_install$_sysroot/usr/lib"
+  local _localedef="$srcdir/glibc-build/locale/localedef"
+  local _loc
+  install -d "$_install$_sysroot/usr/lib/locale"
+  for _loc in en_US:en_US.UTF-8 C:C.UTF-8; do
+    I18NPATH="$_install$_sysroot/usr/share/i18n" \
+      "$_ldso" --library-path "$_libpath" "$_localedef" \
+      --prefix="$_install" -i "${_loc%%:*}" -f UTF-8 "${_loc##*:}"
+  done
+
+  # Assert the archive actually contains BOTH locales the loop above built.
+  # localedef exits 0 having written an archive that a missing charmap or i18n
+  # source left empty, and an empty archive fails exactly like no archive at
+  # all - only later, inside someone's do_rootfs. Checking only en_US would
+  # miss the same failure for C.UTF-8, which the local.conf override path needs.
+  #
+  # localedef's stderr is captured, not discarded: it carries the one message
+  # that distinguishes "no archive" from "archive present but empty".
+  local _archive="$_install$_sysroot/usr/lib/locale/locale-archive"
+  local _listing _want
+  if ! _listing=$("$_ldso" --library-path "$_libpath" "$_localedef" \
+    --list-archive "$_archive" 2>&1); then
+    error "cannot read the generated locale-archive: %s" "$_listing"
+    return 1
+  fi
+  for _want in en_US.utf8 C.utf8; do
+    if ! printf '%s\n' "$_listing" | grep -qx "$_want"; then
+      error "locale-archive is missing %s (contains: %s); bitbake forces LC_ALL=en_US.UTF-8 and every native setlocale would fail" \
+        "$_want" "$(printf '%s' "$_listing" | tr '\n' ' ')"
+      return 1
+    fi
+  done
 
   # The tarball's x86_64-linux/ IS the sysroot: bitbake extracts the tarball
   # and passes <tree>/x86_64-linux to relocate_sdk.py as the new prefix.
@@ -228,7 +345,7 @@ build() {
   # extraction time.
   install -Dm755 /usr/bin/patchelf "$_tree/usr/bin/patchelf-uninative"
   local _pad
-  _pad=$(printf 'a%.0s' $(seq 1 1024))
+  _pad=$(printf '%*s' 1024 '' | tr ' ' a)
   patchelf --set-interpreter "$_pad" "$_tree/usr/bin/patchelf-uninative"
 
   # relocate_sdk.py greps for its own old_prefix literal, which oe-core ships
