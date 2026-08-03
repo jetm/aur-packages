@@ -30,6 +30,18 @@ github = "cwarden/git-add--interactive"
 use_max_tag = true
 prefix = "v"
 
+[nah]
+source = "github"
+github = "manuelschipper/nah"
+use_max_tag = true
+prefix = "v"
+
+[nah-bin]
+source = "github"
+github = "manuelschipper/nah"
+use_max_tag = true
+prefix = "v"
+
 [lavacli]
 source = "gitlab"
 gitlab = "lava/lavacli"

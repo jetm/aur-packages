@@ -1,0 +1,16 @@
+pkgbase = nah-bin
+	pkgdesc = Safety guard that blocks catastrophic coding-agent tool calls before they run
+	pkgver = 1.0.0
+	pkgrel = 1
+	url = https://github.com/manuelschipper/nah
+	arch = x86_64
+	arch = aarch64
+	license = MIT
+	provides = nah
+	conflicts = nah
+	source_x86_64 = nah-1.0.0-x86_64.tar.gz::https://github.com/manuelschipper/nah/releases/download/v1.0.0/nah-x86_64-unknown-linux-musl.tar.gz
+	sha256sums_x86_64 = 1a7681ab72c32a52bd92816708509b3d7ab8262d544441d0bd1d13dfd312dc3d
+	source_aarch64 = nah-1.0.0-aarch64.tar.gz::https://github.com/manuelschipper/nah/releases/download/v1.0.0/nah-aarch64-unknown-linux-musl.tar.gz
+	sha256sums_aarch64 = 0a8cc38c4668565ff599eda91f9b7d4f105024d76b5915bf20b19467533a70a6
+
+pkgname = nah-bin
