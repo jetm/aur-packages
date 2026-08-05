@@ -9,7 +9,7 @@ pkgname=yocto-uninative-tarball
 # from Arch's packaging PKGBUILD; neither is hand-maintained.
 pkgver=2.44+r5+g7cba77790f32
 _commit=7cba77790f3279bec3ac20e9c7632b021cd53f95
-pkgrel=1
+pkgrel=2
 pkgdesc='Yocto uninative libc tarball built from the glibc commit Arch ships'
 arch=('x86_64')
 url='https://git.openembedded.org/openembedded-core/tree/meta/classes-global/uninative.bbclass'
@@ -18,11 +18,21 @@ url='https://git.openembedded.org/openembedded-core/tree/meta/classes-global/uni
 # (LGPL-2.1-or-later), libtirpc (BSD-3-Clause) and relocate_sdk.py (GPL-2.0-only).
 license=('LGPL-2.1-or-later' 'GPL-3.0-or-later WITH GCC-exception-3.1'
          'BSD-3-Clause' 'GPL-2.0-only')
-# libstdc++ and libgcc, not gcc-libs: Arch split those shared objects out of
-# gcc-libs, and build() copies the .so files directly rather than linking.
+# One entry per package providing a library build() copies out of /usr/lib -
+# the copies are plain file reads, so an absent provider fails the build rather
+# than degrading. libstdc++ and libgcc rather than gcc-libs, because Arch split
+# those shared objects out of it. libgomp and libatomic were missed when they
+# were added to the copy list; they happen to be present anyway as gcc-libs
+# dependencies, which is why CI never noticed, but relying on that leaves the
+# build dependent on something it does not declare.
+#
+# zlib, not zlib-ng-compat: this host ships the latter, which Provides zlib and
+# Replaces it, so naming the provider would break on stock Arch while naming
+# zlib resolves on both.
 makedepends=('git' 'python' 'bison' 'patchelf' 'linux-api-headers'
-             'libstdc++' 'libgcc' 'libxcrypt' 'libxcrypt-compat'
-             'libtirpc' 'libnsl')
+             'libstdc++' 'libgcc' 'libgomp' 'libatomic'
+             'libxcrypt' 'libxcrypt-compat'
+             'libtirpc' 'libnsl' 'zlib')
 # Only two of these do anything here, and it is worth being precise because the
 # other two look like they are protecting the payload and are not:
 #   !lto    load-bearing - stops makepkg appending -flto. glibc does not build
@@ -409,6 +419,29 @@ build() {
   #                     "gn: error while loading shared libraries:
   #                      libatomic.so.1" while gn's own DT_NEEDED never
   #                     mentions it.
+  #   libz.so.1      <- rust-native's PREBUILT bootstrap rustc. rust_1.94.1.bb
+  #                     patches the snapshot's interpreter to UNINATIVE_LOADER
+  #                     but sets no RUNPATH, and the snapshot's own RUNPATH is
+  #                     $ORIGIN/../lib, which holds only libLLVM and
+  #                     librustc_driver. do_install died with
+  #                     "rust-snapshot/bin/rustc: error while loading shared
+  #                      libraries: libz.so.1", then "process didn't exit
+  #                     successfully: rustc -vV (exit status: 127)". OE does
+  #                     stage libz for native - it is in the recipe's own
+  #                     recipe-sysroot-native/usr/lib - but nothing on the
+  #                     loader's search path points there, so staging it does
+  #                     not help a binary the recipe only re-interprets.
+  #
+  # There is no host-library fallback that these "should" have hit. Patch 0003
+  # is named "Look for host system ld.so.cache as well", but it only reorders
+  # the search so the cache is consulted last; the cache PATH lives in
+  # .ldsocache and relocate_sdk.py rewrites it with the tree prefix, so the
+  # loader reads <tree>/usr/etc/ld.so.cache - never the host's /etc one. That
+  # file exists (glibc's make install runs ldconfig against DESTDIR) and is
+  # inert: every entry names an unrelocated build path. Verified on the
+  # shipped artifact - it lists no libz, and the paths it does name do not
+  # exist. So this list is the whole mechanism, and adding to it one library
+  # per failure is the intended cost, not a workaround for something broken.
   install -Dm755 -t "$_tree/usr/lib" \
     /usr/lib/libstdc++.so.6 \
     /usr/lib/libgcc_s.so.1 \
@@ -416,7 +449,8 @@ build() {
     /usr/lib/libatomic.so.1 \
     /usr/lib/libcrypt.so.2 \
     /usr/lib/libtirpc.so.3 \
-    /usr/lib/libnsl.so.3
+    /usr/lib/libnsl.so.3 \
+    /usr/lib/libz.so.1
 
   # libcrypt.so.1 is the pre-libxcrypt ABI. Upstream ships it -
   # uninative-tarball.bb pulls nativesdk-libxcrypt-compat alongside
