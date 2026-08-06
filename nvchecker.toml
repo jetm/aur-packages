@@ -92,3 +92,16 @@ github = "CachyOS/linux"
 use_max_release = true
 exclude_regex = ".*-rc[0-9]+-.*"
 prefix = "cachyos-"
+
+# Tags belong to the abandoned MFGTool 2.x line - v2.8.0 (2018) sorts highest, so
+# use_max_tag resolves seven years behind the package. Real versions are releases,
+# tagged uuu_X.Y.Z.
+# use_latest_release, not use_max_release: NXP publishes prereleases in that same
+# uuu_ namespace (1.5.239, 1.5.222 and a rolling "master" are all prerelease=true)
+# and max_release would take the newest of those. Unlike CachyOS above, NXP does
+# set the flag, so latest_release resolves to the newest stable.
+[uuu]
+source = "github"
+github = "nxp-imx/mfgtools"
+use_latest_release = true
+prefix = "uuu_"
