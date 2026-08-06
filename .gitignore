@@ -18,6 +18,10 @@ packages/linux-cachyos-jetm/config-*-cachyos-jetm
 packages/nah-bin/nah-*.tar.gz
 packages/nah/nah-*.tar.gz
 
+# uuu builds from upstream's release source tarball, which makepkg re-downloads
+# and the PKGBUILD pins by checksum.
+packages/uuu/uuu-*.tar.gz
+
 # yocto-uninative-tarball builds glibc from a git checkout that makepkg places
 # beside the PKGBUILD; it is ~263M of upstream source, re-cloned on demand from
 # the _commit the PKGBUILD pins.
