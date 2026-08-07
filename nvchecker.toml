@@ -105,3 +105,13 @@ source = "github"
 github = "nxp-imx/mfgtools"
 use_latest_release = true
 prefix = "uuu_"
+
+# Track releases, not tags: the packaged artifact is the Drata-Agent-linux.deb
+# release asset, so a tag without a release would report a version whose .deb
+# does not exist. use_latest_release is safe here because upstream sets the
+# prerelease flag correctly (every release to date is prerelease=false) and
+# GitHub marks 3.9.0 as latest. Tags carry no prefix.
+[drata-agent-bin]
+source = "github"
+github = "drata/drata-agent"
+use_latest_release = true
