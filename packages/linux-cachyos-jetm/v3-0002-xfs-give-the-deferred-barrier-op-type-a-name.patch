@@ -1,7 +1,20 @@
-From 0ac3b084e367a454c9a8af494d5f2ae0f1d20ce8 Mon Sep 17 00:00:00 2001
+From 6295a076494d6ffb62894fdc854f01bae7030ec1 Mon Sep 17 00:00:00 2001
 From: Javier Tia <floss@jetm.me>
 Date: Wed, 29 Jul 2026 18:32:12 -0600
-Subject: [PATCH 2/5] xfs: give the deferred barrier op type a name
+Subject: [PATCH v3 2/6] xfs: give the deferred barrier op type a name
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1371; i=floss@jetm.me;
+ h=from:subject; bh=cN3dntYSRKkBZpxQVRebrXb/QZ7i856/vDVWzWsugXQ=;
+ b=owEB7QES/pANAwAKAbXuwwuoZ3cfAcsmYgBqelljZqnJOJa7RnkDd+smQ6u6sTV39cbOgg3pl
+ R42h1J2EW+JAbMEAAEKAB0WIQSbE7ILzw7eI0VKk8m17sMLqGd3HwUCanpZYwAKCRC17sMLqGd3
+ HwjgC/9W+RZggkTvAas8vSgCzWt+sCY/+LWSwn8Zb63ECol+aJvCAiPZRr2cOROR+wuB+Oc6Hq+
+ fX7Ku1B4/T9TIPW4ClO5az8YG31sz23EgwCDSEt5DCagmasNmF9N0OWRZA0BJz+RFfxFtuAU+Ln
+ 7gNV54+UuYYCbSrYBZPlUawEJzZxIqctSqKZvAU06FfJ0sNQs9Qz8Fgj5bAJf+vOFocrgkTlGMR
+ CXBpTXLLvzR/xp0PlzyriXzO0AMcmf4i7CRM0nxFoZ5DTzQ93+/pSTu2lfcOB07p3bN99s556b4
+ /pWImMOIck8AYgKa10wxkRe9ZhiZSHt8KD8k1RsoFu969z6PONSTSwIpOLMBJVMeBqj4iRnt+V7
+ czDk5j4n5ld4UWZqYs51fSEYShsMtoimfnKUsl89mYWWB/QZ7fH1VgzX/F13Xg4eNhVz1elL7e3
+ 7kr7G9JC7sVywFxWmCmyMM91RzR/q6P4jT7Vhv1jkUB/muX5Y2Q08b4mfrgdiaohHLvSs=
+X-Developer-Key: i=floss@jetm.me; a=openpgp;
+ fpr=9B13B20BCF0EDE23454A93C9B5EEC30BA867771F
 
 xfs_barrier_defer_type is the only xfs_defer_op_type with no .name.
 Every other one carries a short string used for tracing and reporting:
@@ -16,9 +29,8 @@ lands in fprintf.  xfs_defer_add() already treats a missing member of
 this table as worth shutting the filesystem down for, so an unpopulated
 one is out of step with how the file handles its own ops tables.
 
-Fill it in so the table is complete before anything reads it.
-
 Signed-off-by: Javier Tia <floss@jetm.me>
+Reviewed-by: "Darrick J. Wong" <djwong@kernel.org>
 ---
  fs/xfs/libxfs/xfs_defer.c | 1 +
  1 file changed, 1 insertion(+)
