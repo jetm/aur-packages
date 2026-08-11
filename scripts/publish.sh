@@ -204,9 +204,11 @@ for name in ${wanted[@]+"${wanted[@]}"}; do
 	keep["$name"]=1
 done
 
+pruned=()
 while IFS= read -r tracked; do
 	if [[ -z ${keep[$tracked]:-} ]]; then
 		git -C "$tmp/$pkg" rm -q -- "$tracked"
+		pruned+=("$tracked")
 		echo "pruned $tracked (no longer declared by the PKGBUILD)"
 	fi
 done < <(git -C "$tmp/$pkg" ls-files)
@@ -219,9 +221,36 @@ if git diff --quiet && git diff --cached --quiet && [[ -z "$(git ls-files --othe
 	exit 0
 fi
 
-version=$(grep -m1 '^pkgver=' PKGBUILD | cut -d= -f2)
+# Read the version from .SRCINFO, not from the PKGBUILD's pkgver= assignment.
+# That assignment is a literal for most packages but derived in
+# linux-cachyos-jetm (pkgver=${_major}.${_minor}), where grepping it published
+# the AUR commit message "Update to ${_major}.${_minor}" verbatim. .SRCINFO
+# carries the expanded value because makepkg wrote it after evaluating the
+# PKGBUILD, so it is right for both shapes without this script sourcing
+# anything.
+version=$(awk -F' = ' '$1 ~ /^[[:space:]]*pkgver$/ {print $2; exit}' .SRCINFO)
+if [[ -z $version ]]; then
+	echo "error: no pkgver in $pkgdir/.SRCINFO" >&2
+	exit 1
+fi
+
 git add -A
-git commit -m "Update to $version"
+
+# Describe what the push actually does. A push that only removes files is not
+# an update, and titling it "Update to $version" hides the removal from anyone
+# reading the AUR history to work out when a patch stopped being applied -
+# which is the one question that history gets asked.
+if git diff --cached --name-only --diff-filter=d | grep -q .; then
+	subject="Update to $version"
+else
+	subject="Remove ${#pruned[@]} source file(s) no longer declared by the PKGBUILD"
+fi
+
+if ((${#pruned[@]} > 0)); then
+	git commit -m "$subject" -m "$(printf 'Pruned:\n'; printf -- '- %s\n' "${pruned[@]}")"
+else
+	git commit -m "$subject"
+fi
 git push
 
 echo "$pkg published to AUR (version $version)"
