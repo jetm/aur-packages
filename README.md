@@ -26,6 +26,7 @@ AUR package automation with nvchecker + GitHub Actions.
 | avocado-cli | [avocado-linux/avocado-cli](https://github.com/avocado-linux/avocado-cli) | Yes |
 | yocto-uninative-tarball | [Arch glibc packaging](https://gitlab.archlinux.org/archlinux/packaging/packages/glibc) | Yes |
 | linux-cachyos-jetm | [CachyOS/linux](https://github.com/CachyOS/linux) releases | Yes |
+| reproc | [DaanDeMeyer/reproc](https://github.com/DaanDeMeyer/reproc) | Yes |
 
 ## Secrets required
 

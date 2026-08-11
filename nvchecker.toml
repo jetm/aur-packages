@@ -109,3 +109,9 @@ prefix = "uuu_"
 source = "github"
 github = "drata/drata-agent"
 use_latest_release = true
+
+[reproc]
+source = "github"
+github = "DaanDeMeyer/reproc"
+use_max_tag = true
+prefix = "v"
