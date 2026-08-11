@@ -188,6 +188,29 @@ if ((${#missing[@]} > 0)); then
 	exit 1
 fi
 
+# Drop anything the package no longer declares. This script only ever copied
+# files in, so a source removed from the PKGBUILD stayed on the AUR forever.
+# The kernel package was carrying six such orphans: five superseded XFS patches
+# and the nofs patch dropped on 2026-07-28, whose own PKGBUILD comment says it
+# was removed. That is worse than clutter - the snapshot implies patches the
+# PKGBUILD does not apply, so anyone reading it to answer "what is in this
+# kernel" gets the wrong answer.
+#
+# Keyed on the same `wanted` list the copy loop uses, so the two cannot
+# disagree about what belongs. Driven by git ls-files rather than the
+# directory, which leaves .git alone without special-casing it.
+declare -A keep=([PKGBUILD]=1 [.SRCINFO]=1)
+for name in ${wanted[@]+"${wanted[@]}"}; do
+	keep["$name"]=1
+done
+
+while IFS= read -r tracked; do
+	if [[ -z ${keep[$tracked]:-} ]]; then
+		git -C "$tmp/$pkg" rm -q -- "$tracked"
+		echo "pruned $tracked (no longer declared by the PKGBUILD)"
+	fi
+done < <(git -C "$tmp/$pkg" ls-files)
+
 cd "$tmp/$pkg"
 
 # Check if there are actual changes
