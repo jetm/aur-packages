@@ -236,7 +236,14 @@ jobs:
   commit:
     name: Commit changes
     needs: [check, update]
-    if: needs.check.outputs.has_updates == 'true'
+    # Not `success()`, which is the implicit default and skips this job whenever
+    # any matrix leg fails. That stranded every other package's bump: the AUR
+    # push happens per-leg and had already succeeded, so the repo and old.json
+    # stayed behind while the AUR moved ahead - silently, and for as long as one
+    # package stayed broken. One failing package must not cost the others their
+    # commit. `check` is still required to have succeeded, because its matrix
+    # output is what the steps below iterate.
+    if: ${{ !cancelled() && needs.check.result == 'success' && needs.check.outputs.has_updates == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -246,20 +253,31 @@ jobs:
       # onto the same path. Downloading into .artifacts/ keeps one
       # `updated-<pkg>/` subdirectory per artifact, which the next step maps
       # back to `packages/<pkg>/`.
+      #
+      # A leg that failed uploaded nothing, so the download is now expected to
+      # be a subset of the matrix rather than all of it.
       - name: Download all updated packages
         uses: actions/download-artifact@v8
         with:
           pattern: updated-*
           path: .artifacts
 
-      # Driven by the matrix, not by globbing the download directory, because
       # download-artifact's layout depends on how many artifacts matched:
       # several get one `updated-<pkg>/` subdirectory each, but a single one is
-      # extracted straight into `path` with no subdirectory at all. Globbing for
-      # the subdirectories therefore found nothing whenever exactly one package
-      # updated - which is the common case. Handle both, and say which layout
-      # was used so a future change in that behaviour is visible in the log.
+      # extracted straight into `path` with no subdirectory at all.
+      #
+      # That flat case used to be detected as "the matrix has exactly one
+      # entry", which is wrong once legs are allowed to fail independently - a
+      # five-package matrix where four fail also downloads a single artifact.
+      # Detect it from the download directory instead, and take the package name
+      # from the artifact's own .SRCINFO, so the layout is never inferred from
+      # how many packages were *attempted*.
+      #
+      # Emits the list of packages actually restored. Everything downstream is
+      # driven by that list, never by the matrix, so a package whose build or
+      # AUR push failed is not recorded as done and gets retried next run.
       - name: Restore updated files into the package tree
+        id: restore
         env:
           MATRIX: ${{ needs.check.outputs.matrix }}
         run: |
@@ -271,15 +289,31 @@ jobs:
             echo "  but the matrix lists no packages." >&2
             exit 1
           fi
-          for pkg in "${pkgs[@]}"; do
-            if [[ -d ".artifacts/updated-$pkg" ]]; then
-              src=".artifacts/updated-$pkg"
-            elif ((${#pkgs[@]} == 1)); then
-              src=".artifacts"
-            else
-              echo "error: no artifact directory for '$pkg' and more than one" >&2
-              echo "  package updated, so the flat layout cannot be assumed." >&2
+
+          shopt -s nullglob
+          dirs=(.artifacts/updated-*)
+          shopt -u nullglob
+
+          restored=()
+          flat_pkg=""
+
+          if ((${#dirs[@]} == 0)) && [[ -f .artifacts/.SRCINFO ]]; then
+            # Flat layout: exactly one artifact was downloaded. Read pkgbase
+            # rather than assuming which matrix entry it belongs to.
+            flat_pkg=$(awk -F' = ' '$1 ~ /^[[:space:]]*pkgbase$/ {print $2; exit}' \
+              .artifacts/.SRCINFO)
+            if [[ -z $flat_pkg ]]; then
+              echo "error: flat artifact layout but .SRCINFO declares no pkgbase" >&2
               exit 1
+            fi
+            dirs=(.artifacts)
+          fi
+
+          for src in "${dirs[@]}"; do
+            if [[ $src == .artifacts ]]; then
+              name=$flat_pkg
+            else
+              name=${src#.artifacts/updated-}
             fi
             # The layout assumption above is the thing most likely to change
             # under us; assert on it rather than silently copying an empty tree.
@@ -288,42 +322,72 @@ jobs:
               ls -la "$src" >&2 || true
               exit 1
             fi
-            cp -a "$src/." "packages/$pkg/"
-            echo "restored $pkg from $src"
+            if [[ ! -d "packages/$name" ]]; then
+              echo "error: artifact '$src' names package '$name', which is not" >&2
+              echo "  in the repository tree." >&2
+              exit 1
+            fi
+            cp -a "$src/." "packages/$name/"
+            restored+=("$name")
+            echo "restored $name from $src"
           done
+
           rm -rf .artifacts
 
-      - name: Update nvchecker state
-        run: |
-          # Merge new versions into old.json for packages that were updated
-          matrix='${{ needs.check.outputs.matrix }}'
-          echo "$matrix" | python3 -c "
-          import json, sys
+          # Not an error: every leg failing is a real outcome now that this job
+          # no longer requires them all to pass. Say so loudly and leave old.json
+          # untouched so the next run retries the whole set.
+          if ((${#restored[@]} == 0)); then
+            echo "no artifacts were produced - every update job failed."
+          elif ((${#restored[@]} < ${#pkgs[@]})); then
+            echo "note: ${#restored[@]} of ${#pkgs[@]} packages produced artifacts;" \
+              "the rest failed and will be retried next run."
+          fi
 
-          matrix = json.load(sys.stdin)
-          with open('old.json') as f:
+          echo "count=${#restored[@]}" >>"$GITHUB_OUTPUT"
+          echo "packages=${restored[*]}" >>"$GITHUB_OUTPUT"
+
+      # Keyed on the restored list, not the matrix: recording a version for a
+      # package that never published would mark it done and stop nvchecker ever
+      # retrying it - the same repo-behind-AUR drift in a worse form, permanent
+      # rather than lasting until the next green run.
+      - name: Update nvchecker state
+        if: steps.restore.outputs.count != '0'
+        env:
+          MATRIX: ${{ needs.check.outputs.matrix }}
+          RESTORED: ${{ steps.restore.outputs.packages }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+
+          matrix = json.loads(os.environ["MATRIX"])
+          restored = set(os.environ["RESTORED"].split())
+
+          with open("old.json") as f:
               old = json.load(f)
 
-          for entry in matrix.get('include', []):
-              pkg = entry['pkg']
-              ver = entry['version']
-              old['data'][pkg] = {'version': ver}
+          for entry in matrix.get("include", []):
+              if entry["pkg"] in restored:
+                  old["data"][entry["pkg"]] = {"version": entry["version"]}
 
-          with open('old.json', 'w') as f:
+          with open("old.json", "w") as f:
               json.dump(old, f, indent=2)
-              f.write('\n')
-          "
+              f.write("\n")
+          PY
 
       - name: Commit and push
+        if: steps.restore.outputs.count != '0'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add packages/ old.json
-          # Say so rather than exiting 0 into silence: this job only runs when
-          # the check job found updates, so "nothing staged" means the restore
-          # step or the artifact contract is broken, not that there was no work.
+          # Say so rather than exiting 0 into silence: this step only runs when
+          # at least one package was restored, so "nothing staged" means the
+          # restore step or the artifact contract is broken, not that there was
+          # no work.
           if git diff --cached --quiet; then
-            echo "error: updates were detected but nothing is staged;" >&2
+            echo "error: packages were restored but nothing is staged;" >&2
             echo "  the PKGBUILD bump did not survive the artifact round-trip." >&2
             exit 1
           fi
