@@ -32,10 +32,19 @@
       "version": "0.41.2"
     },
     "yocto-uninative-tarball": {
-      "version": "2.44+r5+g7cba77790f32"
+      "version": "2.44+r24+g16be1518495f"
     },
     "linux-cachyos-jetm": {
-      "version": "7.1.5-1"
+      "version": "7.1.8-1"
+    },
+    "drata-agent-bin": {
+      "version": "3.9.0"
+    },
+    "nah-bin": {
+      "version": "1.2.0"
+    },
+    "uuu": {
+      "version": "1.5.243"
     }
   }
 }
