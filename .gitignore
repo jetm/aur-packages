@@ -13,10 +13,9 @@ packages/linux-cachyos-jetm/cachyos-*.tar.gz.asc
 packages/linux-cachyos-jetm/dkms-clang.patch
 packages/linux-cachyos-jetm/config-*-cachyos-jetm
 
-# nah-bin repackages upstream's prebuilt musl tarballs and nah builds from the
-# source archive; makepkg re-downloads both and the PKGBUILDs pin their checksums.
+# nah-bin repackages upstream's prebuilt musl tarballs; makepkg re-downloads
+# them and the PKGBUILD pins their checksums.
 packages/nah-bin/nah-*.tar.gz
-packages/nah/nah-*.tar.gz
 
 # uuu builds from upstream's release source tarball, which makepkg re-downloads
 # and the PKGBUILD pins by checksum.
