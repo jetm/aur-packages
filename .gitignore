@@ -29,3 +29,25 @@ packages/yocto-uninative-tarball/glibc/
 # drata-agent-bin repackages upstream's release .deb (106 MB); makepkg
 # re-downloads it and the PKGBUILD pins its sha512.
 packages/drata-agent-bin/drata-agent-bin-*.deb
+
+# Catch-all for remote downloads makepkg leaves beside a PKGBUILD. The rules
+# above name one file shape per package, which only works while every package's
+# source= renames its download to something predictable. reproc's does not - it
+# fetches upstream's bare v${pkgver}.tar.gz - so nothing matched and CI
+# committed v14.2.7.tar.gz on the first auto-bump.
+#
+# Generic rather than a sixth per-package rule, because reproc was not the only
+# one: c, lavacli and markless-bin all download under upstream's own name too
+# and would each have committed a tarball on their next version bump. Adding
+# them one at a time loses that race every time a package is added.
+#
+# Nothing legitimate is caught today - no tracked file under packages/ matches
+# these. If a package ever needs a local archive as a real source, negate it
+# with a `!packages/<pkg>/<file>` line below rather than deleting this.
+packages/*/*.tar.gz
+packages/*/*.tar.xz
+packages/*/*.tar.zst
+packages/*/*.tar.bz2
+packages/*/*.tgz
+packages/*/*.zip
+packages/*/*.deb
