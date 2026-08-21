@@ -27,6 +27,7 @@ AUR package automation with nvchecker + GitHub Actions.
 | yocto-uninative-tarball | [Arch glibc packaging](https://gitlab.archlinux.org/archlinux/packaging/packages/glibc) | Yes |
 | linux-cachyos-jetm | [CachyOS/linux](https://github.com/CachyOS/linux) releases | Yes |
 | reproc | [DaanDeMeyer/reproc](https://github.com/DaanDeMeyer/reproc) | Yes |
+| slack-desktop-wayland-jetm | AUR [slack-desktop](https://aur.archlinux.org/packages/slack-desktop) | Yes |
 
 ## Secrets required
 

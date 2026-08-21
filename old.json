@@ -48,6 +48,9 @@
     },
     "reproc": {
       "version": "14.2.7"
+    },
+    "slack-desktop-wayland-jetm": {
+      "version": "4.51.191"
     }
   }
 }

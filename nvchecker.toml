@@ -115,3 +115,15 @@ source = "github"
 github = "DaanDeMeyer/reproc"
 use_max_tag = true
 prefix = "v"
+
+# Personal fork of the AUR `slack-desktop-wayland`, which trails upstream.
+# Tracks the AUR `slack-desktop` package rather than Slack's download page: both
+# consume the same .deb, and ogarcia's bump is proof the URL for that version
+# resolves. Slack publishes builds to the CDN before they are generally rolled
+# out, so following the vendor directly would bump to a version whose .deb may
+# 404. strip_release, or the AUR's pkgrel arrives as part of the version and
+# makepkg rejects the hyphen in pkgver.
+[slack-desktop-wayland-jetm]
+source = "aur"
+aur = "slack-desktop"
+strip_release = true
