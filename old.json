@@ -26,7 +26,7 @@
       "version": "0.9.29"
     },
     "ytcui": {
-      "version": "4.0.0"
+      "version": "4.1.0"
     },
     "avocado-cli": {
       "version": "0.41.2"
@@ -35,7 +35,7 @@
       "version": "2.44+r24+g16be1518495f"
     },
     "linux-cachyos-jetm": {
-      "version": "7.2.0-1"
+      "version": "7.2.1-1"
     },
     "drata-agent-bin": {
       "version": "3.9.0"
