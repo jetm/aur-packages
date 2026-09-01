@@ -14,7 +14,6 @@ license=('BSD-3-Clause')
 optdepends=('qemu')
 # https://fedorapeople.org/groups/virt/virtio-win/CHANGELOG
 changelog="${pkgname}.changelog"
-# install="${pkgname}.install"
 _url=https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio
 source=("${pkgname}-${_pkgver}.iso::${_url}/${pkgname}-${_pkgver}/${pkgname}.iso")
 noextract=("${pkgname}-${_pkgver}.iso")
