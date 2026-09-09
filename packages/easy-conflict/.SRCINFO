@@ -1,6 +1,6 @@
 pkgbase = easy-conflict
 	pkgdesc = Terminal-native Git mergetool with 3-pane IntelliJ-like conflict resolver
-	pkgver = 0.1.3
+	pkgver = 0.4.1
 	pkgrel = 1
 	url = https://github.com/chojs23/ec
 	arch = x86_64
@@ -9,7 +9,7 @@ pkgbase = easy-conflict
 	depends = git
 	provides = ec
 	options = !lto
-	source = easy-conflict-0.1.3.tar.gz::https://github.com/chojs23/ec/archive/v0.1.3.tar.gz
-	sha256sums = c4cca328cc9d181f168ea6d95caa649e1f05b5c750b78de22f9e17488ccb40c3
+	source = easy-conflict-0.4.1.tar.gz::https://github.com/chojs23/ec/archive/v0.4.1.tar.gz
+	sha256sums = 70eaf75969cde5b823d8dc4a4d2e575ceab903edab8277212afc642b757e5a10
 
 pkgname = easy-conflict
