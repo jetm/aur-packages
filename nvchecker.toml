@@ -55,11 +55,6 @@ github = "jvanderberg/markless"
 use_max_tag = true
 prefix = "v"
 
-[ytcui]
-source = "regex"
-url = "https://raw.githubusercontent.com/MilkmanAbi/ytcui/main/VERSION"
-regex = '[\d.]+'
-
 [avocado-cli]
 source = "github"
 github = "avocado-linux/avocado-cli"

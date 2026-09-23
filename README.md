@@ -21,7 +21,6 @@ AUR package automation with nvchecker + GitHub Actions.
 | git-add-interactive | [cwarden/git-add--interactive](https://github.com/cwarden/git-add--interactive) | Yes |
 | lavacli | [lava/lavacli](https://gitlab.com/lava/lavacli) | Yes |
 | include-what-you-use | [include-what-you-use](https://github.com/include-what-you-use/include-what-you-use) | Yes |
-| ytcui | [MilkmanAbi/ytcui](https://github.com/MilkmanAbi/ytcui) | Yes |
 | virtio-win | Fedora infra | No (manual) |
 | avocado-cli | [avocado-linux/avocado-cli](https://github.com/avocado-linux/avocado-cli) | Yes |
 | yocto-uninative-tarball | [Arch glibc packaging](https://gitlab.archlinux.org/archlinux/packaging/packages/glibc) | Yes |
