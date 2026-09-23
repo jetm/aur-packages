@@ -26,6 +26,10 @@ packages/uuu/uuu-*.tar.gz
 # the _commit the PKGBUILD pins.
 packages/yocto-uninative-tarball/glibc/
 
+# tio-fork-jetm builds from a git source that makepkg clones beside the PKGBUILD;
+# the PKGBUILD pins the commit, so the clone is re-created on demand.
+packages/tio-fork-jetm/tio/
+
 # drata-agent-bin repackages upstream's release .deb (106 MB); makepkg
 # re-downloads it and the PKGBUILD pins its sha512.
 packages/drata-agent-bin/drata-agent-bin-*.deb

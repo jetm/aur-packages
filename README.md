@@ -28,6 +28,7 @@ AUR package automation with nvchecker + GitHub Actions.
 | linux-cachyos-jetm | [CachyOS/linux](https://github.com/CachyOS/linux) releases | Yes |
 | reproc | [DaanDeMeyer/reproc](https://github.com/DaanDeMeyer/reproc) | Yes |
 | slack-desktop-wayland-jetm | AUR [slack-desktop](https://aur.archlinux.org/packages/slack-desktop) | Yes |
+| tio-fork-jetm | [jetm/tio](https://github.com/jetm/tio), fork of [tio/tio](https://github.com/tio/tio) | No (opens an issue on each tio release) |
 
 ## Secrets required
 

@@ -127,3 +127,15 @@ prefix = "v"
 source = "aur"
 aur = "slack-desktop"
 strip_release = true
+
+# Personal fork of tio (github.com/jetm/tio) carrying socket client mode and
+# RFC 2217. Tracks UPSTREAM tio/tio, not the fork: the version here is the last
+# upstream release seen, not the package's pkgver. A change means a release
+# needs merging into the fork, which cannot be automated, so update.yml exempts
+# this package from the bump/build/publish steps and opens an issue instead.
+# Tags, not releases: upstream tags every version (v3.7, v3.8, v3.9).
+[tio-fork-jetm]
+source = "github"
+github = "tio/tio"
+use_max_tag = true
+prefix = "v"

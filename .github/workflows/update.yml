@@ -103,7 +103,13 @@ jobs:
       # `su -w` whitelists just these two variables across the privilege drop.
       # Plain `-m` would preserve the whole environment including root's HOME,
       # which makepkg needs to be the builder's.
+      # tio-fork-jetm is exempt from the bump, build and publish steps: nvchecker
+      # tracks upstream tio/tio, and a new release there says nothing about the
+      # fork's own commits until it has been merged into jetm/tio by hand. It
+      # still reaches the upload step, so old.json records the release and the
+      # issue below is opened once per release rather than every day.
       - name: Update package version
+        if: matrix.pkg != 'tio-fork-jetm'
         env:
           PKG: ${{ matrix.pkg }}
           VERSION: ${{ matrix.version }}
@@ -141,13 +147,14 @@ jobs:
       # PKGBUILD is the useful half; whoever installs it builds it themselves,
       # which is how AUR works for any large package.
       - name: Build package
-        if: matrix.pkg != 'linux-cachyos-jetm'
+        if: matrix.pkg != 'linux-cachyos-jetm' && matrix.pkg != 'tio-fork-jetm'
         env:
           PKG: ${{ matrix.pkg }}
         run: |
           su -w PKG builder -c 'cd "packages/$PKG" && CI=1 makepkg --syncdeps --noconfirm --noarchive'
 
       - name: Publish to AUR
+        if: matrix.pkg != 'tio-fork-jetm'
         env:
           AUR_SSH_KEY: ${{ secrets.AUR_SSH_KEY }}
           AUR_USER_NAME: ${{ secrets.AUR_USER_NAME }}
@@ -198,6 +205,49 @@ jobs:
             check; if it no longer applies, drop it if the fix has landed upstream
           - `pkgrel` is pinned to the distro package's, so confirm it still matches
             `linux-cachyos`
+          EOF
+          )"
+
+      # See the exemption on "Update package version". Nothing was bumped or
+      # published; this issue is the whole output for this package. The title
+      # carries the version, and an open issue with the same title suppresses a
+      # duplicate, so a rerun after a failed commit job does not open a second.
+      - name: Open an issue to merge the tio release into the fork
+        if: matrix.pkg == 'tio-fork-jetm'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ matrix.version }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          pacman -S --noconfirm --needed github-cli
+          title="tio-fork-jetm: merge tio $VERSION into jetm/tio"
+          # A plain listing, not --search: the search index lags new issues, so
+          # a quick rerun could miss the one just opened, and a quote in the
+          # upstream tag would unbalance the search phrase.
+          existing=$(gh issue list --repo "$REPO" --state open --limit 1000 \
+            --json title --jq '.[].title')
+          if printf '%s\n' "$existing" | grep -Fxq -- "$title"; then
+            echo "already open: $title"
+            exit 0
+          fi
+          gh issue create --repo "$REPO" --title "$title" --body "$(cat <<EOF
+          Upstream tio tagged v$VERSION. The fork (github.com/jetm/tio) does not
+          have it yet, and CI does not bump or publish tio-fork-jetm - see the
+          exemption in \`.github/workflows/update.yml\`.
+
+          In the tio checkout:
+
+          \`\`\`bash
+          git fetch origin --tags
+          git merge v$VERSION      # merge, never rebase: master is published
+          ninja -C build           # then exercise a socket and an RFC 2217 target
+          git push fork master
+          \`\`\`
+
+          Then here: set \`_commit\` and \`pkgver\` in
+          \`packages/tio-fork-jetm/PKGBUILD\`, regenerate \`.SRCINFO\`, build,
+          commit, and run \`scripts/publish.sh tio-fork-jetm\`.
           EOF
           )"
 

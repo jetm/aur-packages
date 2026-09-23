@@ -51,6 +51,9 @@
     },
     "slack-desktop-wayland-jetm": {
       "version": "4.52.155"
+    },
+    "tio-fork-jetm": {
+      "version": "3.9"
     }
   }
 }
