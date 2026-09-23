@@ -236,13 +236,13 @@ jobs:
           have it yet, and CI does not bump or publish tio-fork-jetm - see the
           exemption in \`.github/workflows/update.yml\`.
 
-          In the tio checkout:
+          In the tio checkout (\`origin\` is jetm/tio, \`upstream\` is tio/tio):
 
           \`\`\`bash
-          git fetch origin --tags
+          git fetch upstream --tags
           git merge v$VERSION      # merge, never rebase: master is published
           ninja -C build           # then exercise a socket and an RFC 2217 target
-          git push fork master
+          git push origin master
           \`\`\`
 
           Then here: set \`_commit\` and \`pkgver\` in
