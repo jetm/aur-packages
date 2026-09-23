@@ -295,49 +295,55 @@ source=(
     "https://github.com/CachyOS/linux/releases/download/${_srcname}/${_srcname}.tar.gz"{,.asc}
     "config"
     # XFS deferred-op diagnostics + the args->total fix, v3 (2026-08-10).
-    # Carried at the revision posted to linux-xfs; patches 5 and 6 have
-    # Reviewed-by: Darrick J. Wong. Filenames keep the vN prefix so the packaged
-    # revision is answerable from ls - it matters when bisecting a filesystem
-    # bug against a series that is still in review.
+    # Posted to linux-xfs; patches 5 and 6 had Reviewed-by: Darrick J. Wong.
+    # Filenames keep the vN prefix so the packaged revision is answerable
+    # from ls - it matters when bisecting a filesystem bug against a series
+    # that was still in review.
     #
-    # Patch 5 is the actual fix and it is evidence-backed, not inferred. A
-    # boot-mapped persistent ftrace instance captured the failing allocation in
-    # the crashing task 5.3 ms before the shutdown:
+    # Patch 5 (the actual fix, args->total) and patch 1 (an unrelated
+    # uninitialised-error fix on the item-less barrier path) landed upstream
+    # between 7.2.6 and 7.2.7 and are DROPPED here - verified 2026-09-23 by
+    # dry-running both against the fetched cachyos-7.2.7-1 tree:
+    # - patch 1: `patch --dry-run` reports "Reversed (or previously
+    #   applied)"; xfs_defer.c:586 already reads `int error = 0;`.
+    # - patch 5: 2 of 4 hunks failed only because of an unrelated
+    #   child->i_ino -> I_INO(child) rename in the context lines;
+    #   xfs_parent.c:207 and :257 already carry the exact
+    #   `ppargs->args.total = xfs_attr_calc_size(&ppargs->args, &local);
+    #   ASSERT(local);` block, comment included.
+    #
+    # For the historical record, this is the failure patch 5 fixed. A
+    # boot-mapped persistent ftrace instance captured the failing allocation
+    # in the crashing task 5.3 ms before the shutdown:
     #
     #   531.418881 xfs_alloc_vextent_loopfailed  minlen=1 maxlen=1
     #   531.435265 xfs_alloc_size_nominleft      minlen=1 maxlen=0 total=0xffffffff
     #   531.435266 xfs_alloc_vextent_badargs     minlen=1 maxlen=0
     #   531.440550 xfs_force_shutdown            xfs_defer.c:721
     #
-    # total=0xffffffff is the uninitialised args->total underflowing in
+    # total=0xffffffff was the uninitialised args->total underflowing in
     # xfs_da_grow_inode_int(). In xfs_alloc_space_available() the guard
-    # "available < (int)max(args->total, alloc_len)" then evaluates against
-    # (int)0xFFFFFFFF == -1, so it cannot fail; maxlen is clamped to available
-    # (0); and both ASSERTs guarding that clamp are no-ops because
-    # CONFIG_XFS_DEBUG is unset. xfs_alloc_vextent_check_args() then rejects
-    # minlen(1) > maxlen(0) with a bare -ENOSPC, which xfs_defer_finish_noroll()
-    # treats as fatal.
+    # "available < (int)max(args->total, alloc_len)" then evaluated against
+    # (int)0xFFFFFFFF == -1, so it could not fail; maxlen was clamped to
+    # available (0); and both ASSERTs guarding that clamp were no-ops
+    # because CONFIG_XFS_DEBUG is unset. xfs_alloc_vextent_check_args() then
+    # rejected minlen(1) > maxlen(0) with a bare -ENOSPC, which
+    # xfs_defer_finish_noroll() escalated to fatal.
     #
-    # With a correct total the guard demands available >= total, so maxlen can
-    # never be clamped to 0 - the failing state is unreachable. Patch 5 is
-    # therefore necessary AND sufficient for this crash.
+    # Patches 2-4 are diagnostics that have not landed upstream yet; none of
+    # them fixes the crash on their own.
     #
-    # Patches 1-4 are diagnostics and one unrelated real bug (uninitialised
-    # error on the item-less barrier path); none of them fixes this crash.
-    #
-    # Patch 6 asserts in xfs_da_grow_inode_int() that the remaining reservation
-    # still covers each fork growth, so this underflow class trips loudly in a
-    # debug build instead of wrapping silently. It is a guard, not a second fix:
-    # CONFIG_XFS_DEBUG is unset here, so it compiles out and changes nothing on
-    # this machine. It is carried to keep the packaged series identical to the
-    # posted one.
-    "v3-0001-xfs-initialise-error-in-xfs_defer_finish_one.patch"
+    # Patch 6 asserts in xfs_da_grow_inode_int() that the remaining
+    # reservation still covers each fork growth, so this underflow class
+    # trips loudly in a debug build instead of wrapping silently. It is a
+    # guard, not a second fix: CONFIG_XFS_DEBUG is unset here, so it
+    # compiles out and changes nothing on this machine. It stays queued
+    # upstream and is carried until it lands.
     "v3-0002-xfs-give-the-deferred-barrier-op-type-a-name.patch"
     "v3-0003-xfs-report-the-error-that-made-deferred-work-shut.patch"
     "v3-0004-xfs-correct-the-parent-pointer-space-reservation-.patch"
-    "v3-0005-xfs-initialise-args-total-for-parent-pointer-upda.patch"
     "v3-0006-xfs-assert-the-reservation-covers-each-da-fork-gr.patch"
-    # Apart from those six, no out-of-tree patches: otherwise STOCK SOURCE +
+    # Apart from those four, no out-of-tree patches: otherwise STOCK SOURCE +
     # DWARF debuginfo, so a crash on it differs from the distro kernel only by
     # the debug build and the patches listed above.
     #
@@ -977,10 +983,8 @@ done
 b2sums=('19720409be3c7a5f2ccfa447c9eddb4fafd248d196e042283e5d0c265591bfa36bfe8ab7ccc549d987537d66fb2d6222ce6ae0921a12910c6c0cde2303f32baf'
         'SKIP'
         '96e851734027e90d23c0705d80ceffb502a76d046a92b168fc5dd71e99200e95e1aa6bd22dfdf8d6bc51d03ba7157bcb6622797ec6e9ff709d3c8e2d5b329613'
-        '6ed7fa19aab0bba299d6b698b48768c15a9a786ff3da300d616288b0235e712f188ff5348013d2f0aaccc328b6e39cb7f570f9e1bfe11ef982fb3924e8c32b5a'
         'b8e91621dcf7630a915d30b26fdcc6140f22702050f2d0568d043ab5b9172aa043f12d0f0c523716c71a7dd5932928a87b26f6205f5363e94a90e81f99c38145'
         '81f724a1438c4509862e608119643cdba7bdd5065f7ce8c2818d16bb526710b8fe3c70ed8b3a84bc2d4a7ba35b59a5c840656114e13eeffb9276a5f2e0035aff'
         '70109579c223fdc6700fe8854291f33d59d2557ebe96817fd0c0a417de75e3529bd5867bc10fa300bc81092cf0a264a1fd10a2b9cf2d29e7352976d8a3affc6b'
-        '9efad38775f139ec951a35c441c1bcd2ea3eac2b32011d170aaa4f566249e31e1e29643e95ee3ae2b53d98fed708594a8fcf4206b25823380b19daf6438f5b9b'
         '9f0f692c2d18b487afabc23d290341bfec042ea0849d8aac94c164c41dc45f6ede459b276de1efd0e62408978d1e2f0cf4e0bd107665ba53ac38327cfc544e5c'
         'c992567bd7dd8553432be496ffa1c17e2f5ebe9c7edb51945cf977e1b742dd6517c210d8843bb82744ca705efd07f8027cd7dde41b50215ebd707a34aa81462e')
