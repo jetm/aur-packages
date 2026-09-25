@@ -8,7 +8,7 @@
 pkgname=slack-desktop-wayland-jetm
 _debname=slack-desktop
 pkgver=4.52.162
-pkgrel=2
+pkgrel=1
 pkgdesc='Slack Desktop (Beta) for Linux, launched as a native Wayland client on the system Electron package'
 arch=('x86_64')
 url='https://slack.com/downloads'
