@@ -29,7 +29,7 @@
       "version": "0.41.2"
     },
     "yocto-uninative-tarball": {
-      "version": "2.44+r24+g16be1518495f"
+      "version": "2.44+r50+g1848099f063e"
     },
     "linux-cachyos-jetm": {
       "version": "7.2.8-1"
