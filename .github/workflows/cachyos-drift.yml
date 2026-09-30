@@ -1,0 +1,61 @@
+name: CachyOS PKGBUILD drift
+
+# nvchecker follows the CachyOS/linux release tags only, so a change to the
+# upstream PKGBUILD's patch list, nvidia/zfs pins or makedepends is invisible
+# to update.yml. This job compares those lines and opens one issue per drift.
+
+on:
+  schedule:
+    - cron: '30 8 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compare against upstream
+        id: compare
+        run: |
+          set +e
+          scripts/check-cachyos-drift.sh >drift.txt 2>&1
+          echo "rc=$?" >>"$GITHUB_OUTPUT"
+          cat drift.txt
+
+      # Anything but 0 (in sync) or 1 (drift) means the comparison itself did
+      # not run: 2 is a failed fetch or a changed PKGBUILD layout, 126/127 a
+      # missing or non-executable script. Failing the job makes that visible
+      # instead of reading as "no drift".
+      - name: Fail when the comparison could not run
+        if: steps.compare.outputs.rc != '0' && steps.compare.outputs.rc != '1'
+        run: exit 1
+
+      - name: Open an issue for the drift
+        if: steps.compare.outputs.rc == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          title="linux-cachyos-jetm: PKGBUILD drifted from upstream linux-cachyos"
+          open=$(gh issue list --state open --search "in:title \"$title\"" --json number --jq length)
+          if [[ "$open" != "0" ]]; then
+            echo "an issue is already open"
+            exit 0
+          fi
+          {
+            echo 'Upstream `CachyOS/linux-cachyos` changed lines this fork mirrors'
+            echo '(`-` upstream only, `+` local only):'
+            echo
+            echo '```diff'
+            cat drift.txt
+            echo '```'
+            echo
+            echo 'Port what applies to `packages/linux-cachyos-jetm/PKGBUILD`, then'
+            echo 'rerun `scripts/check-cachyos-drift.sh` until it reports in sync.'
+          } >body.md
+          gh issue create --title "$title" --body-file body.md
