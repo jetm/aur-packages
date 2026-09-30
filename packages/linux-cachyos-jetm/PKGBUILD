@@ -15,8 +15,8 @@
 # sources from distant mirrors. See _HZ_ticks, _tickrate and _tcp_bbr3 below for
 # the reasoning on each.
 #
-# It also carries an XFS fix that is posted upstream but not yet merged; see the
-# patch list. pkgrel stays pinned to the distro package's - see the note there.
+# It also runs the BORE scheduler; see _cpusched. pkgrel normally stays pinned to
+# the distro package's - see the note there.
 
 ### BUILD OPTIONS
 # Set these variables to ANYTHING that is not null or choose proper variable to enable them
@@ -33,7 +33,14 @@
 # 'eevdf' - select 'EEVDF Scheduler'
 # 'rt' - select EEVDF, but includes a series of realtime patches
 # 'rt-bore' - select Burst-Oriented Response Enhancer, but includes a series of realtime patches
-: "${_cpusched:=cachyos}"
+# Build machine: bore rather than upstream's cachyos (plain EEVDF). The 32
+# threads sit saturated by a build for hours while the desktop stays in use, and
+# BORE's burst penalty keeps interactive tasks ahead of the compile jobs. It was
+# held back while the XFS crash was being chased, to keep the source stock; that
+# investigation is finished. It adds one fetched patch (sched/0001-bore-cachy.patch).
+# scripts/check-cachyos-drift.sh tracks its name but cannot tell whether it still
+# applies to a new tag; that shows up as a failed prepare().
+: "${_cpusched:=bore}"
 
 ### Tweak kernel options prior to a build via nconfig
 : "${_makenconfig:=no}"
@@ -300,72 +307,14 @@ _nv_open_pkg="NVIDIA-kernel-module-source-${_nv_ver}"
 source=(
     "https://github.com/CachyOS/linux/releases/download/${_srcname}/${_srcname}.tar.gz"{,.asc}
     "config"
-    # XFS deferred-op diagnostics + the args->total fix, v3 (2026-08-10).
-    # Posted to linux-xfs; patches 5 and 6 had Reviewed-by: Darrick J. Wong.
-    # Filenames keep the vN prefix so the packaged revision is answerable
-    # from ls - it matters when bisecting a filesystem bug against a series
-    # that was still in review.
+    # No out-of-tree XFS patches any more: the crash investigation is finished
+    # and the v3 diagnostics series (v3-0002, -0003, -0004, -0006) is dropped.
+    # Its fix, args->total in xfs_parent.c, landed upstream between 7.2.6 and
+    # 7.2.7. The carried patches can be read back from this file's git history.
     #
-    # Patch 5 (the actual fix, args->total) and patch 1 (an unrelated
-    # uninitialised-error fix on the item-less barrier path) landed upstream
-    # between 7.2.6 and 7.2.7 and are DROPPED here - verified 2026-09-23 by
-    # dry-running both against the fetched cachyos-7.2.7-1 tree:
-    # - patch 1: `patch --dry-run` reports "Reversed (or previously
-    #   applied)"; xfs_defer.c:586 already reads `int error = 0;`.
-    # - patch 5: 2 of 4 hunks failed only because of an unrelated
-    #   child->i_ino -> I_INO(child) rename in the context lines;
-    #   xfs_parent.c:207 and :257 already carry the exact
-    #   `ppargs->args.total = xfs_attr_calc_size(&ppargs->args, &local);
-    #   ASSERT(local);` block, comment included.
-    #
-    # For the historical record, this is the failure patch 5 fixed. A
-    # boot-mapped persistent ftrace instance captured the failing allocation
-    # in the crashing task 5.3 ms before the shutdown:
-    #
-    #   531.418881 xfs_alloc_vextent_loopfailed  minlen=1 maxlen=1
-    #   531.435265 xfs_alloc_size_nominleft      minlen=1 maxlen=0 total=0xffffffff
-    #   531.435266 xfs_alloc_vextent_badargs     minlen=1 maxlen=0
-    #   531.440550 xfs_force_shutdown            xfs_defer.c:721
-    #
-    # total=0xffffffff was the uninitialised args->total underflowing in
-    # xfs_da_grow_inode_int(). In xfs_alloc_space_available() the guard
-    # "available < (int)max(args->total, alloc_len)" then evaluated against
-    # (int)0xFFFFFFFF == -1, so it could not fail; maxlen was clamped to
-    # available (0); and both ASSERTs guarding that clamp were no-ops
-    # because CONFIG_XFS_DEBUG is unset. xfs_alloc_vextent_check_args() then
-    # rejected minlen(1) > maxlen(0) with a bare -ENOSPC, which
-    # xfs_defer_finish_noroll() escalated to fatal.
-    #
-    # Patches 2-4 are diagnostics that have not landed upstream yet; none of
-    # them fixes the crash on their own.
-    #
-    # Patch 6 asserts in xfs_da_grow_inode_int() that the remaining
-    # reservation still covers each fork growth, so this underflow class
-    # trips loudly in a debug build instead of wrapping silently. It is a
-    # guard, not a second fix: CONFIG_XFS_DEBUG is unset here, so it
-    # compiles out and changes nothing on this machine. It stays queued
-    # upstream and is carried until it lands.
-    "v3-0002-xfs-give-the-deferred-barrier-op-type-a-name.patch"
-    "v3-0003-xfs-report-the-error-that-made-deferred-work-shut.patch"
-    "v3-0004-xfs-correct-the-parent-pointer-space-reservation-.patch"
-    "v3-0006-xfs-assert-the-reservation-covers-each-da-fork-gr.patch"
-    # Apart from those four, no out-of-tree patches: otherwise STOCK SOURCE +
+    # Apart from the BORE patch added by _cpusched below, the source is STOCK +
     # DWARF debuginfo, so a crash on it differs from the distro kernel only by
-    # the debug build and the patches listed above.
-    #
-    # REMOVED 2026-07-28:
-    # 0001-xfs-fix-nofs-context-corruption-in-xfs_btree_split_worker.patch
-    # (Yun Zhou, linux-xfs 2026-07-20). The patch is CORRECT - both a local
-    # source review and an independent cold review confirmed the cross-thread
-    # tp->t_pflags clobber is real and the fix is sound - but it does NOT fix the
-    # crash this machine has. The failure reproduced on the patched kernel on
-    # 2026-07-28 (build task 3393/4296, root XFS shut down, journald spewing EIO,
-    # no panic and therefore no vmcore). That matches the review's verdict: the
-    # patch addresses a latent deadlock risk, while the observed failure is
-    # in-memory corruption whose userspace half (RSVD-bit PTEs, zeroed code
-    # pages on unrelated processes) it cannot explain. Carrying it added a
-    # variable without buying a fix. Kept for reference in
-    # ~/cpu-rma-evidence/2026-07-26-xfs-nofs/.
+    # the debug build and the scheduler.
 )
 validpgpkeys=(
   E18447AC260021D31F3FF6C4C8A2A4774B8B63C4  # Eric Naim <dnaim@cachyos.org>
@@ -989,8 +938,5 @@ done
 b2sums=('e9c1784d45b95872cee8a993c96659dda4174b1e42097757dcbada2f1041776a67009caefe0ed0b5af2c3d9811d0cb8f72c67b988f0aef1673ed6d38b901154b'
         'SKIP'
         '475ed83f3a10cfeb9624a65b8deae00f171bfbc04b92a4aa80c546264393b6374acaa001ab19e24c1bf0adc891ac7a32af1b03476ae4d976ce16de34eb51235d'
-        'b8e91621dcf7630a915d30b26fdcc6140f22702050f2d0568d043ab5b9172aa043f12d0f0c523716c71a7dd5932928a87b26f6205f5363e94a90e81f99c38145'
-        '81f724a1438c4509862e608119643cdba7bdd5065f7ce8c2818d16bb526710b8fe3c70ed8b3a84bc2d4a7ba35b59a5c840656114e13eeffb9276a5f2e0035aff'
-        '70109579c223fdc6700fe8854291f33d59d2557ebe96817fd0c0a417de75e3529bd5867bc10fa300bc81092cf0a264a1fd10a2b9cf2d29e7352976d8a3affc6b'
-        '9f0f692c2d18b487afabc23d290341bfec042ea0849d8aac94c164c41dc45f6ede459b276de1efd0e62408978d1e2f0cf4e0bd107665ba53ac38327cfc544e5c'
-        'c992567bd7dd8553432be496ffa1c17e2f5ebe9c7edb51945cf977e1b742dd6517c210d8843bb82744ca705efd07f8027cd7dde41b50215ebd707a34aa81462e')
+        'c992567bd7dd8553432be496ffa1c17e2f5ebe9c7edb51945cf977e1b742dd6517c210d8843bb82744ca705efd07f8027cd7dde41b50215ebd707a34aa81462e'
+        '03b6d236610ae00db9395819aa7578860f45ce10839fbdcee80fb8e9e9c8810896d20680c63e43c416ae23b371efd737bc0a14831e1f7d8111578c1f65bda68f')

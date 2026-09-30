@@ -67,7 +67,7 @@ include_regex = "[0-9.]+"
 source = "cmd"
 cmd = "scripts/check-uninative.sh"
 
-# Personal fork of CachyOS's linux-cachyos PKGBUILD (adds an XFS nofs patch and
+# Personal fork of CachyOS's linux-cachyos PKGBUILD (builds with the BORE scheduler and
 # a -jetm package suffix so pacman's `Replaces: linux-cachyos-lto` cannot remove
 # it). Tracks the SOURCE TARBALL repo, not CachyOS/linux-cachyos: the packaging
 # repo's tags are stale (6.17.9 while the kernel is 7.1.5), whereas

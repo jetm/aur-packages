@@ -166,7 +166,7 @@ jobs:
       # The exemption above means nothing here proves the kernel still builds,
       # and the running machines are not updated by this workflow either. Raise
       # an issue so the bump is visible and someone rebuilds on each host - the
-      # XFS patch in particular is pinned to a source tag and may not apply.
+      # BORE patch in particular is pinned to a source tag and may not apply.
       - name: Open an issue for the local kernel rebuild
         if: matrix.pkg == 'linux-cachyos-jetm'
         env:
@@ -201,8 +201,9 @@ jobs:
 
           Check while you are there:
 
-          - the XFS nofs patch is pinned to a source tag and carries a re-apply
-            check; if it no longer applies, drop it if the fix has landed upstream
+          - the BORE patch is fetched from cachyos/kernel-patches for the current
+            kernel series; if prepare() reports it no longer applies, wait for
+            CachyOS to refresh it or build with `_cpusched=cachyos`
           - `pkgrel` is pinned to the distro package's, so confirm it still matches
             `linux-cachyos`
           EOF
