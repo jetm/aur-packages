@@ -52,7 +52,7 @@
 : "${_localmodcfg:=no}"
 
 # Path to the list of used modules
-: "${_localmodcfg_path:="$HOME/.config/modprobed.db"}"
+: "${_localmodcfg_path:="$XDG_DATA_HOME/modprobed-db/modprobed.db"}"
 
 # Use the current kernel's .config file
 # Enabling this option will use the .config of the RUNNING kernel rather than
@@ -253,7 +253,13 @@ _tagrel=1
 # graphical login that will not start while root on a TTY still works. A normal
 # version bump is safe because the running kernel keeps its own directory; this
 # does not. Install only when the reboot follows immediately.
-pkgrel=1
+#
+# pkgrel=2 while the distro package is at 1: a deliberate bump, made so this
+# rebuild (upstream sync of the optional nvidia/zfs pins) installs as a new
+# version and leaves the running kernel's module tree alone. `uname -r` reads
+# 7.2.8-2-cachyos-jetm until the next upstream tag resets it via
+# update-version.sh.
+pkgrel=2
 _srcname=cachyos-${_major}.${_minor}-${_tagrel}
 # Kept short: the split packages append their own suffixes to this string
 # ("... kernel and modules", "Non-stripped vmlinux file for the ..."), so a long
@@ -288,7 +294,7 @@ makedepends=(
 )
 
 _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
-_nv_ver=610.43.03
+_nv_ver=615.71.09
 _nv_pkg="NVIDIA-Linux-x86_64-${_nv_ver}"
 _nv_open_pkg="NVIDIA-kernel-module-source-${_nv_ver}"
 source=(
@@ -386,14 +392,14 @@ fi
 # ZFS support
 if [ "$_build_zfs" = "yes" ]; then
     makedepends+=(git)
-    source+=("git+https://github.com/cachyos/zfs.git#commit=c681af76c5a6a15caada25eb13090e41218c7831")
+    source+=("git+https://github.com/cachyos/zfs.git#commit=71a9f9578616a90c3c14bb59629fb4d31bfd68d1")
 fi
 
 
 if [ "$_build_nvidia_open" = "yes" ]; then
     source+=("https://download.nvidia.com/XFree86/${_nv_open_pkg%"-$_nv_ver"}/${_nv_open_pkg}.tar.xz"
              "${_patchsource}/misc/nvidia/0002-fix-dsc-correct-RC-parameter-tables-to-match-VESA-DS.patch"
-             "${_patchsource}/misc/nvidia/0004-fix-dp-add-Bigscreen-Beyond-VR-headset-to-WAR-databa.patch")
+             "${_patchsource}/misc/nvidia/0003-fix-dp-add-Bigscreen-Beyond-VR-headset-to-WAR-databa.patch")
 fi
 
 # Use generated AutoFDO Profile
