@@ -7,7 +7,7 @@
 # `conflicts` alone still let a `slack-desktop-wayland` upgrade take the slot.
 pkgname=slack-desktop-wayland-jetm
 _debname=slack-desktop
-pkgver=4.52.162
+pkgver=4.52.171
 pkgrel=1
 pkgdesc='Slack Desktop (Beta) for Linux, launched as a native Wayland client on the system Electron package'
 arch=('x86_64')
@@ -63,7 +63,7 @@ options=('!strip')
 
 source=("https://downloads.slack-edge.com/desktop-releases/linux/x64/${pkgver}/${_debname}-${pkgver}-amd64.deb")
 noextract=("${_debname}-${pkgver}-amd64.deb")
-b2sums=('58be09bb5f84f9d3520d630137d7cf3a1a68180cb72486701c9f9e7dadcc23de524f41615c12ac7689066ebe03c84f81cab859cc9b9b0731147343541055872a')
+b2sums=('a9d2430aa3e2a69c862d6bdb3ac3a3f795a09b29675aeefc456c10270b3f73a8f37669fe3dc3d6f1c2d823804b94e69ca3239001d90a051984690e1555f3d63f')
 
 _archive="${_debname}-${pkgver}"
 
