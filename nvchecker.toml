@@ -134,3 +134,17 @@ source = "github"
 github = "tio/tio"
 use_max_tag = true
 prefix = "v"
+
+# Pinned-tag build of upstream's own whatsit (devlinman/whatsit) in place of
+# their whatsit-git, which pikaur re-checks and reinstalls every run via its
+# floating pkgver(). Tracks the SAME repo whatsit-git does, directly - there
+# is no fork lagging behind to merge into, so unlike tio-fork-jetm above this
+# needs no bump/build/publish exemption. The PKGBUILD's _tag is derived from
+# pkgver (_tag="v${pkgver}"), not stored separately, so the generic
+# update-version.sh bump path (set pkgver, reset pkgrel, updpkgsums) is
+# already sufficient - nothing else to resync.
+[whatsit-jetm]
+source = "github"
+github = "devlinman/whatsit"
+use_max_tag = true
+prefix = "v"
