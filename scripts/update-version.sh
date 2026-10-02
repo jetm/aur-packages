@@ -44,11 +44,19 @@ fi
 
 # IWYU: also update _clang_major and _clang_minor
 if [[ "$pkg" == "include-what-you-use" ]]; then
-	iwyu_minor=${ver#0.}
-	clang_major=$((iwyu_minor - 4))
-	clang_minor=$(curl -fsSL "https://archlinux.org/packages/extra/x86_64/clang/json/" |
-		grep -Po '"pkgver"\s*:\s*"\K[^"]+' |
-		cut -d. -f2)
+	# IWYU pins depends=(clang>=X.Y clang<(X+1).0) to one exact clang major -
+	# Arch ships only the current rolling major, so X must be THAT major, not
+	# a version-arithmetic guess. The "IWYU 0.N needs clang N-4" rule used to
+	# track Arch in lockstep but drifted once IWYU's release cadence slowed:
+	# IWYU shipped one release (0.26) in the 13 months Arch's clang moved
+	# 21->23, so N-4 pointed at clang 22, which Arch no longer carries at
+	# all (confirmed 2026-10-02: 0.26 built and ran correctly against the
+	# installed clang/llvm 23.1.1, two majors past what N-4 predicted). Read
+	# the major Arch actually ships instead of deriving it.
+	arch_clang_ver=$(curl -fsSL "https://archlinux.org/packages/extra/x86_64/clang/json/" |
+		grep -Po '"pkgver"\s*:\s*"\K[^"]+')
+	clang_major=${arch_clang_ver%%.*}
+	clang_minor=$(cut -d. -f2 <<<"$arch_clang_ver")
 	sed -i "s/^_clang_major=.*/_clang_major=$clang_major/" "$pkgdir/PKGBUILD"
 	sed -i "s/^_clang_minor=.*/_clang_minor=$clang_minor/" "$pkgdir/PKGBUILD"
 fi
