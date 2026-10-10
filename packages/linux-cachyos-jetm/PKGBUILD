@@ -261,12 +261,12 @@ _tagrel=2
 # version bump is safe because the running kernel keeps its own directory; this
 # does not. Install only when the reboot follows immediately.
 #
-# pkgrel=2 while the distro package is at 1: a deliberate bump, made so this
-# rebuild (upstream sync of the optional nvidia/zfs pins) installs as a new
-# version and leaves the running kernel's module tree alone. `uname -r` reads
-# 7.2.8-2-cachyos-jetm until the next upstream tag resets it via
-# update-version.sh.
-pkgrel=2
+# pkgrel=3 while the distro package is at 2: a deliberate bump, made so a rebuild
+# at the same kernel version (here, porting upstream's generated-Rust headers
+# install) installs as a new version and leaves the running kernel's module
+# tree alone. `uname -r` reads 7.2.9-3-cachyos-jetm until the next upstream tag
+# resets it via update-version.sh.
+pkgrel=3
 _srcname=cachyos-${_major}.${_minor}-${_tagrel}
 # Kept short: the split packages append their own suffixes to this string
 # ("... kernel and modules", "Non-stripped vmlinux file for the ..."), so a long
@@ -301,7 +301,7 @@ makedepends=(
 )
 
 _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
-_nv_ver=615.71.09
+_nv_ver=615.78.08
 _nv_pkg="NVIDIA-Linux-x86_64-${_nv_ver}"
 _nv_open_pkg="NVIDIA-kernel-module-source-${_nv_ver}"
 source=(
@@ -810,6 +810,13 @@ _package-headers() {
     # Install .so files if they exist
     if compgen -G "rust/*.so" 1>/dev/null; then
         install -Dt "$builddir/rust" rust/*.so
+    fi
+
+    # Install generated Rust files
+    if [ -d rust/kernel ]; then
+        while IFS= read -r -d "" _gen; do
+            install -Dm644 "$_gen" "$builddir/$_gen"
+        done < <(find rust -type f -name 'generated_*.rs' -print0)
     fi
 
     echo "Installing unstripped VDSO..."
