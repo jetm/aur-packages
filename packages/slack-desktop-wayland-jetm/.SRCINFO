@@ -1,6 +1,6 @@
 pkgbase = slack-desktop-wayland-jetm
 	pkgdesc = Slack Desktop (Beta) for Linux, launched as a native Wayland client on the system Electron package
-	pkgver = 4.52.171
+	pkgver = 4.52.178
 	pkgrel = 1
 	url = https://slack.com/downloads
 	arch = x86_64
@@ -23,14 +23,14 @@ pkgbase = slack-desktop-wayland-jetm
 	optdepends = xdg-desktop-portal-kde: portal backend for KDE
 	optdepends = xdg-desktop-portal-lxqt: portal backend for LXQt
 	optdepends = xdg-desktop-portal-wlr: portal backend for wlroots compositors
-	provides = slack-desktop=4.52.171
+	provides = slack-desktop=4.52.178
 	conflicts = slack-desktop
 	conflicts = slack-desktop-wayland
 	conflicts = slack-electron
 	replaces = slack-desktop-wayland
-	noextract = slack-desktop-4.52.171-amd64.deb
+	noextract = slack-desktop-4.52.178-amd64.deb
 	options = !strip
-	source = https://downloads.slack-edge.com/desktop-releases/linux/x64/4.52.171/slack-desktop-4.52.171-amd64.deb
-	b2sums = a9d2430aa3e2a69c862d6bdb3ac3a3f795a09b29675aeefc456c10270b3f73a8f37669fe3dc3d6f1c2d823804b94e69ca3239001d90a051984690e1555f3d63f
+	source = https://downloads.slack-edge.com/desktop-releases/linux/x64/4.52.178/slack-desktop-4.52.178-amd64.deb
+	b2sums = eb686bf7cd361e595ba6508dcc8938165304fd72c02e37d028b6662ad5117a1a9cfeeed576761da5b64fec1709c8a393ebf5746c2df157392659a41bb43fad16
 
 pkgname = slack-desktop-wayland-jetm
