@@ -261,12 +261,12 @@ _tagrel=2
 # version bump is safe because the running kernel keeps its own directory; this
 # does not. Install only when the reboot follows immediately.
 #
-# pkgrel=3 while the distro package is at 2: a deliberate bump, made so a rebuild
-# at the same kernel version (here, porting upstream's generated-Rust headers
-# install) installs as a new version and leaves the running kernel's module
-# tree alone. `uname -r` reads 7.2.9-3-cachyos-jetm until the next upstream tag
-# resets it via update-version.sh.
-pkgrel=2
+# pkgrel runs ahead of _tagrel (the distro package's) whenever a rebuild at the
+# same kernel version has to install as a new version instead of reinstalling
+# over the running kernel's module tree. update-version.sh resets it to _tagrel
+# on the next upstream tag. Currently one ahead: the fetched patches are now
+# saved under series-qualified names (see _patchsource below).
+pkgrel=3
 _srcname=cachyos-${_major}.${_minor}-${_tagrel}
 # Kept short: the split packages append their own suffixes to this string
 # ("... kernel and modules", "Non-stripped vmlinux file for the ..."), so a long
@@ -300,6 +300,13 @@ makedepends=(
   zstd
 )
 
+# The dkms-clang and scheduler patches are saved as <name>-${_major}.patch (the
+# name::url form), not under their upstream basename. makepkg reuses any file
+# already in the package directory ("Found ...") and never re-downloads it, and
+# the upstream basename carries no series, so after a series bump the previous
+# series' patch was reused: updpkgsums then pinned its b2sum and validation
+# passed on the wrong file, until prepare() failed with rejected hunks. With the
+# series in the name, a bump finds nothing and downloads the right patch.
 _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
 _nv_ver=615.78.08
 _nv_pkg="NVIDIA-Linux-x86_64-${_nv_ver}"
@@ -324,7 +331,7 @@ validpgpkeys=(
 # LLVM makedepends
 if _is_lto_kernel; then
     makedepends+=(clang llvm lld)
-    source+=("${_patchsource}/misc/dkms-clang.patch")
+    source+=("dkms-clang-${_major}.patch::${_patchsource}/misc/dkms-clang.patch")
     BUILD_FLAGS=(
         CC=clang
         LD=ld.lld
@@ -373,13 +380,13 @@ fi
 ## List of CachyOS schedulers
 case "$_cpusched" in
     bore|rt-bore|hardened) # CachyOS Scheduler (BORE)
-        source+=("${_patchsource}/sched/0001-bore-cachy.patch");;&
+        source+=("0001-bore-cachy-${_major}.patch::${_patchsource}/sched/0001-bore-cachy.patch");;&
     bmq) ## Project C Scheduler
-        source+=("${_patchsource}/sched/0001-prjc-cachy.patch");;
+        source+=("0001-prjc-cachy-${_major}.patch::${_patchsource}/sched/0001-prjc-cachy.patch");;
     hardened) ## Hardened Patches
-        source+=("${_patchsource}/misc/0001-hardened.patch");;
+        source+=("0001-hardened-${_major}.patch::${_patchsource}/misc/0001-hardened.patch");;
     rt|rt-bore) ## RT patches
-        source+=("${_patchsource}/misc/0001-rt-i915.patch");;
+        source+=("0001-rt-i915-${_major}.patch::${_patchsource}/misc/0001-rt-i915.patch");;
 esac
 
 export KBUILD_BUILD_HOST=cachyos

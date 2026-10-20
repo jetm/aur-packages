@@ -12,6 +12,7 @@ packages/linux-cachyos-jetm/cachyos-*.tar.gz
 packages/linux-cachyos-jetm/cachyos-*.tar.gz.asc
 packages/linux-cachyos-jetm/dkms-clang.patch
 packages/linux-cachyos-jetm/0001-bore-cachy.patch
+packages/linux-cachyos-jetm/*-[0-9].[0-9]*.patch
 packages/linux-cachyos-jetm/config-*-cachyos-jetm
 
 # nah-bin repackages upstream's prebuilt musl tarballs; makepkg re-downloads

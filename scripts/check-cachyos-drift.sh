@@ -42,7 +42,11 @@ normalize() {
 # Lines that must match upstream: fetched patch URLs, pinned inputs, the
 # signing keys, and the build dependencies. Sorted, so order is not drift.
 extract_lines() {
+  # This fork saves its fetched patches as "<name>-${_major}.patch::<url>" so a
+  # series bump cannot reuse the previous series' file; the url is what must
+  # match upstream, so the local name is dropped before comparing.
   normalize <"$1" \
+    | sed -E 's/"[A-Za-z0-9._-]+-\$\{_major\}\.patch::/"/' \
     | grep -E '^(_patchsource=|_nv_ver=|source\+=\(.*(_patchsource|zfs\.git)|"\$\{_patchsource\}|[0-9A-F]{40}$|(bc|binutils|cpio|gettext|glibc|libelf|libgcc|openssl|pahole|perl|python|rust|rust-bindgen|rust-src|tar|xxhash|xz|zlib|zstd|clang|llvm|lld)$)' \
     | sort -u || true
 }
