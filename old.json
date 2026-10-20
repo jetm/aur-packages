@@ -32,7 +32,7 @@
       "version": "2.44+r50+g1848099f063e"
     },
     "linux-cachyos-jetm": {
-      "version": "7.2.11-1"
+      "version": "7.3.0-2"
     },
     "drata-agent-bin": {
       "version": "3.9.0"
