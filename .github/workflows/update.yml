@@ -185,7 +185,8 @@ jobs:
             --repo "${{ github.repository }}" \
             --title "linux-cachyos-jetm $VERSION: rebuild on each host" \
             --body "$(cat <<'EOF'
-          nvchecker picked up a new CachyOS release and the PKGBUILD has been
+          nvchecker picked up a new CachyOS release, or a change to the CachyOS
+          kernel-patches this package fetches, and the PKGBUILD has been
           bumped and published to the AUR. CI does not build this package - see
           the exemption in `.github/workflows/update.yml` - so nothing has
           verified it compiles, and no machine has been updated.
@@ -204,8 +205,9 @@ jobs:
           - the BORE patch is fetched from cachyos/kernel-patches for the current
             kernel series; if prepare() reports it no longer applies, wait for
             CachyOS to refresh it or build with `_cpusched=cachyos`
-          - `pkgrel` is pinned to the distro package's, so confirm it still matches
-            `linux-cachyos`
+          - `pkgrel` follows CachyOS's numbering for a patch-only rebuild but is not
+            pinned to it; compare with `pacman -Si linux-cachyos` if the two
+            should line up
           EOF
           )"
 

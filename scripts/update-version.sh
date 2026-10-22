@@ -19,23 +19,36 @@ fi
 
 echo "Updating $pkg to $ver..."
 
-# linux-cachyos-jetm: nvchecker reports the CachyOS source-tag version, which
-# carries the tag's release suffix (7.1.5-1). pkgver may not contain a hyphen,
-# and here it is derived rather than literal - pkgver=${_major}.${_minor}, with
-# the suffix living in _tagrel because _srcname must reproduce the tag name
-# exactly. Writing the whole string into pkgver produced
-# "pkgver is not allowed to contain ... hyphens" and no package could be built.
+# linux-cachyos-jetm: nvchecker reports "<kernel>-<tagrel>[.<n>]" from
+# check-cachyos-release.sh: the CachyOS source-tag version (7.1.5-1), plus ".n"
+# when CachyOS changed the patches this package fetches n times since that tag
+# was published (7.1.5-1.2). pkgver may not contain a hyphen, and here it is
+# derived rather than literal - pkgver=${_major}.${_minor}, with the tag suffix
+# living in _tagrel because _srcname must reproduce the tag name exactly.
+# Writing the whole string into pkgver produced "pkgver is not allowed to
+# contain ... hyphens" and no package could be built.
 #
-# pkgrel follows _tagrel rather than resetting to 1: it is pinned to the distro
-# package's pkgrel so that `uname -r` differs from stock only by the -cachyos-jetm
-# suffix, and CachyOS's source tag and their package's pkgrel move together.
+# pkgrel is tagrel + n, which matches how CachyOS numbered a patch-only rebuild
+# (linux-cachyos 7.3.0-2 -> 7.3.0-3), so `uname -r` stays comparable with the
+# distro kernel. It must also grow with every build at the same kernel version:
+# an equal pkgrel reinstalls over the running kernel's module tree. So when the
+# kernel version is unchanged, pkgrel is at least one above the current one.
 if [[ "$pkg" == "linux-cachyos-jetm" ]]; then
-	kver="${ver%-*}"    # 7.1.5-1 -> 7.1.5
-	tagrel="${ver##*-}" # 7.1.5-1 -> 1
+	kver="${ver%-*}"           # 7.1.5-1.2 -> 7.1.5
+	rev="${ver##*-}"           # 7.1.5-1.2 -> 1.2
+	tagrel="${rev%%.*}"        # 1.2 -> 1
+	patches=0
+	[[ "$rev" == *.* ]] && patches="${rev#*.}" # 1.2 -> 2
+	pkgrel=$((tagrel + patches))
+	current_kver="$(sed -n 's/^_major=//p' "$pkgdir/PKGBUILD").$(sed -n 's/^_minor=//p' "$pkgdir/PKGBUILD")"
+	current_pkgrel="$(sed -n 's/^pkgrel=//p' "$pkgdir/PKGBUILD")"
+	if [[ "$current_kver" == "$kver" && "$current_pkgrel" -ge "$pkgrel" ]]; then
+		pkgrel=$((current_pkgrel + 1))
+	fi
 	sed -i "s/^_major=.*/_major=${kver%.*}/" "$pkgdir/PKGBUILD"
 	sed -i "s/^_minor=.*/_minor=${kver##*.}/" "$pkgdir/PKGBUILD"
 	sed -i "s/^_tagrel=.*/_tagrel=$tagrel/" "$pkgdir/PKGBUILD"
-	sed -i "s/^pkgrel=.*/pkgrel=$tagrel/" "$pkgdir/PKGBUILD"
+	sed -i "s/^pkgrel=.*/pkgrel=$pkgrel/" "$pkgdir/PKGBUILD"
 else
 	# Bump pkgver and reset pkgrel
 	sed -i "s/^pkgver=.*/pkgver=$ver/" "$pkgdir/PKGBUILD"

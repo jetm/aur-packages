@@ -69,18 +69,17 @@ cmd = "scripts/check-uninative.sh"
 
 # Personal fork of CachyOS's linux-cachyos PKGBUILD (builds with the BORE scheduler and
 # a -jetm package suffix so pacman's `Replaces: linux-cachyos-lto` cannot remove
-# it). Tracks the SOURCE TARBALL repo, not CachyOS/linux-cachyos: the packaging
-# repo's tags are stale (6.17.9 while the kernel is 7.1.5), whereas
-# CachyOS/linux releases are exactly what _srcname consumes (cachyos-7.1.5-1).
-# Tags there are inherited upstream Linux tags (v5.18-rc5...), so use releases.
-# CachyOS does NOT flag rc releases as prerelease, so exclude them explicitly or
-# this tracks 7.2-rc5 instead of 7.1.5.
+# it). Follows what CachyOS ships rather than the Linux release alone: the
+# version is the newest stable CachyOS/linux release (the tarball _srcname
+# consumes, cachyos-7.3.0-2) plus a ".n" suffix counting the commits CachyOS has
+# made since to the kernel-patches files this package fetches. CachyOS rebuilt
+# linux-cachyos 7.3.0-2 -> 7.3.0-3 after updating the BORE patch, with no new
+# release tag, so the release alone would never flag such a rebuild. See
+# scripts/check-cachyos-release.sh. Not CachyOS/linux-cachyos: the packaging
+# repo's tags are stale, and its PKGBUILD pkgrel is not bumped for a rebuild.
 [linux-cachyos-jetm]
-source = "github"
-github = "CachyOS/linux"
-use_max_release = true
-exclude_regex = ".*-rc[0-9]+-.*"
-prefix = "cachyos-"
+source = "cmd"
+cmd = "scripts/check-cachyos-release.sh"
 
 # Tags belong to the abandoned MFGTool 2.x line - v2.8.0 (2018) sorts highest, so
 # use_max_tag resolves seven years behind the package. Real versions are releases,

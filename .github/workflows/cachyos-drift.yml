@@ -1,8 +1,9 @@
 name: CachyOS PKGBUILD drift
 
-# nvchecker follows the CachyOS/linux release tags only, so a change to the
-# upstream PKGBUILD's patch list, nvidia/zfs pins or makedepends is invisible
-# to update.yml. This job compares those lines and opens one issue per drift.
+# nvchecker follows the CachyOS/linux release tags and the kernel-patches this
+# package fetches, so a change to the upstream PKGBUILD's patch list,
+# nvidia/zfs pins or makedepends is invisible to update.yml. This job compares
+# those lines and opens one issue per drift.
 
 on:
   schedule:
