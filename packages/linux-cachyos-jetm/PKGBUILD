@@ -267,7 +267,7 @@ _tagrel=2
 # 7.3.0-2 -> 7.3.0-3). It is also kept at least one above the previous build at
 # the same kernel version, so a rebuild always installs as a new version
 # instead of reinstalling over the running kernel's module tree.
-pkgrel=4
+pkgrel=5
 _srcname=cachyos-${_major}.${_minor}-${_tagrel}
 # Kept short: the split packages append their own suffixes to this string
 # ("... kernel and modules", "Non-stripped vmlinux file for the ..."), so a long
@@ -301,13 +301,15 @@ makedepends=(
   zstd
 )
 
-# The dkms-clang and scheduler patches are saved as <name>-${_major}.patch (the
-# name::url form), not under their upstream basename. makepkg reuses any file
-# already in the package directory ("Found ...") and never re-downloads it, and
-# the upstream basename carries no series, so after a series bump the previous
-# series' patch was reused: updpkgsums then pinned its b2sum and validation
-# passed on the wrong file, until prepare() failed with rejected hunks. With the
-# series in the name, a bump finds nothing and downloads the right patch.
+# makepkg reuses any file already in the package directory ("Found ...") and
+# never re-downloads it, so a patch left by an earlier build was reused after
+# CachyOS changed it: updpkgsums then pinned the old b2sum and validation passed
+# on the wrong file. It failed loudly on a series bump (prepare() rejected
+# hunks) and silently when BORE changed inside 7.3 (the b2sum was re-pinned to
+# the old patch). _purge_fetched_patches, below the source arrays, deletes every patch
+# fetched from kernel-patches whenever this file is sourced, so each run
+# downloads them fresh. The dkms-clang and scheduler patches are also saved as
+# <name>-${_major}.patch (the name::url form) to keep the series in the file name.
 _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
 _nv_ver=615.78.08
 _nv_pkg="NVIDIA-Linux-x86_64-${_nv_ver}"
@@ -389,6 +391,23 @@ case "$_cpusched" in
     rt|rt-bore) ## RT patches
         source+=("0001-rt-i915-${_major}.patch::${_patchsource}/misc/0001-rt-i915.patch");;
 esac
+
+# Delete every patch fetched from kernel-patches, so makepkg downloads them fresh
+# on each run (see the note above _patchsource). Runs while makepkg sources this
+# file, before it looks for sources; it is a no-op for a caller that has no
+# makepkg environment (refresh-config.sh sources this file under `set -u`).
+_purge_fetched_patches() {
+    local dir="${SRCDEST:-${startdir:-}}" entry name
+    [ -n "$dir" ] || return 0
+    for entry in "${source[@]}"; do
+        # name::url keeps its local name; a bare url is saved under its basename.
+        [[ "${entry#*::}" == "${_patchsource}"/* ]] || continue
+        name="${entry%%::*}"
+        [ "$name" != "$entry" ] || name="${entry##*/}"
+        rm -f -- "$dir/$name"
+    done
+}
+_purge_fetched_patches
 
 export KBUILD_BUILD_HOST=cachyos
 export KBUILD_BUILD_USER="$pkgbase"
