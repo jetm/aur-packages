@@ -21,6 +21,12 @@
 ### BUILD OPTIONS
 # Set these variables to ANYTHING that is not null or choose proper variable to enable them
 
+### Compiler launcher
+# auto picks sccache when its binary is on PATH, otherwise ccache; "sccache" or
+# "ccache" forces one. The two never wrap the same compile because sccache keeps
+# its own cache.
+: "${_cc_launcher:=auto}"
+
 ### Selecting CachyOS config
 : "${_cachy_config:=yes}"
 
@@ -415,7 +421,53 @@ export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EP
 
 _die() { error "$@" ; exit 1; }
 
+# Print the effective compiler launcher: sccache or ccache.
+_launcher_select() {
+    case "$_cc_launcher" in
+        auto)
+            if command -v sccache >/dev/null 2>&1; then echo sccache; else echo ccache; fi ;;
+        sccache)
+            command -v sccache >/dev/null 2>&1 \
+                || _die "_cc_launcher=sccache but no sccache binary is on PATH. Accepted values: auto, sccache, ccache."
+            echo sccache ;;
+        ccache) echo ccache ;;
+        *) _die "The value '$_cc_launcher' is invalid for _cc_launcher. Accepted values: auto, sccache, ccache." ;;
+    esac
+}
+
+# For sccache: drop the ccache masquerade dirs from PATH (sccache keeps its own
+# cache, so the two must not wrap one compile) and prefix the compiler.
+_launcher_setup() {
+    local launcher cc path_entry new_path="" i found=no
+    launcher="$(_launcher_select)" || exit 1
+    if [ "$launcher" = sccache ]; then
+        local -a path_parts
+        IFS=: read -ra path_parts <<< "$PATH"
+        for path_entry in "${path_parts[@]}"; do
+            [ "$path_entry" = /usr/lib/ccache/bin ] && continue
+            new_path="${new_path:+$new_path:}$path_entry"
+        done
+        PATH="$new_path"
+        if _is_lto_kernel; then
+            cc=clang
+            for i in "${!BUILD_FLAGS[@]}"; do
+                if [ "${BUILD_FLAGS[$i]}" = "CC=clang" ]; then
+                    BUILD_FLAGS[i]="CC=sccache /usr/bin/clang"; found=yes
+                fi
+            done
+            [ "$found" = yes ] || BUILD_FLAGS+=("CC=sccache /usr/bin/clang")
+        else
+            cc=gcc
+            BUILD_FLAGS+=("CC=sccache /usr/bin/gcc")
+        fi
+    else
+        cc=$(_is_lto_kernel && echo clang || echo gcc)
+    fi
+    msg2 "Compiler launcher: $launcher (compiler: $cc)"
+}
+
 prepare() {
+    _launcher_setup
     cd "$_srcname"
 
     echo "Setting version..."
@@ -689,6 +741,7 @@ _sign_modules() {
 }
 
 build() {
+    _launcher_setup
     cd "$_srcname"
     make "${BUILD_FLAGS[@]}" -j"$(nproc)" all
 
