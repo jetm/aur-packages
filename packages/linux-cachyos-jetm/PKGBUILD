@@ -26,6 +26,7 @@
 # "ccache" forces one. The two never wrap the same compile because sccache keeps
 # its own cache.
 : "${_cc_launcher:=auto}"
+: "${_make_jobs:=}"   # make -j value; empty means automatic (nproc plus distributed cpus)
 
 ### Selecting CachyOS config
 : "${_cachy_config:=yes}"
@@ -463,11 +464,79 @@ _launcher_setup() {
     else
         cc=$(_is_lto_kernel && echo clang || echo gcc)
     fi
+    _launcher_effective="$launcher"
     msg2 "Compiler launcher: $launcher (compiler: $cc)"
+}
+
+# Print "<servers> <cpus>" from the sccache-dist scheduler, or "0 0" when the
+# launcher is not sccache, distribution is disabled, or the query fails. The
+# aggregate fields precede any per-server list, so the first match is the total.
+_dist_probe() {
+    local status servers cpus
+    if [ "${_launcher_effective:-}" != sccache ]; then echo "0 0"; return 0; fi
+    status="$(timeout 30 sccache --dist-status 2>/dev/null)" || { echo "0 0"; return 0; }
+    servers="$(grep -o '"num_servers":[0-9]*' <<< "$status" | head -n1 | cut -d: -f2)" || true
+    cpus="$(grep -o '"num_cpus":[0-9]*' <<< "$status" | head -n1 | cut -d: -f2)" || true
+    if [ -z "$servers" ] || [ -z "$cpus" ]; then echo "0 0"; return 0; fi
+    echo "$servers $cpus"
+}
+
+# Record whether this build distributes, and pin the CPU target when it does:
+# -march=native is evaluated on whichever host compiles, and zen4 is the fleet floor.
+_dist_decide() {
+    local servers cpus
+    read -r servers cpus <<< "$(_dist_probe)"
+    mkdir -p "$srcdir"
+    if [ "${servers:-0}" -ge 1 ]; then
+        echo "dist $servers $cpus" > "$srcdir/.dist-decision"
+        if [ -z "$_processor_opt" ]; then
+            _processor_opt=zen4
+            msg2 "Distributed build: pinning _processor_opt=zen4 (pc2 is Zen 4 and -march=native is evaluated on whichever host compiles; zen4 is the fleet floor)"
+        fi
+    else
+        echo "local 0 0" > "$srcdir/.dist-decision"
+    fi
+}
+
+# Settle launcher and job count for build(). A configure-time "local" decision
+# with servers now visible means the config was not pinned for distribution, so
+# fall back to ccache rather than ship non-pinned objects to other hosts.
+_build_plan() {
+    local mode=local servers=0 cpus=0 psrv=0 pcpus=0 i
+    local -a kept=()
+    if [ -f "$srcdir/.dist-decision" ]; then
+        read -r mode servers cpus < "$srcdir/.dist-decision" || true
+    fi
+    if [ "$mode" = local ] && [ "${_launcher_effective:-}" = sccache ]; then
+        read -r psrv pcpus <<< "$(_dist_probe)"
+        if [ "${psrv:-0}" -ge 1 ]; then
+            warning "Scheduler now reports $psrv server(s) but prepare() decided local (no zen4 pin); building with ccache instead"
+            PATH="/usr/lib/ccache/bin:$PATH"
+            for i in "${!BUILD_FLAGS[@]}"; do
+                case "${BUILD_FLAGS[$i]}" in
+                    "CC=sccache /usr/bin/clang") kept+=("CC=clang") ;;
+                    "CC=sccache /usr/bin/gcc") ;;
+                    *) kept+=("${BUILD_FLAGS[$i]}") ;;
+                esac
+            done
+            BUILD_FLAGS=("${kept[@]}")
+            _launcher_effective=ccache
+        fi
+    fi
+    _dist_servers="${servers:-0}"
+    _dist_cpus="${cpus:-0}"
+    if [ -n "$_make_jobs" ]; then
+        _jobs="$_make_jobs"
+    elif [ "$mode" = dist ]; then
+        _jobs=$(( $(nproc) + _dist_cpus ))
+    else
+        _jobs="$(nproc)"
+    fi
 }
 
 prepare() {
     _launcher_setup
+    _dist_decide
     cd "$_srcname"
 
     echo "Setting version..."
@@ -742,8 +811,12 @@ _sign_modules() {
 
 build() {
     _launcher_setup
+    _build_plan
     cd "$_srcname"
-    make "${BUILD_FLAGS[@]}" -j"$(nproc)" all
+    msg2 "Build: launcher=${_launcher_effective} jobs=${_jobs} servers=${_dist_servers} cpus=${_dist_cpus}"
+    [ "${_launcher_effective}" != sccache ] || sccache --zero-stats || true
+    make "${BUILD_FLAGS[@]}" -j"${_jobs}" all
+    [ "${_launcher_effective}" != sccache ] || sccache --show-stats || true
 
     if ! _is_ci_build; then
         make -C tools/bpf/bpftool vmlinux.h feature-clang-bpf-co-re=1

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Tests the compiler-launcher selection in packages/linux-cachyos-jetm/PKGBUILD.
-# Usage: test-kernel-launcher.sh [launcher|all]
+# Usage: test-kernel-launcher.sh [launcher|dist|all]
 #
 # The PKGBUILD is sourced from a COPY of the package directory: sourcing it at
 # global scope runs _purge_fetched_patches, which deletes fetched patch files
@@ -10,8 +10,8 @@ set -euo pipefail
 
 mode="${1:-all}"
 case "$mode" in
-    launcher | all) ;;
-    *) echo "usage: $0 [launcher|all]" >&2; exit 2 ;;
+    launcher | dist | all) ;;
+    *) echo "usage: $0 [launcher|dist|all]" >&2; exit 2 ;;
 esac
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -117,7 +117,70 @@ launcher_tests() {
     check "PKGBUILD sources cleanly under bash -u" "$rc"
 }
 
-launcher_tests
+# Fake sccache whose --dist-status output comes from the file in $FAKE_STATUS.
+mkdir -p "$work/distbin"
+cat > "$work/distbin/sccache" <<'FAKE'
+#!/bin/sh
+case "${1:-}" in
+    --dist-status) cat "$FAKE_STATUS"; exit "${FAKE_RC:-0}" ;;
+    *) exit 0 ;;
+esac
+FAKE
+chmod +x "$work/distbin/sccache"
+status_2x64='{"SchedulerStatus":["https://s:10600",{"num_servers":2,"num_cpus":64,"in_progress":0,"servers":{"a":{"num_cpus":32},"b":{"num_cpus":32}}}]}'
+status_off='{"Disabled":null}'
+
+# Run a snippet with a fake scheduler status ($1), nproc stubbed to 32, and a
+# fresh srcdir per call.
+run_dist() {
+    local status="$1" snippet="$2" sd
+    sd="$(mktemp -d -p "$work")"
+    printf '%s' "$status" > "$sd/status.json"
+    mkdir -p "$sd/src"
+    FAKE_STATUS="$sd/status.json" run_pkg "$work/distbin" "" \
+        "srcdir='$sd/src'; nproc() { echo 32; }; $snippet" 2>&1
+}
+
+dist_tests() {
+    local out rc dump
+    dump='_launcher_setup; _dist_decide; printf "DECISION=%s\n" "$(cat "$srcdir/.dist-decision")"; printf "OPT=[%s]\n" "$_processor_opt"; _build_plan; printf "JOBS=%s\n" "$_jobs"'
+
+    out="$(run_dist "$status_2x64" "$dump")"
+    case "$out" in *"DECISION=dist 2 64"*) rc=0 ;; *) rc=1 ;; esac
+    check "2 servers/64 cpus: decision is 'dist 2 64'" "$rc"
+    case "$out" in *"OPT=[zen4]"*) rc=0 ;; *) rc=1 ;; esac
+    check "2 servers/64 cpus: _processor_opt pinned to zen4" "$rc"
+    case "$out" in *"JOBS=96"*) rc=0 ;; *) rc=1 ;; esac
+    check "2 servers/64 cpus on 32-cpu host: 96 jobs" "$rc"
+
+    out="$(run_dist "$status_off" "$dump")"
+    case "$out" in *"DECISION=local 0 0"*) rc=0 ;; *) rc=1 ;; esac
+    check "Disabled: decision is 'local 0 0'" "$rc"
+    case "$out" in *"OPT=[]"*) rc=0 ;; *) rc=1 ;; esac
+    check "Disabled: _processor_opt stays empty" "$rc"
+    case "$out" in *"JOBS=32"*) rc=0 ;; *) rc=1 ;; esac
+    check "Disabled: 32 jobs" "$rc"
+
+    out="$(run_dist "$status_2x64" "_processor_opt=native; $dump")"
+    case "$out" in *"OPT=[native]"*) rc=0 ;; *) rc=1 ;; esac
+    check "explicit _processor_opt=native is kept while distributing" "$rc"
+
+    out="$(run_dist "$status_2x64" "_make_jobs=120; $dump")"
+    case "$out" in *"JOBS=120"*) rc=0 ;; *) rc=1 ;; esac
+    check "_make_jobs=120 overrides the computed job count" "$rc"
+
+    # decision local at configure time, servers visible by build time
+    out="$(run_dist "$status_2x64" '_launcher_setup; echo "local 0 0" > "$srcdir/.dist-decision"; _build_plan; printf "FLAGS=%s\n" "${BUILD_FLAGS[*]:-}"; printf "PATH=%s\n" "$PATH"; printf "JOBS=%s\n" "$_jobs"')"
+    case "$(grep '^PATH=' <<< "$out")" in "PATH=/usr/lib/ccache/bin"*) rc=0 ;; *) rc=1 ;; esac
+    check "local decision + servers at build: PATH regains /usr/lib/ccache/bin first" "$rc"
+    case "$(grep '^FLAGS=' <<< "$out")" in *sccache*) rc=1 ;; *"CC=clang"*) rc=0 ;; *) rc=1 ;; esac
+    check "local decision + servers at build: BUILD_FLAGS CC is plain clang" "$rc"
+    case "$out" in *"JOBS=32"*) rc=0 ;; *) rc=1 ;; esac
+    check "local decision + servers at build: 32 jobs" "$rc"
+}
+
+case "$mode" in launcher | all) launcher_tests ;; esac
+case "$mode" in dist | all) dist_tests ;; esac
 
 echo "checks: $ran/$total run"
 if [ "$failed" -ne 0 ]; then
