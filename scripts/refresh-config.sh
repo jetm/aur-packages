@@ -86,8 +86,23 @@ this checkout."
 		echo "error: $REPO_ROOT is on '${branch:-a detached HEAD}', not main - refusing to commit the refresh there" >&2
 		exit 1
 	fi
-	if ! git -C "$REPO_ROOT" pull --ff-only --quiet; then
-		echo "error: could not fast-forward $REPO_ROOT from origin; reconcile it and rerun" >&2
+	# Fetch on its own, so a network failure is reported as one and the counts
+	# below always come from a ref this run just refreshed. Not a rebase: that
+	# would rewrite unpushed commits unattended, in the middle of an upgrade.
+	if ! git -C "$REPO_ROOT" fetch --quiet; then
+		echo "error: could not fetch origin for $REPO_ROOT; check the network and rerun" >&2
+		exit 1
+	fi
+	if ! git -C "$REPO_ROOT" merge --ff-only --quiet '@{u}' 2>/dev/null; then
+		counts=$(git -C "$REPO_ROOT" rev-list --left-right --count 'HEAD...@{u}' 2>/dev/null || true)
+		read -r ahead behind <<<"$counts"
+		if [[ -n "${ahead:-}" && -n "${behind:-}" ]]; then
+			echo "error: main has diverged from origin/main in $REPO_ROOT ($ahead ahead, $behind behind)." >&2
+			echo "  Rebase your unpushed commits and rerun:" >&2
+			echo "    git -C $REPO_ROOT rebase origin/main" >&2
+		else
+			echo "error: could not fast-forward $REPO_ROOT from origin (no upstream set, local changes in the way, or a merge in progress); reconcile it and rerun" >&2
+		fi
 		exit 1
 	fi
 else
