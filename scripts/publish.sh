@@ -3,19 +3,42 @@ set -euo pipefail
 
 # Push an updated package to the AUR.
 #
-# Usage: publish.sh <package-name>
+# Usage: publish.sh [--committed] <package-name>
 #
 # Expects:
 #   - SSH key at ~/.ssh/aur (set up by CI or manually)
 #   - Git user.name and user.email configured
 #   - packages/<name>/PKGBUILD and .SRCINFO to be up to date
+#
+# By default the package files are read from the working tree, which is what CI
+# needs: update-version.sh bumps them there and the commit job records the bump
+# only after this step, so HEAD still holds the previous version.
+#
+# --committed, for a manual run, publishes the package directory as it is
+# committed at HEAD instead. Uncommitted edits and untracked or ignored files
+# (downloaded sources, build artifacts) cannot reach the AUR, and the committed
+# .SRCINFO must match `makepkg --printsrcinfo` or nothing is pushed. A stale
+# checksum left uncommitted in a working tree would have gone out through the
+# default mode; it was noticed before it did. Not usable as root, because
+# makepkg refuses to run there.
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
-pkg="${1:?Usage: publish.sh <package-name>}"
+committed=0
+if [[ "${1:-}" == "--committed" ]]; then
+	committed=1
+	shift
+fi
+
+pkg="${1:?Usage: publish.sh [--committed] <package-name>}"
 pkgdir="$REPO_ROOT/packages/$pkg"
 
-if [[ ! -f "$pkgdir/PKGBUILD" ]] || [[ ! -f "$pkgdir/.SRCINFO" ]]; then
+if ((committed)) && ((EUID == 0)); then
+	echo "error: --committed runs makepkg, which refuses to run as root" >&2
+	exit 1
+fi
+
+if ((!committed)) && { [[ ! -f "$pkgdir/PKGBUILD" ]] || [[ ! -f "$pkgdir/.SRCINFO" ]]; }; then
 	echo "error: PKGBUILD or .SRCINFO missing in $pkgdir" >&2
 	exit 1
 fi
@@ -99,6 +122,35 @@ trap 'rm -rf "$tmp"' EXIT
 
 setup_ssh
 setup_git_identity
+
+if ((committed)); then
+	# Read the package from HEAD, not the working tree. git archive of the
+	# package's own tree writes its contents at the extraction root, so the
+	# rest of this script reads $pkgdir exactly as it did before.
+	if ! git -C "$REPO_ROOT" cat-file -e "HEAD:packages/$pkg/.SRCINFO" 2>/dev/null ||
+		! git -C "$REPO_ROOT" cat-file -e "HEAD:packages/$pkg/PKGBUILD" 2>/dev/null; then
+		echo "error: packages/$pkg/PKGBUILD or .SRCINFO is not committed at HEAD" >&2
+		exit 1
+	fi
+	if [[ -n "$(git -C "$REPO_ROOT" status --porcelain -- "packages/$pkg")" ]]; then
+		echo "warning: uncommitted changes in packages/$pkg are not published" >&2
+	fi
+	pkgdir="$tmp/head-$pkg"
+	mkdir -p "$pkgdir"
+	git -C "$REPO_ROOT" archive "HEAD:packages/$pkg" | tar -x -C "$pkgdir"
+
+	# The committed .SRCINFO must be what makepkg would write for the committed
+	# PKGBUILD. An empty result is not a match, so a makepkg that failed to run
+	# cannot pass this check by printing nothing.
+	if ! fresh=$(cd "$pkgdir" && makepkg --printsrcinfo) || [[ -z "$fresh" ]]; then
+		echo "error: makepkg --printsrcinfo failed in the committed $pkg" >&2
+		exit 1
+	fi
+	if ! diff -u "$pkgdir/.SRCINFO" <(printf '%s\n' "$fresh"); then
+		echo "error: committed .SRCINFO is stale for $pkg; regenerate it and commit before publishing" >&2
+		exit 1
+	fi
+fi
 
 echo "Publishing $pkg to AUR..."
 
