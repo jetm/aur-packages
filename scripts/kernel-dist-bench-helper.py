@@ -45,6 +45,23 @@ def savedcmd_argv(cmd_text, d, b):
     raise ValueError(f"no line starting {prefix!r}")
 
 
+LAUNCHERS = ("sccache", "ccache")
+
+
+def strip_launcher(argv):
+    """Drop a leading compiler-launcher word.
+
+    Kbuild records the command it ran, so a tree last built through sccache or
+    ccache has "sccache /usr/bin/clang ..." in its .cmd file. The caller supplies
+    its own compiler and launcher, and keeping the recorded one would pass the
+    compiler path to clang as a second input file.
+    """
+    out = list(argv)
+    while out and os.path.basename(out[0]) in LAUNCHERS:
+        out.pop(0)
+    return out
+
+
 def rewrite_outputs(argv, obj, dep):
     """Point -o and -Wp,-MMD,<path> at obj and dep."""
     out = list(argv)
@@ -66,7 +83,7 @@ def build_cmd(tree, tu, outdir, tag):
     b = f[:-2] if f.endswith(".c") else os.path.splitext(f)[0]
     cmdfile = os.path.join(tree, d, f".{b}.o.cmd")
     with open(cmdfile, encoding="utf-8", errors="replace") as fh:
-        argv = savedcmd_argv(fh.read(), d, b)
+        argv = strip_launcher(savedcmd_argv(fh.read(), d, b))
     argv, n = pin_march(argv)
     print(f"{PIN_FROM} -> {PIN_TO}: {n} replacement(s) in {tu}", file=sys.stderr)
     argv[0] = "/usr/bin/clang"
@@ -340,6 +357,11 @@ def self_test():
     except ValueError:
         missing = True
     check("missing savedcmd line raises", missing)
+    check("a saved command built through sccache or ccache loses the launcher word",
+          strip_launcher(["sccache", "/usr/bin/clang", "-c", "x.c"]) == ["/usr/bin/clang", "-c", "x.c"]
+          and strip_launcher(["/usr/bin/ccache", "clang", "-c"]) == ["clang", "-c"])
+    check("a saved command with no launcher is left alone",
+          strip_launcher(["clang", "-c", "sccache.c"]) == ["clang", "-c", "sccache.c"])
 
     # sccache 0.19 prints the failure count on one line and the successes as a header
     # followed by one indented line per build server.
@@ -436,7 +458,7 @@ def self_test():
     sys.exit(0 if ok == len(checks) and len(checks) == EXPECTED_CHECKS else 1)
 
 
-EXPECTED_CHECKS = 33
+EXPECTED_CHECKS = 35
 
 
 def main():
