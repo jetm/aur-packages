@@ -129,8 +129,9 @@ cmd_probe() {
   echo "probe: local -j$ncpu, distributed -j$((ncpu + cpus)) (scheduler cpus: $cpus)"
   read -r ln lsec <<<"$(probe_build "$tree" "$sub" local "$ncpu")"
   read -r ld dsec <<<"$(probe_build "$tree" "$sub" dist "$((ncpu + cpus))")"
-  lrate="$(awk -v n="$ln" -v s="$lsec" 'BEGIN { printf "%.3f", s > 0 ? n / s : 0 }')"
-  drate="$(awk -v n="$ld" -v s="$dsec" 'BEGIN { printf "%.3f", s > 0 ? n / s : 0 }')"
+  # Parenthesized: after a printf argument list a bare ">" is an output redirect.
+  lrate="$(awk -v n="$ln" -v s="$lsec" 'BEGIN { printf "%.3f", (s > 0 ? n / s : 0) }')"
+  drate="$(awk -v n="$ld" -v s="$dsec" 'BEGIN { printf "%.3f", (s > 0 ? n / s : 0) }')"
   echo "local: $ln objects in ${lsec}s = $lrate objects/s"
   echo "dist:  $ld objects in ${dsec}s = $drate objects/s"
   verdict="$(py verdict "$lrate" "$drate")"
