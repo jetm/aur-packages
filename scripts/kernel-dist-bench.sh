@@ -55,8 +55,9 @@ cmd_smoke() {
   echo "stats after  (dist_ok dist_failed executed): $after"
 
   local rc=0
-  if cmp "$tmp/$(basename "${tu%.c}").direct.o" "$tmp/$(basename "${tu%.c}").sccache.o"; then
-    echo "objects: identical"
+  local verdict
+  if verdict="$(py compare-objects "$tmp/$(basename "${tu%.c}").direct.o" "$tmp/$(basename "${tu%.c}").sccache.o")"; then
+    echo "objects: $verdict"
   else
     echo "objects: DIFFER" >&2
     rc=1

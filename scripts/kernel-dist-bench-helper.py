@@ -5,6 +5,7 @@ Subcommands:
   timeline <tree>                       phase table from file mtimes
   build-cmd <tree> <tu> <outdir> <tag>  NUL-separated argv for one TU
   stats                                 parse `sccache --show-stats` on stdin
+  compare-objects <a.o> <b.o>           identical | same-code | differ (exit 1 on differ)
   safe-subdir|strip-ccache-path|dist-cpus|verdict|load-check
                                         small probe/run predicates (see kernel-dist-bench.sh)
   run-row <label> <date> <tree> <start> <end> <log> <rev> [VAR=val ...]
@@ -15,7 +16,9 @@ Subcommands:
 import os
 import re
 import shlex
+import subprocess
 import sys
+import tempfile
 import time
 
 PIN_FROM = "-march=native"
@@ -71,19 +74,83 @@ def build_cmd(tree, tu, outdir, tag):
                            os.path.join(outdir, f"{b}.{tag}.d"))
 
 
-STAT_RE = re.compile(r"^(Successful|Failed) distributed compiles\s+(\d+)\s*$", re.M)
+FAILED_RE = re.compile(r"^Failed distributed compilations\s+(\d+)\s*$", re.M)
+OK_HEADER_RE = re.compile(r"^Successful distributed compiles\s*$", re.M)
+OK_SERVER_RE = re.compile(r"^\s+\S+:\d+\s+(\d+)\s*$")
 EXEC_RE = re.compile(r"^Compile requests executed\s+(\d+)\s*$", re.M)
+
+# Verbatim shape of `sccache --show-stats` 0.19.0 after one distributed compile.
+SAMPLE_STATS = """\
+Compile requests executed            12
+Failed distributed compilations       1
+
+Successful distributed compiles
+  192.168.8.187:10501                 3
+  192.168.8.163:10501                 2
+Cache location                  Local disk: "/home/u/.cache/sccache"
+"""
 
 
 def parse_stats(text):
-    """Return dict ok/failed distributed compiles and executed requests (0 if absent)."""
+    """Return dict ok/failed distributed compiles and executed requests (0 if absent).
+
+    sccache 0.19 prints the failures on one line and lists the successes per build
+    server under a header line, so the successes are summed over that list.
+    """
     r = {"ok": 0, "failed": 0, "executed": 0}
-    for kind, val in STAT_RE.findall(text):
-        r["ok" if kind == "Successful" else "failed"] = int(val)
+    m = FAILED_RE.search(text)
+    if m:
+        r["failed"] = int(m.group(1))
+    h = OK_HEADER_RE.search(text)
+    if h:
+        for line in text[h.end():].lstrip("\n").splitlines():
+            sm = OK_SERVER_RE.match(line)
+            if not sm:
+                break
+            r["ok"] += int(sm.group(1))
     m = EXEC_RE.search(text)
     if m:
         r["executed"] = int(m.group(1))
     return r
+
+
+BITCODE_MAGICS = (b"BC\xc0\xde", b"\xde\xc0\x17\x0b")
+IR_DROP_RE = re.compile(r"^(!\d+ = |\^\d+ = |; ModuleID|source_filename)")
+IR_ANNOT_RE = re.compile(r", ![A-Za-z_.]+ ![0-9]+")
+
+
+def ir_code(text):
+    """Textual IR with debug/metadata annotations and module identity removed."""
+    out = []
+    for line in text.splitlines():
+        if IR_DROP_RE.match(line):
+            continue
+        out.append(re.sub(r"![0-9]+", "!N", IR_ANNOT_RE.sub("", line)))
+    return "\n".join(out)
+
+
+def disassemble(path):
+    p = subprocess.run(["llvm-dis", "-o", "-", path], capture_output=True, text=True, check=False)
+    if p.returncode != 0:
+        raise RuntimeError(f"llvm-dis failed on {path}: {p.stderr.strip()}")
+    return p.stdout
+
+
+def compare_objects(a, b):
+    """'identical', 'same-code' (bitcode that differs only in debug locations) or 'differ'.
+
+    A distributed compile runs clang on the preprocessed source, which moves some
+    debug locations, so a remote object is not byte-identical to a direct one even
+    when every instruction is the same.
+    """
+    with open(a, "rb") as fa, open(b, "rb") as fb:
+        da, db = fa.read(), fb.read()
+    if da == db:
+        return "identical"
+    if da[:4] in BITCODE_MAGICS and db[:4] in BITCODE_MAGICS:
+        if ir_code(disassemble(a)) == ir_code(disassemble(b)):
+            return "same-code"
+    return "differ"
 
 
 def phases(objs, vmlinux_a, vmlinux_o, mod_o, ko):
@@ -274,9 +341,13 @@ def self_test():
         missing = True
     check("missing savedcmd line raises", missing)
 
-    s = parse_stats("Compile requests executed       12\nSuccessful distributed compiles  3\n"
-                    "Failed distributed compiles  1\n")
-    check("stats parsed", s == {"ok": 3, "failed": 1, "executed": 12})
+    # sccache 0.19 prints the failure count on one line and the successes as a header
+    # followed by one indented line per build server.
+    s = parse_stats(SAMPLE_STATS)
+    check("0.19 stats: successes summed over servers, failures and executed read",
+          s == {"ok": 5, "failed": 1, "executed": 12})
+    check("0.19 stats: the server list ends at the first non-server line",
+          parse_stats(SAMPLE_STATS.replace("Cache location", "  5 5\nCache location"))["ok"] == 5)
     check("absent dist lines count as zero", parse_stats("Cache hits 4\n") == {"ok": 0, "failed": 0, "executed": 0})
 
     rows = phases([10, 20, 30, 99, 150], 100, 130, [140, 160], [170, 180, 200])
@@ -336,10 +407,25 @@ def self_test():
           and dist_cpus("not running") == 0)
     check("verdict line follows the rates",
           verdict_line(10.0, 12.0) == "verdict: dist-wins" and verdict_line(10.0, 10.0) == "verdict: local-wins")
-    log = ("2026-10-24T10:00:00 Successful distributed compiles  7\n"
-           "2026-10-24T10:00:00 Failed distributed compiles  2\n")
+    log = "".join(f"2026-10-24T10:00:00 {ln}\n" for ln in SAMPLE_STATS.splitlines())
     check("log stats parse behind timestamps and are zero off sccache",
-          log_stats(log, []) == (7, 2) and log_stats(log, ["_cc_launcher=ccache"]) == (0, 0))
+          log_stats(log, []) == (5, 1) and log_stats(log, ["_cc_launcher=ccache"]) == (0, 0))
+
+    with_dbg = ("; ModuleID = '/a/x.o'\ndefine void @f() {\n  %1 = icmp eq i8 %0, 0, !dbg !7\n"
+                "  ret void, !dbg !8\n}\n!7 = !DILocation(line: 1)\n^0 = module: (path: \"/a/x.o\")\n")
+    without_dbg = ("; ModuleID = '/b/y.o'\ndefine void @f() {\n  %1 = icmp eq i8 %0, 0\n"
+                   "  ret void\n}\n^0 = module: (path: \"/b/y.o\")\n")
+    changed = without_dbg.replace("icmp eq", "icmp ne")
+    check("IR with different debug annotations and module names has the same code",
+          ir_code(with_dbg) == ir_code(without_dbg))
+    check("IR with a different instruction does not", ir_code(with_dbg) != ir_code(changed))
+    with tempfile.TemporaryDirectory() as td:
+        pa, pb, pc = (os.path.join(td, n) for n in ("a.o", "b.o", "c.o"))
+        for p, data in ((pa, b"\x7fELF-one"), (pb, b"\x7fELF-one"), (pc, b"\x7fELF-two")):
+            with open(p, "wb") as fh:
+                fh.write(data)
+        check("equal bytes are identical, unequal non-bitcode bytes differ",
+              compare_objects(pa, pb) == "identical" and compare_objects(pa, pc) == "differ")
 
     ok = sum(1 for _, c in checks if c)
     for name, c in checks:
@@ -350,7 +436,7 @@ def self_test():
     sys.exit(0 if ok == len(checks) and len(checks) == EXPECTED_CHECKS else 1)
 
 
-EXPECTED_CHECKS = 29
+EXPECTED_CHECKS = 33
 
 
 def main():
@@ -368,6 +454,10 @@ def main():
         sys.exit(0 if safe_subdir(sys.argv[2]) else 2)
     elif cmd == "strip-ccache-path" and len(sys.argv) == 3:
         print(strip_ccache_path(sys.argv[2]))
+    elif cmd == "compare-objects" and len(sys.argv) == 4:
+        verdict = compare_objects(sys.argv[2], sys.argv[3])
+        print(verdict)
+        sys.exit(0 if verdict != "differ" else 1)
     elif cmd == "dist-cpus":
         print(dist_cpus(sys.stdin.read()))
     elif cmd == "verdict" and len(sys.argv) == 4:
