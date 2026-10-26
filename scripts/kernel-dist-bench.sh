@@ -92,8 +92,22 @@ BUILDDIR_DEFAULT=/var/tmp/makepkg-build
 tsloop() {
   local line
   while IFS= read -r line; do
-    printf '%s %s\n' "$(date +%Y-%m-%dT%H:%M:%S)" "$line"
+    # %()T is a printf builtin; $(date ...) forked a process for every line.
+    printf '%(%Y-%m-%dT%H:%M:%S)T %s\n' -1 "$line"
   done
+}
+
+# A distributed build writes ~150 warning lines per object (the remote clang sees
+# preprocessed source), so the build's whole output is drained through tsloop at
+# thousands of lines per second. A loop that forks per line cannot keep up and
+# stalls every compiler on a full pipe, which looks like a cluster that does nothing.
+tsloop_speed_check() {
+  local n=50000 s e
+  s="$EPOCHREALTIME"
+  seq 1 "$n" | tsloop >/dev/null
+  e="$EPOCHREALTIME"
+  awk -v s="$s" -v e="$e" -v n="$n" \
+    'BEGIN { r = n / (e - s); printf "tsloop: %d lines in %.2f s = %.0f lines/s (need 50000)\n", n, e - s, r; exit !(r >= 50000) }'
 }
 
 # Delete a subdir's objects, rebuild it, print "<objects> <seconds>".
@@ -213,6 +227,6 @@ case "${1:-}" in
   report) cmd_report ;;
   timeline) [[ $# -eq 2 ]] || usage; py timeline "$2" ;;
   smoke) shift; cmd_smoke "$@" ;;
-  self-test) py self-test ;;
+  self-test) py self-test && tsloop_speed_check ;;
   *) usage ;;
 esac
