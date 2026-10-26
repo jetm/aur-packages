@@ -187,7 +187,10 @@ cmd_run() {
   rm -f "$marker"
   (( rc == 0 )) || { echo "run: makepkg failed (exit $rc), see $log" >&2; exit "$rc"; }
 
-  local -a trees=("$builddir"/linux-cachyos-jetm/src/cachyos-*)
+  # Trailing slash keeps directories only: src/ also holds cachyos-*.tar.gz and
+  # .tar.gz.asc symlinks, which a bare cachyos-* glob counted as extra trees.
+  local -a trees=("$builddir"/linux-cachyos-jetm/src/cachyos-*/)
+  trees=("${trees[@]%/}")
   if [[ ${#trees[@]} -ne 1 || ! -d "${trees[0]}" ]]; then
     echo "run: expected exactly one build tree under $builddir/linux-cachyos-jetm/src, got ${#trees[@]}" >&2
     exit 2
