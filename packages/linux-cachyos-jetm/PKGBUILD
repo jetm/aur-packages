@@ -68,6 +68,12 @@
 # Path to the list of used modules
 : "${_localmodcfg_path:="$XDG_DATA_HOME/modprobed-db/modprobed.db"}"
 
+# Build BTF for every module (CONFIG_DEBUG_INFO_BTF_MODULES). "no" skips one pahole
+# run per module, so BPF programs cannot use BTF for module types or kfuncs.
+# yes - keep the config's setting
+# no  - turn it off
+: "${_btf_modules:=yes}"
+
 # Use the current kernel's .config file
 # Enabling this option will use the .config of the RUNNING kernel rather than
 # the ARCH defaults. Useful when the package gets updated and you already went
@@ -274,7 +280,7 @@ _tagrel=4
 # 7.3.0-2 -> 7.3.0-3). It is also kept at least one above the previous build at
 # the same kernel version, so a rebuild always installs as a new version
 # instead of reinstalling over the running kernel's module tree.
-pkgrel=7
+pkgrel=8
 _srcname=cachyos-${_major}.${_minor}-${_tagrel}
 # Kept short: the split packages append their own suffixes to this string
 # ("... kernel and modules", "Non-stripped vmlinux file for the ..."), so a long
@@ -684,6 +690,13 @@ prepare() {
     # swapon and the rule firing.
     echo "Disabling zswap by default..."
     scripts/config -d ZSWAP_DEFAULT_ON -d ZSWAP_SHRINKER_DEFAULT_ON
+
+    # Per-module BTF costs one pahole run for every module, which is a large part
+    # of the module-link phase. vmlinux keeps its own BTF either way.
+    if [ "$_btf_modules" = no ]; then
+        echo "Disabling BTF for modules..."
+        scripts/config -d DEBUG_INFO_BTF_MODULES
+    fi
 
     ### CI-only stuff
     if _is_ci_build; then
