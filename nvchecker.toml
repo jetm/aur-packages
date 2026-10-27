@@ -148,7 +148,7 @@ github = "devlinman/whatsit"
 use_max_tag = true
 prefix = "v"
 
-# sccache with the jetm/sccache carry patches and a few open upstream PRs applied on
+# sccache with the jetm/sccache carry patches applied on
 # the release tarball (packages/sccache-jetm). Tracks upstream tags. The generic
 # bump path sets pkgver and resets pkgrel, then the CI build runs prepare(), which
 # applies the patches: a release that no longer takes one fails the build there,

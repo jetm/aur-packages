@@ -2,24 +2,23 @@
 # Based on the Arch Linux sccache PKGBUILD by Maxime Gauduin <alucryd@archlinux.org>
 
 # sccache with the sccache-dist changes that make distributed compilation work for
-# OpenEmbedded/Yocto and kernel builds, plus a few open upstream pull requests that
-# speed it up. The upstream release is the source; everything else is applied on top
-# as numbered patches in prepare(), so a release that no longer takes a patch fails
-# the build there instead of shipping a silently different sccache.
+# OpenEmbedded/Yocto and kernel builds. The upstream release is the source and the
+# changes are applied on top as a patch in prepare(), so a release that no longer takes
+# the patch fails the build there instead of shipping a silently different sccache.
 #
 #   0001  jetm/sccache carry/0.19.0: v0.19.0 plus 48 commits (the work behind
-#         mozilla/sccache#2776, #2777 and the not yet opened scheduler, packaging and
-#         rust/gcc dist fixes). Regenerate with
+#         mozilla/sccache#2776 and #2777 and the scheduler, packaging and rust/gcc dist
+#         fixes not yet sent upstream). Regenerate with
 #         git format-patch --stdout <release>..<rebased carry branch>
-#   0002  mozilla/sccache#2718  fifo jobserver so the daemon can posix_spawn
-#   0003  mozilla/sccache#2938  gcc: no double preprocessing of assembly in dist mode
-#   0004  mozilla/sccache#2940  direct mode: remember file digests across lookups
-#   0005  mozilla/sccache#2936  reuse file digests while the file's metadata is unchanged
-#   0006  mozilla/sccache#2901  disk cache: do not touch entry times on read-only hits
 #
-# On a new upstream release: rebase the carry branch onto it, regenerate 0001, drop each
-# of 0002-0006 that the release contains, and rebuild. A patch that fails to apply stops
-# the build, which is how to find out what the release changed.
+# On a new upstream release: rebase the carry branch onto it, regenerate 0001 and
+# rebuild. A patch that fails to apply stops the build, which is how to find out what
+# the release changed.
+#
+# Open upstream speedup PRs were measured on top of this on the kernel build and left
+# out: #2718 (fifo jobserver), #2938, #2940, #2936 and #2901 gave no gain (cold 519-538 s
+# against 499-508 s without them; warm 480 s against 478 s). Their patches are in git
+# history at 9accb64 if a later release makes them worth another look.
 #
 # It conflicts with and provides sccache, so it replaces the distro package.
 
@@ -27,7 +26,7 @@ pkgname=sccache-jetm
 _upstream=sccache
 pkgver=0.19.0
 pkgrel=1
-pkgdesc='Shared compilation cache - build with distributed-compile fixes and upstream speedups'
+pkgdesc='Shared compilation cache - build with distributed-compile fixes'
 arch=(x86_64)
 url=https://github.com/mozilla/sccache
 license=(Apache-2.0)
@@ -49,11 +48,6 @@ conflicts=(sccache)
 options=(!lto)
 _patches=(
   0001-jetm-carry.patch
-  0002-pr2718-fifo-jobserver-posix-spawn.patch
-  0003-pr2938-gcc-asm-double-preprocess.patch
-  0004-pr2940-direct-mode-file-digests.patch
-  0005-pr2936-reuse-file-digests.patch
-  0006-pr2901-read-only-hits-no-touch.patch
 )
 source=(
   "$_upstream-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz"
@@ -62,11 +56,6 @@ source=(
 sha256sums=(
   '2da079033cd19fd8e2a09f56f9a7d9d1a72d591ff3acdc47d95b920145cf2671'
   '1585533763ec311f6564bf4c247189135acd5e4507b1960053ffe21d8c5f7d94'  # 0001-jetm-carry.patch
-  '9440e701d003f25d24606a40218cb8b95ff3cce4c89ac59c6ccddfebb37bd41a'  # 0002-pr2718-fifo-jobserver-posix-spawn.patch
-  '61d6efc3329ea72e9cb2b0f65249308946d6233864a0053e5ef1d4645110d87c'  # 0003-pr2938-gcc-asm-double-preprocess.patch
-  '4c379b86ec33b237c1327baeb01a8405811c70b559f726d521c7bc6432e8bc43'  # 0004-pr2940-direct-mode-file-digests.patch
-  'c4d3bdbdfcc4a80c0bac98cedd6d6cb85f3c20d0deadd17ddfd94e9655839414'  # 0005-pr2936-reuse-file-digests.patch
-  '3a8942426d7065879a79b0dff9caf737c766120b039e6560d4670fe599def713'  # 0006-pr2901-read-only-hits-no-touch.patch
 )
 
 prepare() {
