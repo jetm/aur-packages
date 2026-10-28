@@ -63,16 +63,26 @@
 # This PKGBUILD read the database kept if it exists
 #
 # More at this wiki page ---> https://wiki.archlinux.org/index.php/Modprobed-db
-: "${_localmodcfg:=no}"
+#
+# On by default: the module set is the one tracked next to this file in
+# modules.pc1 (this workstation's loaded and hardware-resolved modules), plus
+# modules.always, the crash-capture and debugging modules that are only loaded
+# after something goes wrong and so never show up in an lsmod snapshot (ramoops,
+# netconsole, EDAC). Set to "no" to build every module, which a machine with
+# different hardware needs.
+: "${_localmodcfg:=yes}"
 
-# Path to the list of used modules
-: "${_localmodcfg_path:="$XDG_DATA_HOME/modprobed-db/modprobed.db"}"
+# Path to the list of used modules. Empty uses the tracked modules.pc1; point it
+# at a modprobed-db database to use that instead. modules.always is appended
+# either way.
+: "${_localmodcfg_path:=}"
 
 # Build BTF for every module (CONFIG_DEBUG_INFO_BTF_MODULES). "no" skips one pahole
 # run per module, so BPF programs cannot use BTF for module types or kfuncs.
+# vmlinux keeps its own BTF, which is what tracing and CO-RE programs read.
 # yes - keep the config's setting
 # no  - turn it off
-: "${_btf_modules:=yes}"
+: "${_btf_modules:=no}"
 
 # Use the current kernel's .config file
 # Enabling this option will use the .config of the RUNNING kernel rather than
@@ -143,7 +153,7 @@
 # "thin: uses multiple threads, faster and uses less memory, may have a lower runtime performance than Full."
 # "thin-dist: Similar to thin, but uses a distributed model rather than in-process: https://discourse.llvm.org/t/rfc-distributed-thinlto-build-for-kernel/85934"
 # "none: disable LTO
-: "${_use_llvm_lto:=thin}"
+: "${_use_llvm_lto:=thin-dist}"
 
 # Use suffix -lto only when requested by the user
 # yes - enable -lto suffix
@@ -280,7 +290,7 @@ _tagrel=4
 # 7.3.0-2 -> 7.3.0-3). It is also kept at least one above the previous build at
 # the same kernel version, so a rebuild always installs as a new version
 # instead of reinstalling over the running kernel's module tree.
-pkgrel=8
+pkgrel=13
 _srcname=cachyos-${_major}.${_minor}-${_tagrel}
 # Kept short: the split packages append their own suffixes to this string
 # ("... kernel and modules", "Non-stripped vmlinux file for the ..."), so a long
@@ -330,6 +340,8 @@ _nv_open_pkg="NVIDIA-kernel-module-source-${_nv_ver}"
 source=(
     "https://github.com/CachyOS/linux/releases/download/${_srcname}/${_srcname}.tar.gz"{,.asc}
     "config"
+    "modules.pc1"
+    "modules.always"
     # No out-of-tree XFS patches any more: the crash investigation is finished
     # and the v3 diagnostics series (v3-0002, -0003, -0004, -0006) is dropped.
     # Its fix, args->total in xfs_parent.c, landed upstream between 7.2.6 and
@@ -698,6 +710,12 @@ prepare() {
         scripts/config -d DEBUG_INFO_BTF_MODULES
     fi
 
+    # The config ships with the EFI pstore backend compiled in but disabled, so no
+    # oops or panic log survives a reset unless the command line says
+    # efi_pstore.pstore_disable=0. This kernel is run to catch crashes, so enable it.
+    echo "Enabling the EFI pstore backend by default..."
+    scripts/config -d EFI_VARS_PSTORE_DEFAULT_DISABLE
+
     ### CI-only stuff
     if _is_ci_build; then
         echo "Detected build inside CI"
@@ -771,11 +789,14 @@ prepare() {
     ### Optionally load needed modules for the make localmodconfig
     # See https://aur.archlinux.org/packages/modprobed-db
     if [ "$_localmodcfg" = "yes" ]; then
-        if [ -e "$_localmodcfg_path" ]; then
+        local _modlist="${_localmodcfg_path:-$srcdir/modules.pc1}"
+        if [ -e "$_modlist" ]; then
             echo "Running Steven Rostedt's make localmodconfig now"
-            make "${BUILD_FLAGS[@]}" LSMOD="${_localmodcfg_path}" localmodconfig
+            # localmodconfig reads one file, so the always-kept modules are merged in.
+            cat "$_modlist" "$srcdir/modules.always" > "$srcdir/modules.merged"
+            make "${BUILD_FLAGS[@]}" LSMOD="$srcdir/modules.merged" localmodconfig
         else
-            _die "No modprobed.db data found"
+            _die "No module list found at $_modlist"
         fi
     fi
 
@@ -1111,5 +1132,7 @@ done
 b2sums=('d90b9a609d930cf596022050014ef75e11f3b9378fb51be7763743bc15b10d31caa8d48c59149ed2aea28853aae1ec6d7e68a8ce441b1bd014c9897cbeb8dba5'
         'SKIP'
         'ec368517f0f5bbe7d61e2e82f5d6e19262d2c1739f3322691c973eb75d17d23db8d10c73c07aa38f419278acc2287f63ba1c09496dda97c77368e4470eb8db81'
+        '4103183a51f761fcc79e38dd6c48560a1bc7e7bd952bdaa5c2fbe0bf5e1ed593f896c00cfa2ce031ce720654c2078ecdb37d6c586417c75db7356569f44cb850'
+        'f10ca629b97ba6ac39977da99fa6fe00308094be6f5cb51210a02928fb8fddad875a7e38e7b0fc8554add8e6cb347224cc7fa8321dc1ea1b7203b2e3d0262093'
         'c992567bd7dd8553432be496ffa1c17e2f5ebe9c7edb51945cf977e1b742dd6517c210d8843bb82744ca705efd07f8027cd7dde41b50215ebd707a34aa81462e'
         '04cca5d4811dce379776c124469cb69f5275e7eaa61401da9e23077d0d60d4d06b85b646292b6db4639541d70b4283f732b102c1168d6d29e16f8cccc695e205')
