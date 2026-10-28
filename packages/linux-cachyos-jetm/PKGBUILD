@@ -290,7 +290,7 @@ _tagrel=4
 # 7.3.0-2 -> 7.3.0-3). It is also kept at least one above the previous build at
 # the same kernel version, so a rebuild always installs as a new version
 # instead of reinstalling over the running kernel's module tree.
-pkgrel=13
+pkgrel=14
 _srcname=cachyos-${_major}.${_minor}-${_tagrel}
 # Kept short: the split packages append their own suffixes to this string
 # ("... kernel and modules", "Non-stripped vmlinux file for the ..."), so a long
@@ -1133,6 +1133,6 @@ b2sums=('d90b9a609d930cf596022050014ef75e11f3b9378fb51be7763743bc15b10d31caa8d48
         'SKIP'
         'ec368517f0f5bbe7d61e2e82f5d6e19262d2c1739f3322691c973eb75d17d23db8d10c73c07aa38f419278acc2287f63ba1c09496dda97c77368e4470eb8db81'
         '4103183a51f761fcc79e38dd6c48560a1bc7e7bd952bdaa5c2fbe0bf5e1ed593f896c00cfa2ce031ce720654c2078ecdb37d6c586417c75db7356569f44cb850'
-        'f10ca629b97ba6ac39977da99fa6fe00308094be6f5cb51210a02928fb8fddad875a7e38e7b0fc8554add8e6cb347224cc7fa8321dc1ea1b7203b2e3d0262093'
+        '7acb8cc64e8ce96ad6fd6862c5d51b8858bee09aed4dd6f28c29e2cb3ae8e2ef02d900e89ce36d9dbfbd3ebf8aae173abc4702b1b787d27c22fa399e3dc99ef1'
         'c992567bd7dd8553432be496ffa1c17e2f5ebe9c7edb51945cf977e1b742dd6517c210d8843bb82744ca705efd07f8027cd7dde41b50215ebd707a34aa81462e'
         '04cca5d4811dce379776c124469cb69f5275e7eaa61401da9e23077d0d60d4d06b85b646292b6db4639541d70b4283f732b102c1168d6d29e16f8cccc695e205')
