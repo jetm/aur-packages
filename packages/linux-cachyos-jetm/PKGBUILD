@@ -290,7 +290,7 @@ _tagrel=4
 # 7.3.0-2 -> 7.3.0-3). It is also kept at least one above the previous build at
 # the same kernel version, so a rebuild always installs as a new version
 # instead of reinstalling over the running kernel's module tree.
-pkgrel=14
+pkgrel=15
 _srcname=cachyos-${_major}.${_minor}-${_tagrel}
 # Kept short: the split packages append their own suffixes to this string
 # ("... kernel and modules", "Non-stripped vmlinux file for the ..."), so a long
@@ -715,6 +715,13 @@ prepare() {
     # efi_pstore.pstore_disable=0. This kernel is run to catch crashes, so enable it.
     echo "Enabling the EFI pstore backend by default..."
     scripts/config -d EFI_VARS_PSTORE_DEFAULT_DISABLE
+
+    # The base config predates the AMD Promontory 21 chipset temperature sensor and has
+    # it off, and localmodconfig keeps a listed module only when the config already
+    # enables it, so listing prom21_xhci in modules.always cannot turn it on by itself.
+    # Enable it here, before localmodconfig runs. USB_XHCI_PCI_PROM21 follows by default.
+    echo "Enabling the AMD Promontory 21 temperature sensor..."
+    scripts/config -m SENSORS_PROM21_XHCI
 
     ### CI-only stuff
     if _is_ci_build; then
