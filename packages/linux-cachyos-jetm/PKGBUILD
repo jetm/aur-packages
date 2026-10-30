@@ -15,7 +15,7 @@
 # sources from distant mirrors. See _HZ_ticks, _tickrate and _tcp_bbr3 below for
 # the reasoning on each.
 #
-# It also runs the BORE scheduler; see _cpusched. pkgrel follows CachyOS's
+# It also runs the mainline EEVDF scheduler; see _cpusched. pkgrel follows CachyOS's
 # numbering for a patch-only rebuild - see the note there.
 
 ### BUILD OPTIONS
@@ -40,14 +40,13 @@
 # 'eevdf' - select 'EEVDF Scheduler'
 # 'rt' - select EEVDF, but includes a series of realtime patches
 # 'rt-bore' - select Burst-Oriented Response Enhancer, but includes a series of realtime patches
-# Build machine: bore rather than upstream's cachyos (plain EEVDF). The 32
-# threads sit saturated by a build for hours while the desktop stays in use, and
-# BORE's burst penalty keeps interactive tasks ahead of the compile jobs. It was
-# held back while the XFS crash was being chased, to keep the source stock; that
-# investigation is finished. It adds one fetched patch (sched/0001-bore-cachy.patch).
-# scripts/check-cachyos-drift.sh tracks its name but cannot tell whether it still
-# applies to a new tag; that shows up as a failed prepare().
-: "${_cpusched:=bore}"
+# Build machine: eevdf, the mainline scheduler, with no scheduler patch to carry.
+# BORE was the default, but its CachyOS patch lags the stable tags: against 7.3.1 it
+# left an unguarded sysctl_sched_base_slice use at fair.c:1175 and prepare() built a
+# kernel that did not compile. sched_ext is enabled (SCHED_CLASS_EXT=y), so scx_lavd
+# or scx_bpfland from the scx-scheds package can replace EEVDF at runtime without a
+# rebuild. _cpusched=bore still works: its patch and checksum are added only then.
+: "${_cpusched:=eevdf}"
 
 ### Tweak kernel options prior to a build via nconfig
 : "${_makenconfig:=no}"
@@ -1189,4 +1188,13 @@ b2sums=('b744477e1202ae7c63020645fdd923625da6edd2bde61d01d9c7755e6d9628fc3fb00e6
         '4103183a51f761fcc79e38dd6c48560a1bc7e7bd952bdaa5c2fbe0bf5e1ed593f896c00cfa2ce031ce720654c2078ecdb37d6c586417c75db7356569f44cb850'
         '754c21da91745e0ee2992e1c1df53f5bd005dcdf076a2f5dce45c26c76f818768fc7123b652b73e7236c4fc3bcf2359bb0ff0d40e0d0b437613619ef5d768fc9'
         'c992567bd7dd8553432be496ffa1c17e2f5ebe9c7edb51945cf977e1b742dd6517c210d8843bb82744ca705efd07f8027cd7dde41b50215ebd707a34aa81462e'
-        '04cca5d4811dce379776c124469cb69f5275e7eaa61401da9e23077d0d60d4d06b85b646292b6db4639541d70b4283f732b102c1168d6d29e16f8cccc695e205')
+        )
+
+# One entry per source, in source order. The BORE patch is the last source and is
+# fetched only for the bore family, so its sum is appended only then; a scheduler
+# whose patches have no sum here fails makepkg's length check instead of building
+# unchecked. updpkgsums rewrites the array, so re-add this block if it does.
+case "$_cpusched" in
+    bore|rt-bore|hardened)
+        b2sums+=('04cca5d4811dce379776c124469cb69f5275e7eaa61401da9e23077d0d60d4d06b85b646292b6db4639541d70b4283f732b102c1168d6d29e16f8cccc695e205');;
+esac

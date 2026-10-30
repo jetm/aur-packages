@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Tests the compiler-launcher selection in packages/linux-cachyos-jetm/PKGBUILD.
-# Usage: test-kernel-launcher.sh [launcher|dist|march|all]
+# Usage: test-kernel-launcher.sh [launcher|dist|march|sched|all]
 #
 # The PKGBUILD is sourced from a COPY of the package directory: sourcing it at
 # global scope runs _purge_fetched_patches, which deletes fetched patch files
@@ -10,8 +10,8 @@ set -euo pipefail
 
 mode="${1:-all}"
 case "$mode" in
-    launcher | dist | march | all) ;;
-    *) echo "usage: $0 [launcher|dist|march|all]" >&2; exit 2 ;;
+    launcher | dist | march | sched | all) ;;
+    *) echo "usage: $0 [launcher|dist|march|sched|all]" >&2; exit 2 ;;
 esac
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -245,9 +245,31 @@ march_tests() {
     check "no recorded target: no KCFLAGS or KAFLAGS are added" "$rc"
 }
 
+# One b2sums entry per source entry, whatever _cpusched is: makepkg rejects a mismatch,
+# and the BORE patch is only fetched for the bore family.
+run_sched() {
+    local sched="$1"
+    # _cpusched must be set before the PKGBUILD is sourced: it decides `source` at global scope.
+    if [ -n "$sched" ]; then export _cpusched="$sched"; else unset _cpusched; fi
+    run_pkg "$work/distbin" "" \
+        "printf 'SCHED=%s SRC=%s SUMS=%s\n' \"\$_cpusched\" \"\${#source[@]}\" \"\${#b2sums[@]}\"" 2>&1
+}
+
+sched_tests() {
+    local out s
+    out="$(run_sched '')"
+    check "default scheduler is eevdf" "$(grep -q '^SCHED=eevdf ' <<< "$out" && echo 0 || echo 1)"
+    for s in '' eevdf cachyos bore; do
+        out="$(run_sched "$s")"
+        check "_cpusched='${s:-default}': source and b2sums have the same length ($out)" \
+            "$(awk '{split($2,a,"=");split($3,b,"=");exit !(a[2]==b[2] && a[2]>0)}' <<< "$out" && echo 0 || echo 1)"
+    done
+}
+
 case "$mode" in launcher | all) launcher_tests ;; esac
 case "$mode" in dist | all) dist_tests ;; esac
 case "$mode" in march | all) march_tests ;; esac
+case "$mode" in sched | all) sched_tests ;; esac
 
 echo "checks: $ran/$total run"
 if [ "$failed" -ne 0 ]; then
