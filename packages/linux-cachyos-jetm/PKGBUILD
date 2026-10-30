@@ -801,7 +801,12 @@ prepare() {
             echo "Running Steven Rostedt's make localmodconfig now"
             # localmodconfig reads one file, so the always-kept modules are merged in.
             cat "$_modlist" "$srcdir/modules.always" > "$srcdir/modules.merged"
-            make "${BUILD_FLAGS[@]}" LSMOD="$srcdir/modules.merged" localmodconfig
+            # The base config predates some symbols (GPIO_BT8XX, SND_SE6X today), and
+            # localmodconfig ends in `conf --oldconfig`, which asks about every new symbol
+            # on a terminal. A build run from one (pikaur, makepkg in a shell) stops on
+            # the first prompt; a detached build only got through because its closed stdin
+            # made conf take each default. Feed empty answers so both behave the same.
+            yes "" | make "${BUILD_FLAGS[@]}" LSMOD="$srcdir/modules.merged" localmodconfig
         else
             _die "No module list found at $_modlist"
         fi
