@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Tests the compiler-launcher selection in packages/linux-cachyos-jetm/PKGBUILD.
-# Usage: test-kernel-launcher.sh [launcher|dist|all]
+# Usage: test-kernel-launcher.sh [launcher|dist|march|all]
 #
 # The PKGBUILD is sourced from a COPY of the package directory: sourcing it at
 # global scope runs _purge_fetched_patches, which deletes fetched patch files
@@ -10,8 +10,8 @@ set -euo pipefail
 
 mode="${1:-all}"
 case "$mode" in
-    launcher | dist | all) ;;
-    *) echo "usage: $0 [launcher|dist|all]" >&2; exit 2 ;;
+    launcher | dist | march | all) ;;
+    *) echo "usage: $0 [launcher|dist|march|all]" >&2; exit 2 ;;
 esac
 
 repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -148,8 +148,8 @@ dist_tests() {
     out="$(run_dist "$status_2x64" "$dump")"
     case "$out" in *"DECISION=dist 2 64"*) rc=0 ;; *) rc=1 ;; esac
     check "2 servers/64 cpus: decision is 'dist 2 64'" "$rc"
-    case "$out" in *"OPT=[zen4]"*) rc=0 ;; *) rc=1 ;; esac
-    check "2 servers/64 cpus: _processor_opt pinned to zen4" "$rc"
+    case "$out" in *"OPT=[]"*) rc=0 ;; *) rc=1 ;; esac
+    check "2 servers/64 cpus: _processor_opt stays empty (the target is detected, not pinned)" "$rc"
     case "$out" in *"JOBS=96"*) rc=0 ;; *) rc=1 ;; esac
     check "2 servers/64 cpus on 32-cpu host: 96 jobs" "$rc"
 
@@ -179,8 +179,75 @@ dist_tests() {
     check "local decision + servers at build: 32 jobs" "$rc"
 }
 
+# Fake clang that answers `-march=native -###` with the CPU named in $FAKE_TARGET_CPU,
+# in the shape real clang prints it on stderr.
+mkdir -p "$work/clangbin"
+cat > "$work/clangbin/clang" <<'FAKE'
+#!/bin/sh
+echo "\"/usr/bin/clang\" \"-cc1\" \"-triple\" \"x86_64-pc-linux-gnu\" \"-target-cpu\" \"${FAKE_TARGET_CPU:-x86-64}\"" >&2
+FAKE
+chmod +x "$work/clangbin/clang"
+
+cpuinfo_amd="$work/cpuinfo-amd"
+printf 'processor\t: 0\nvendor_id\t: AuthenticAMD\ncpu family\t: 26\n' > "$cpuinfo_amd"
+cpuinfo_intel="$work/cpuinfo-intel"
+printf 'processor\t: 0\nvendor_id\t: GenuineIntel\ncpu family\t: 6\n' > "$cpuinfo_intel"
+
+# Run _amd_march against a fake /proc/cpuinfo ($1) and a compiler that reports $2.
+run_march() {
+    local cpuinfo="$1" target="$2"
+    FAKE_TARGET_CPU="$target" run_pkg "$work/clangbin" "" "_cpuinfo='$cpuinfo'; _amd_march" 2>&1
+}
+
+march_tests() {
+    local out rc sd
+
+    out="$(run_march "$cpuinfo_amd" znver5)"
+    check "AMD host, compiler says znver5: the target is znver5" "$([ "$out" = znver5 ] && echo 0 || echo 1)"
+
+    out="$(run_march "$cpuinfo_amd" znver4)"
+    check "AMD host, compiler says znver4: the target is znver4" "$([ "$out" = znver4 ] && echo 0 || echo 1)"
+
+    rc=0
+    out="$(run_march "$cpuinfo_intel" znver5)" || rc=$?
+    check "Intel host: refused with a non-zero exit" "$([ "$rc" -ne 0 ] && echo 0 || echo 1)"
+    case "$out" in *AMD*GenuineIntel* | *GenuineIntel*AMD*) rc=0 ;; *) rc=1 ;; esac
+    check "Intel host: the message names AMD and the vendor it saw" "$rc"
+
+    rc=0
+    out="$(run_march "$cpuinfo_amd" x86-64)" || rc=$?
+    check "AMD host, compiler cannot name a znver target: refused" "$([ "$rc" -ne 0 ] && echo 0 || echo 1)"
+
+    # build(): the recorded target becomes an explicit -march for C and assembler, which
+    # every distributed builder evaluates the same way, unlike -march=native.
+    sd="$(mktemp -d -p "$work")"
+    mkdir -p "$sd/src"
+    printf 'znver5\n' > "$sd/src/.march"
+    printf 'dist 2 64\n' > "$sd/src/.dist-decision"
+    out="$(FAKE_STATUS="$sd/status.json" run_pkg "$work/distbin" "" \
+        "srcdir='$sd/src'; nproc() { echo 32; }; _launcher_setup; _build_plan; printf 'FLAGS=%s\n' \"\${BUILD_FLAGS[*]:-}\"" 2>&1)"
+    case "$(grep '^FLAGS=' <<< "$out")" in *"KCFLAGS=-march=znver5"*"KAFLAGS=-march=znver5"*) rc=0 ;; *) rc=1 ;; esac
+    check "recorded znver5: BUILD_FLAGS carry KCFLAGS and KAFLAGS -march=znver5" "$rc"
+
+    # A config prepared as 'local' that then finds servers used to fall back to ccache,
+    # because -march=native would ship host-specific code. An explicit target is safe.
+    printf '%s' "$status_2x64" > "$sd/status.json"
+    printf 'local 0 0\n' > "$sd/src/.dist-decision"
+    out="$(FAKE_STATUS="$sd/status.json" run_pkg "$work/distbin" "" \
+        "srcdir='$sd/src'; nproc() { echo 32; }; _launcher_setup; _build_plan; printf 'FLAGS=%s\n' \"\${BUILD_FLAGS[*]:-}\"" 2>&1)"
+    case "$(grep '^FLAGS=' <<< "$out")" in *"CC=sccache"*) rc=0 ;; *) rc=1 ;; esac
+    check "recorded target + servers at build: sccache is kept, no ccache fallback" "$rc"
+
+    rm -f "$sd/src/.march"
+    out="$(FAKE_STATUS="$sd/status.json" run_pkg "$work/distbin" "" \
+        "srcdir='$sd/src'; nproc() { echo 32; }; _launcher_setup; _build_plan; printf 'FLAGS=%s\n' \"\${BUILD_FLAGS[*]:-}\"" 2>&1)"
+    case "$(grep '^FLAGS=' <<< "$out")" in *KCFLAGS*) rc=1 ;; *) rc=0 ;; esac
+    check "no recorded target: no KCFLAGS or KAFLAGS are added" "$rc"
+}
+
 case "$mode" in launcher | all) launcher_tests ;; esac
 case "$mode" in dist | all) dist_tests ;; esac
+case "$mode" in march | all) march_tests ;; esac
 
 echo "checks: $ran/$total run"
 if [ "$failed" -ne 0 ]; then

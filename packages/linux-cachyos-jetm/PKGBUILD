@@ -133,18 +133,20 @@
 # https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/performance_tuning_guide/sect-red_hat_enterprise_linux-performance_tuning_guide-configuring_transparent_huge_pages
 : "${_hugepage:=always}"
 
-# CPU compiler optimizations - Defaults to native if left empty
-# - "native" (use compiler autodetection)
+# CPU compiler optimizations - Detected when left empty
+# - "" (detect the AMD CPU doing the build, e.g. znver5, and compile for it)
+# - "native" (use compiler autodetection, evaluated on whichever host compiles)
 # - "zen4" (Use znver4 compiler optimizations)
-# - "generic" (kernel's default - to share the package between machines with different CPU µarch as long as they are x86-64)
+# - "generic_v1" to "generic_v4" (x86-64 levels, to share the package between machines with different CPU µarch)
 #
-# Left empty on purpose, which enables CONFIG_X86_NATIVE_CPU and compiles for
-# whichever CPU ran the build. That is only safe because every machine builds
-# this package itself from the AUR - the fleet is not uniform (Zen 5 and Zen 4),
-# so a binary built on one and installed on the other could execute an
-# instruction the target lacks. INVARIANT: do not ship a built package between
-# machines. If that ever changes, pin this to "zen4", which the whole fleet
-# runs natively and which costs the newer host well under a percent.
+# Left empty on purpose: the build host's CPU is read from /proc/cpuinfo and the
+# compiler, and passed as an explicit -march, so a distributed build compiles for the
+# machine that will run the kernel and not for the helper that happens to compile it.
+# The build refuses a non-AMD host. Only Zen 4 and newer are detected, since the
+# source has no option to carry older ones; those fall back to x86-64-v3. The package
+# is therefore tied to the CPU that built it. INVARIANT: do not ship a built package
+# between machines with different CPUs. If that ever changes, set "zen4", which the
+# whole fleet runs natively.
 : "${_processor_opt:=}"
 
 # Clang LTO mode, only available with the "llvm" compiler - options are "none", "full" or "thin".
@@ -499,18 +501,35 @@ _dist_probe() {
     echo "$servers $cpus"
 }
 
-# Record whether this build distributes, and pin the CPU target when it does:
-# -march=native is evaluated on whichever host compiles, and zen4 is the fleet floor.
+# The compiler's name for the AMD CPU this build is for, such as znver5. The kernel
+# source has no Kconfig choice for the newest Zen parts, so the name is passed to the
+# compiler explicitly. Unlike -march=native, which is evaluated on whichever host
+# compiles, an explicit name gives every distributed builder the same target.
+# Refuses a non-AMD host, since this kernel is meant to be built for AMD CPUs only.
+_amd_march() {
+    local vendor name
+    vendor="$(awk -F': *' '/^vendor_id/ { print $2; exit }' "${_cpuinfo:-/proc/cpuinfo}" 2>/dev/null)" || true
+    if [ "$vendor" != AuthenticAMD ]; then
+        error "this kernel is built for AMD CPUs only, but vendor_id is '${vendor:-unknown}'. Set _processor_opt to generic_v3 (or native) to build it anyway."
+        return 1
+    fi
+    name="$(clang -march=native -### -x c /dev/null 2>&1 | sed -n 's/.*"-target-cpu" "\([^"]*\)".*/\1/p' | head -n1)" || true
+    case "$name" in
+        znver[0-9]*) echo "$name" ;;
+        *) error "clang reported '${name:-nothing}' for -march=native, not a Zen target; set _processor_opt explicitly"
+           return 1 ;;
+    esac
+}
+
+# Record whether this build distributes. The CPU target is not pinned for it: the
+# default is detected by _amd_march and passed explicitly, so it is the same on every
+# builder.
 _dist_decide() {
     local servers cpus
     read -r servers cpus <<< "$(_dist_probe)"
     mkdir -p "$srcdir"
     if [ "${servers:-0}" -ge 1 ]; then
         echo "dist $servers $cpus" > "$srcdir/.dist-decision"
-        if [ -z "$_processor_opt" ]; then
-            _processor_opt=zen4
-            msg2 "Distributed build: pinning _processor_opt=zen4 (pc2 is Zen 4 and -march=native is evaluated on whichever host compiles; zen4 is the fleet floor)"
-        fi
     else
         echo "local 0 0" > "$srcdir/.dist-decision"
     fi
@@ -520,15 +539,23 @@ _dist_decide() {
 # with servers now visible means the config was not pinned for distribution, so
 # fall back to ccache rather than ship non-pinned objects to other hosts.
 _build_plan() {
-    local mode=local servers=0 cpus=0 psrv=0 pcpus=0 i
+    local mode=local servers=0 cpus=0 psrv=0 pcpus=0 march i
     local -a kept=()
     if [ -f "$srcdir/.dist-decision" ]; then
         read -r mode servers cpus < "$srcdir/.dist-decision" || true
     fi
-    if [ "$mode" = local ] && [ "${_launcher_effective:-}" = sccache ]; then
+    # The CPU target prepare() detected, passed to the compiler as an explicit -march
+    # on top of the MZEN4 flag, which the later option overrides.
+    if [ -s "$srcdir/.march" ]; then
+        read -r march < "$srcdir/.march" || true
+        BUILD_FLAGS+=("KCFLAGS=-march=$march" "KAFLAGS=-march=$march")
+    fi
+    # Only a -march=native config is host specific; a recorded explicit target is safe
+    # to distribute even when prepare() saw no servers.
+    if [ "$mode" = local ] && [ "${_launcher_effective:-}" = sccache ] && [ ! -s "$srcdir/.march" ]; then
         read -r psrv pcpus <<< "$(_dist_probe)"
         if [ "${psrv:-0}" -ge 1 ]; then
-            warning "Scheduler now reports $psrv server(s) but prepare() decided local (no zen4 pin); building with ccache instead"
+            warning "Scheduler now reports $psrv server(s) but prepare() decided local with a host-specific CPU target; building with ccache instead"
             PATH="/usr/lib/ccache/bin:$PATH"
             for i in "${!BUILD_FLAGS[@]}"; do
                 case "${BUILD_FLAGS[$i]}" in
@@ -579,6 +606,7 @@ prepare() {
     cp ../config .config
 
     ### Select CPU optimization
+    rm -f "$srcdir/.march"
     if [ -n "$_processor_opt" ]; then
         MARCH="${_processor_opt^^}"
 
@@ -589,7 +617,21 @@ prepare() {
             NATIVE) scripts/config -d GENERIC_CPU -d MZEN4 -e X86_NATIVE_CPU;;
         esac
     else
-        scripts/config -d GENERIC_CPU -d MZEN4 -e X86_NATIVE_CPU
+        # No choice made: build for the CPU doing the build, named explicitly so a
+        # distributed build compiles for it too. MZEN4 is only the carrier that adds
+        # the Zen options; build() appends the detected -march, which overrides it.
+        march="$(_amd_march)" || _die "cannot detect the CPU target"
+        case "$march" in
+            znver[4-9] | znver[1-9][0-9])
+                scripts/config -d GENERIC_CPU -e MZEN4 -d X86_NATIVE_CPU
+                echo "$march" > "$srcdir/.march"
+                echo "Building for $march (detected)..." ;;
+            *)
+                # The source has no carrier for Zen 1 to 3, so use the closest generic level.
+                echo "Detected $march, older than the MZEN4 carrier; using x86-64-v3..."
+                scripts/config -e GENERIC_CPU -d MZEN4 -d X86_NATIVE_CPU --set-val X86_64_VERSION 3
+                rm -f "$srcdir/.march" ;;
+        esac
     fi
 
     ### Selecting CachyOS config
