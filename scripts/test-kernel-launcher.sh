@@ -257,6 +257,12 @@ run_sched() {
 
 sched_tests() {
     local out s
+    # updpkgsums (run by aurgen) deletes from every line matching this pattern to the next
+    # line ending in ')'. A second match, e.g. `b2sums+=(`, is deleted along with whatever
+    # follows it, which broke the PKGBUILD's syntax.
+    check "only the b2sums array itself matches updpkgsums' start pattern" \
+        "$([ "$(grep -cE '^[[:blank:]]*b2sums(_[^=]+)?\+?=' "$pkgdir/PKGBUILD")" -eq 1 ] && echo 0 || echo 1)"
+
     out="$(run_sched '')"
     check "default scheduler is eevdf" "$(grep -q '^SCHED=eevdf ' <<< "$out" && echo 0 || echo 1)"
     for s in '' eevdf cachyos bore; do
