@@ -54,6 +54,9 @@ source=(
   "$_upstream-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz"
   "${_patches[@]}"
 )
+# Same order as source=(): the release tarball, then 0001-jetm-carry.patch.
+# updpkgsums rewrites this array on every bump and drops any comment inside
+# it, so the labels live up here instead.
 sha256sums=('2da079033cd19fd8e2a09f56f9a7d9d1a72d591ff3acdc47d95b920145cf2671'
             '1585533763ec311f6564bf4c247189135acd5e4507b1960053ffe21d8c5f7d94')
 
