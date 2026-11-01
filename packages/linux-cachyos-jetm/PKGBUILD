@@ -734,25 +734,19 @@ prepare() {
     echo "Sizing NR_CPUS for this fleet rather than MAXSMP..."
     scripts/config -d MAXSMP --set-val NR_CPUS 64
 
-    ### Sign modules with a key that outlives the build tree
-    # The default key, certs/signing_key.pem, is generated inside the build tree, so
-    # every build embeds a different certificate in vmlinux. A compile cache that
-    # returns an earlier build's certs/system_certificates.o then leaves the kernel
-    # trusting a key no module in the package was signed with (observed: sccache
-    # served that object while the tree held a new key). A fixed key makes the
-    # certificate the same on every build. Create it once with
-    #   (umask 077; mkdir -p ~/.local/share/linux-cachyos-jetm; cd ~/.local/share/linux-cachyos-jetm &&
-    #    openssl req -new -x509 -newkey rsa:4096 -nodes -days 36500 -sha512 \
-    #      -subj "/CN=linux-cachyos-jetm module signing/" -keyout signing_key.pem -out cert.tmp &&
-    #    cat cert.tmp >> signing_key.pem && rm cert.tmp)
-    # and keep the file private: whoever holds it can sign modules this kernel loads.
-    local _sign_key="${_module_sign_key:-${XDG_DATA_HOME:-$HOME/.local/share}/linux-cachyos-jetm/signing_key.pem}"
-    if [ -f "$_sign_key" ]; then
-        echo "Signing modules with the fixed key $_sign_key..."
-        scripts/config --set-str MODULE_SIG_KEY "$_sign_key"
-    else
-        warning "No fixed module signing key at $_sign_key: every build generates its own, so a cached certs/system_certificates.o from an earlier build is only safe with sccache-jetm 0.19.0-5 or later, which hashes the files .incbin embeds"
-    fi
+    ### Build without module signing
+    # One person uses this kernel on a machine with Secure Boot off, lockdown off and
+    # MODULE_SIG_FORCE unset, so nothing ever enforces a module signature and the
+    # signing key bought no protection. It did cost: the key is generated inside the
+    # build tree on every build, and a compile cache that returned an earlier build's
+    # certs/system_certificates.o left vmlinux trusting a key no module was signed with.
+    # Without signing there is no key and no certificate to go stale. Turn it back on
+    # (and give it a key kept outside the tree) before enabling lockdown or Secure Boot.
+    # MODULE_SIG_FORCE and the key options depend on MODULE_SIG, so the `make config`
+    # below drops them. SECURITY_LOCKDOWN_LSM goes too: security/lockdown/Kconfig has
+    # `select MODULE_SIG if MODULES`, so with it on the `make config` below switches
+    # signing straight back on. Lockdown is not in use here (it reads [none]).
+    scripts/config -d SECURITY_LOCKDOWN_LSM -d MODULE_SIG -d MODULE_SIG_ALL
 
     ### Do not boot with zswap in front of zram
     # Swap here is zram, and zswap ahead of it would compress every page twice
@@ -896,20 +890,29 @@ prepare() {
 }
 
 _sign_modules() {
-    msg2 "Signing modules in $1"
-    local sign_script="${srcdir}/${_srcname}/scripts/sign-file"
-    local sign_key="$(grep -Po 'CONFIG_MODULE_SIG_KEY="\K[^"]*' "${srcdir}/${_srcname}/.config")"
-    if [[ ! "$sign_key" =~ ^/ ]]; then
-        sign_key="${srcdir}/${_srcname}/${sign_key}"
-    fi
-    local sign_cert="${srcdir}/${_srcname}/certs/signing_key.x509"
-    local hash_algo="$(grep -Po 'CONFIG_MODULE_SIG_HASH="\K[^"]*' "${srcdir}/${_srcname}/.config")"
+    local config="${srcdir}/${_srcname}/.config"
 
     if [ "$_use_llvm_lto" != "none" ]; then
         local strip_bin="llvm-strip"
     else
         local strip_bin="strip"
     fi
+
+    # Stripping invalidates a signature, so signing (when it is on) comes after it.
+    if ! grep -q '^CONFIG_MODULE_SIG=y' "$config"; then
+        msg2 "Stripping modules in $1 (module signing is off)"
+        find "$1" -type f -name '*.ko' -print -exec "${strip_bin}" --strip-debug '{}' \;
+        return
+    fi
+
+    msg2 "Signing modules in $1"
+    local sign_script="${srcdir}/${_srcname}/scripts/sign-file"
+    local sign_key="$(grep -Po 'CONFIG_MODULE_SIG_KEY="\K[^"]*' "$config")"
+    if [[ ! "$sign_key" =~ ^/ ]]; then
+        sign_key="${srcdir}/${_srcname}/${sign_key}"
+    fi
+    local sign_cert="${srcdir}/${_srcname}/certs/signing_key.x509"
+    local hash_algo="$(grep -Po 'CONFIG_MODULE_SIG_HASH="\K[^"]*' "$config")"
 
     find "$1" -type f -name '*.ko' -print \
         -exec "${strip_bin}" --strip-debug '{}' \; \
