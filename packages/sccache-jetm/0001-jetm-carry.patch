@@ -1,7 +1,7 @@
 From de70acefc6a2fb2a93d20dc7e8ec9d09e414483c Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:19:15 -0600
-Subject: [PATCH 01/69] server: don't panic when a finished compile has neither
+Subject: [PATCH 01/71] server: don't panic when a finished compile has neither
  code nor signal
 
 get_signal did `status.signal().expect("must have signal")`, assuming the
@@ -108,7 +108,7 @@ Javier Tia
 From d93e23bd615e743b5fd246b854983a05a212684c Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:22:04 -0600
-Subject: [PATCH 02/69] compiler: log distributed-compile decisions at info
+Subject: [PATCH 02/71] compiler: log distributed-compile decisions at info
  level
 
 sccache logged the distribute-vs-local decision only at debug ("Compiling
@@ -174,7 +174,7 @@ Javier Tia
 From d085ce4b09326a2c2cc61f5c0617f9d3ab43d61e Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:21:37 -0600
-Subject: [PATCH 03/69] compiler: fall back to local on distributed-compile
+Subject: [PATCH 03/71] compiler: fall back to local on distributed-compile
  failure
 
 A distributed compile the build-server rejects is often a distribution
@@ -252,7 +252,7 @@ Javier Tia
 From 49ddb9d8efc6015512c2f20a2215bd3f25c065d7 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:23:34 -0600
-Subject: [PATCH 04/69] compiler: fall back to local when a dist compile drops
+Subject: [PATCH 04/71] compiler: fall back to local when a dist compile drops
  an output
 
 A distributed compile can return a successful (exit 0) result yet omit a
@@ -445,7 +445,7 @@ Javier Tia
 From c630508eb9922955390287c84b57919abb6ec9ca Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:24:23 -0600
-Subject: [PATCH 05/69] logging: keep wrapper log output off the compiler's
+Subject: [PATCH 05/71] logging: keep wrapper log output off the compiler's
  stderr
 
 When sccache runs as a compiler wrapper (`sccache <compiler> ...`) it
@@ -549,7 +549,7 @@ Javier Tia
 From 2adc43ccb55c4c905886e5864db43fe6e1e6326b Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:24:00 -0600
-Subject: [PATCH 06/69] dist: don't fail a distributed compile over an optional
+Subject: [PATCH 06/71] dist: don't fail a distributed compile over an optional
  missing output
 
 After a distributed compile the client verifies every declared output
@@ -592,7 +592,7 @@ Javier Tia
 From 2132f6a42ea95fe8b658d59937a97d558c50e479 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:23:21 -0600
-Subject: [PATCH 07/69] compiler: log a failed distributed compile's remote
+Subject: [PATCH 07/71] compiler: log a failed distributed compile's remote
  output at debug
 
 When a distributed compile exits non-zero the client logs only the exit
@@ -645,7 +645,7 @@ Javier Tia
 From e982f9dad352a47cd9e2d8651990501dee342a96 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:29:10 -0600
-Subject: [PATCH 08/69] config: add the dist fallback switch
+Subject: [PATCH 08/71] config: add the dist fallback switch
 
 Kernel assembler sources that .incbin generated files fail on the
 build server, because the generated file is not among the shipped
@@ -765,7 +765,7 @@ Javier Tia
 From bbeab9f927b219311d30b91f27619960eb6b2b43 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:34:28 -0600
-Subject: [PATCH 09/69] compiler: honor the dist fallback switch
+Subject: [PATCH 09/71] compiler: honor the dist fallback switch
 
 A non-zero remote exit code or a missing declared output unconditionally
 triggered a local recompile. That contradicts upstream's behaviour, where
@@ -1119,7 +1119,7 @@ Javier Tia
 From cb8dc81aac4aed01eb882afb5142fc616145be21 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:36:02 -0600
-Subject: [PATCH 10/69] compiler/rust: ship the target spec so a remote rustc
+Subject: [PATCH 10/71] compiler/rust: ship the target spec so a remote rustc
  resolves --target
 
 A distributed rust compile against an OpenEmbedded custom target failed on
@@ -1501,7 +1501,7 @@ Javier Tia
 From 0d746cee92d95b8285cf38798e0a88b623e991d1 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:37:31 -0600
-Subject: [PATCH 11/69] compiler/rust: ship the target sysroot std to
+Subject: [PATCH 11/71] compiler/rust: ship the target sysroot std to
  distributed compiles
 
 A distributed cross-compile against an OpenEmbedded custom target failed on
@@ -1607,7 +1607,7 @@ Javier Tia
 From 03e12a3c5295ab373e15ad87004ad65342be2cfd Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:36:31 -0600
-Subject: [PATCH 12/69] compiler/rust: ship split-metadata rlibs whole instead
+Subject: [PATCH 12/71] compiler/rust: ship split-metadata rlibs whole instead
  of dropping them
 
 When packaging dist inputs, sccache trims a dependency rlib to just its
@@ -1767,7 +1767,7 @@ Javier Tia
 From 49fc6832068f8c900ca9660170dcb7fbb77fc89f Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:40:01 -0600
-Subject: [PATCH 13/69] compiler/gcc: fix distributed compile of relative input
+Subject: [PATCH 13/71] compiler/gcc: fix distributed compile of relative input
  paths
 
 sccache-dist ships the preprocessed input through the inputs packager
@@ -1883,7 +1883,7 @@ Javier Tia
 From 02817f77f0ba5b7e253847771b3673f9c561149d Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:44:01 -0600
-Subject: [PATCH 14/69] compiler/gcc: never distribute precompiled-header
+Subject: [PATCH 14/71] compiler/gcc: never distribute precompiled-header
  generation
 
 A distributed PCH build produced a .gch that broke every consumer of the
@@ -2011,7 +2011,7 @@ Javier Tia
 From 4888aae374ec5992585e7988d70d16d8b37617a5 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:42:12 -0600
-Subject: [PATCH 15/69] compiler/gcc: keep configure feature-probes local
+Subject: [PATCH 15/71] compiler/gcc: keep configure feature-probes local
 
 avocado-distro's do_configure phase ships ~900 autoconf conftest and
 CMake try_compile feature-probe compiles to the build-server. Each is a
@@ -2207,7 +2207,7 @@ Javier Tia
 From 23519a0cac3e50fcd89d7cd9976aba5bd528d1e9 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:45:02 -0600
-Subject: [PATCH 16/69] compiler/gcc: run /dev/null feature-probes locally
+Subject: [PATCH 16/71] compiler/gcc: run /dev/null feature-probes locally
 
 OpenSSL probes assembler support by running the compiler on /dev/null:
 `gcc -Wa,--help -c -o null.o -x assembler /dev/null`, then greps the
@@ -2287,7 +2287,7 @@ Javier Tia
 From 7e37206e67a2786adb228e11bc328be2daa6d97e Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:44:58 -0600
-Subject: [PATCH 17/69] dist/pkg: bundle relocated interpreter's libdir into
+Subject: [PATCH 17/71] dist/pkg: bundle relocated interpreter's libdir into
  the toolchain package
 
 sccache-dist packages a toolchain's shared libraries by parsing `ldd`
@@ -2432,7 +2432,7 @@ Javier Tia
 From c810f2000da448dfda9f9d56e86ff6a76bd67e05 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:46:56 -0600
-Subject: [PATCH 18/69] compiler: package the compile task's toolchain, not the
+Subject: [PATCH 18/71] compiler: package the compile task's toolchain, not the
  daemon's
 
 When sccache packages a C/C++ toolchain for distributed compilation it
@@ -2707,7 +2707,7 @@ Javier Tia
 From 243736304a2b9d729249be8d3fa6b6c3a1cfda8c Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:45:31 -0600
-Subject: [PATCH 19/69] dist/pkg: bundle the sysroot usr/lib for split-sysroot
+Subject: [PATCH 19/71] dist/pkg: bundle the sysroot usr/lib for split-sysroot
  toolchains
 
 A relocated toolchain interpreter (the OE buildtools SDK loader) already
@@ -2843,7 +2843,7 @@ Javier Tia
 From 56fa7b71bde7d90766163f5b34b1f7fefaeb5efe Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:47:12 -0600
-Subject: [PATCH 20/69] dist/pkg: skip dangling symlinks when packaging a
+Subject: [PATCH 20/71] dist/pkg: skip dangling symlinks when packaging a
  toolchain
 
 Cold toolchain packaging walked the relocated interpreter's sysroot and
@@ -2933,7 +2933,7 @@ Javier Tia
 From 1172153d845942a45df3e4e69970cc6f546d3d9a Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:49:52 -0600
-Subject: [PATCH 21/69] dist/pkg: ship long input paths via GNU tar long-name
+Subject: [PATCH 21/71] dist/pkg: ship long input paths via GNU tar long-name
 
 The input packager built each tar entry with a ustar header and set the
 entry path with Header::set_path, which overruns the ustar name (100 B)
@@ -3153,7 +3153,7 @@ Javier Tia
 From 42337626e9cdf857bc5a0a41e6f87b1e728fd8fa Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:51:46 -0600
-Subject: [PATCH 22/69] dist: report a per-server breakdown in scheduler status
+Subject: [PATCH 22/71] dist: report a per-server breakdown in scheduler status
 
 SchedulerStatusResult only carried cluster aggregates (num_servers,
 num_cpus, in_progress), so a client could see total capacity but not how
@@ -3315,7 +3315,7 @@ Javier Tia
 From 4abccea8af8a365b7883d7ed535bcd0e91b666e6 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:52:46 -0600
-Subject: [PATCH 23/69] dist/scheduler: drop a stopped server promptly
+Subject: [PATCH 23/71] dist/scheduler: drop a stopped server promptly
 
 A build server that stops is only removed once prune_servers sees its
 last_seen exceed the 90s heartbeat timeout, and prune runs only on the
@@ -3675,7 +3675,7 @@ Javier Tia
 From 257162490ca0382dd8358b87cc71fd339bf29ae4 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:55:39 -0600
-Subject: [PATCH 24/69] dist/scheduler: soften the error demotion so an idle
+Subject: [PATCH 24/71] dist/scheduler: soften the error demotion so an idle
  remote node is not stranded
 
 A server that fails a job assignment is dropped into the best_err bucket and
@@ -3963,7 +3963,7 @@ Javier Tia
 From 9a171b205ae097e2f879550f005728d52803de36 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:57:42 -0600
-Subject: [PATCH 25/69] dist/scheduler: make routing topology-aware and
+Subject: [PATCH 25/71] dist/scheduler: make routing topology-aware and
  deterministic
 
 The load model weighs every server as job_count/core_count with the raw
@@ -4187,7 +4187,7 @@ Javier Tia
 From b27bd55dd353d5cf8fe07d11bcfb24139dd8c977 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:57:28 -0600
-Subject: [PATCH 26/69] dist/scheduler: derive the colocated de-weight
+Subject: [PATCH 26/71] dist/scheduler: derive the colocated de-weight
  dynamically
 
 The advertised-cores override added earlier had to be a hardcoded absolute
@@ -4516,7 +4516,7 @@ Javier Tia
 From 9ee133b66333fcde1d4eddb6cfca77d98b47358d Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:00:54 -0600
-Subject: [PATCH 27/69] dist/scheduler: reap Started jobs whose Complete update
+Subject: [PATCH 27/71] dist/scheduler: reap Started jobs whose Complete update
  was lost
 
 A distributed job that reached the Started state but never reported
@@ -4777,7 +4777,7 @@ Javier Tia
 From 0f57afffb4271f3638f28edf2eb7d1c93c61704e Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:05:12 -0600
-Subject: [PATCH 28/69] dist/scheduler: add a between-nodes job-lifecycle leak
+Subject: [PATCH 28/71] dist/scheduler: add a between-nodes job-lifecycle leak
  detector
 
 Diagnosing scheduler slot leaks meant a rebuild-with-debug-logging cycle
@@ -4935,7 +4935,7 @@ Javier Tia
 From 252ca082e45277cf0bfc9fbbd6084efc273c785e Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:04:30 -0600
-Subject: [PATCH 29/69] dist/scheduler: make late job-state updates idempotent
+Subject: [PATCH 29/71] dist/scheduler: make late job-state updates idempotent
 
 The 180s Started-job reaper can discard a successful compile: it reclaims
 the slot at the timeout, then the build server's run_job propagates a
@@ -5057,7 +5057,7 @@ Javier Tia
 From a8b72b8f677c748c4cd4ccd7597c3546b24efffd Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:05:25 -0600
-Subject: [PATCH 30/69] dist/scheduler: measure the unclaimed reservation
+Subject: [PATCH 30/71] dist/scheduler: measure the unclaimed reservation
  timeout from Ready
 
 The unclaimed-reservation reaper timed a job out from its allocation
@@ -5166,7 +5166,7 @@ Javier Tia
 From e01a31c69427db49a1ab0575409b4091f3e9caae Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:10:32 -0600
-Subject: [PATCH 31/69] dist: make scheduler restart safe for job accounting
+Subject: [PATCH 31/71] dist: make scheduler restart safe for job accounting
 
 A build server that keeps running across a scheduler restart can be
 handed a job id it still holds a job_toolchains entry for, and
@@ -5334,7 +5334,7 @@ Javier Tia
 From c930b831dc3ebe16723eaf7687c28e803956b308 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:12:40 -0600
-Subject: [PATCH 32/69] dist: reap Started jobs by liveness lease, not a fixed
+Subject: [PATCH 32/71] dist: reap Started jobs by liveness lease, not a fixed
  timeout
 
 The scheduler reaped a Started job purely on a fixed 180s timeout, so a
@@ -5971,7 +5971,7 @@ Javier Tia
 From fb924f23c8e0bc863df963dced4b593cb75fd6f1 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:19:17 -0600
-Subject: [PATCH 33/69] dist/http: reuse connections and offload large
+Subject: [PATCH 33/71] dist/http: reuse connections and offload large
  deserialize
 
 The single client daemon is the throughput chokepoint of a full image
@@ -6648,7 +6648,7 @@ Javier Tia
 From 2fafebdcb3c6aacafeac79e976f4bfe5f9d1c981 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:20:42 -0600
-Subject: [PATCH 34/69] dist/http: re-close the connection on chunked toolchain
+Subject: [PATCH 34/71] dist/http: re-close the connection on chunked toolchain
  submit
 
 do_submit_toolchain posts a chunked body (wrap_stream, no Content-Length),
@@ -6717,7 +6717,7 @@ Javier Tia
 From b89f531e02a2633998f3d6b7951c26e921a0ced1 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:21:42 -0600
-Subject: [PATCH 35/69] dist/server: shrink toolchain locks so compiles stop
+Subject: [PATCH 35/71] dist/server: shrink toolchain locks so compiles stop
  convoying
 
 The build server serialized all concurrent compiles behind two global
@@ -7531,7 +7531,7 @@ Javier Tia
 From 7adee95f0f089aae697f21c5b9e69b9453119c4d Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:31:41 -0600
-Subject: [PATCH 36/69] dist/server: bound the shutdown deregister and poll the
+Subject: [PATCH 36/71] dist/server: bound the shutdown deregister and poll the
  stop flag faster
 
 The SIGINT/SIGTERM handler installed for graceful deregistration runs a
@@ -7581,7 +7581,7 @@ Javier Tia
 From 4e4b035d0f3758b3f5d69810b4f0bce1957ecc42 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:33:13 -0600
-Subject: [PATCH 37/69] tests/harness: wait for dist servers to exit on
+Subject: [PATCH 37/71] tests/harness: wait for dist servers to exit on
  teardown
 
 DistSystem::drop sent SIGINT to each dist server, slept a fixed 100 ms
@@ -7664,7 +7664,7 @@ Javier Tia
 From 7b5b6d0a5bab86b150c6b0f823f56aba0351d071 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:38:09 -0600
-Subject: [PATCH 38/69] dist: instrument job scheduling and client dispatch for
+Subject: [PATCH 38/71] dist: instrument job scheduling and client dispatch for
  load diagnosis
 
 The 2-node cluster leaves both build servers idle for long stretches of a
@@ -7890,7 +7890,7 @@ Javier Tia
 From d2b3db2f6f47d929494d91f57d9d8a9e91e2d689 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:41:13 -0600
-Subject: [PATCH 39/69] dist: time local preprocessing in the per-job load
+Subject: [PATCH 39/71] dist: time local preprocessing in the per-job load
  diagnostics
 
 The R0 dist instrumentation times put_toolchain, alloc, submit, and
@@ -8051,7 +8051,7 @@ Javier Tia
 From 7d5374ae1951defc51ea0d8b35f3e25c4514a2ba Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:42:44 -0600
-Subject: [PATCH 40/69] compiler/c: gauge live local preprocess concurrency
+Subject: [PATCH 40/71] compiler/c: gauge live local preprocess concurrency
 
 The preprocessing wall - the client jobserver's cores saturated by local
 cc1 -E for the whole cluster while remote nodes idle - was only ever an
@@ -8142,7 +8142,7 @@ Javier Tia
 From 0414008068bf178dc25e3b3d6da23af667bc8c7b Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:44:38 -0600
-Subject: [PATCH 41/69] compiler: concatenate strings without relying on deref
+Subject: [PATCH 41/71] compiler: concatenate strings without relying on deref
  coercion
 
 The lib test target links the thirtyfour dev-dependency, whose 0.36
@@ -8182,7 +8182,7 @@ Javier Tia
 From b7f70580ebe7690d77fb7f1e433d9ea950f82eea Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:46:08 -0600
-Subject: [PATCH 42/69] ci: mirror the CI validation gate in pre-commit
+Subject: [PATCH 42/71] ci: mirror the CI validation gate in pre-commit
 
 The pre-commit config only ran nightly fmt and clippy with no failure
 gate, so a break reached CI before anyone noticed - a changed function
@@ -8279,7 +8279,7 @@ Javier Tia
 From f868d96dd45928eac778c653f2328f53abe2b9d0 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:51:43 -0600
-Subject: [PATCH 43/69] dist: satisfy clippy under the all-features gate
+Subject: [PATCH 43/71] dist: satisfy clippy under the all-features gate
 
 The tree fails `clippy -D warnings --features all,dist-server` with the
 current toolchain. The failing sites in this commit are in
@@ -8623,7 +8623,7 @@ Javier Tia
 From 57ca4823938e5602aea91b9d72069d30572cf697 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:51:33 -0600
-Subject: [PATCH 44/69] chore: fix clippy lints flagged by a newer toolchain
+Subject: [PATCH 44/71] chore: fix clippy lints flagged by a newer toolchain
 
 Clippy 1.99 rejects the tree under `-D warnings` at more sites than
 the dist-specific commit covers: collapsible_if in
@@ -8730,7 +8730,7 @@ Javier Tia
 From ef1710d34d65f9a992281c2fac1e736878bad83b Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 15:55:24 -0600
-Subject: [PATCH 45/69] compiler: keep the server annotation on a reported
+Subject: [PATCH 45/71] compiler: keep the server annotation on a reported
  remote failure
 
 With the dist fallback switch off, the remote result is meant to reach
@@ -8799,7 +8799,7 @@ Javier Tia
 From 4e3def9704d7eddeed5b8c8d3dd1311d6267e2e1 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 17:54:55 -0600
-Subject: [PATCH 46/69] compiler/rust: ship sysroot rlibs whose name has no
+Subject: [PATCH 46/71] compiler/rust: ship sysroot rlibs whose name has no
  hash suffix
 
 The inputs packager skips a hashless library when rustc dependency
@@ -8909,7 +8909,7 @@ Javier Tia
 From 3c0c7a4a2f2d04c068debc22527618b309251889 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 17:57:25 -0600
-Subject: [PATCH 47/69] dist: compare returned outputs, not path existence,
+Subject: [PATCH 47/71] dist: compare returned outputs, not path existence,
  after a remote compile
 
 After a successful remote compile the client fell back to a local
@@ -9318,7 +9318,7 @@ Javier Tia
 From f8c2b9b1a1997e70b768803618e488ee811b2230 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 18:58:14 -0600
-Subject: [PATCH 48/69] dist/scheduler: test the Started backstop, deregister
+Subject: [PATCH 48/71] dist/scheduler: test the Started backstop, deregister
  and status paths
 
 Mutation testing showed three guards that no test failed without: the
@@ -9457,7 +9457,7 @@ Javier Tia
 From 2df26335ab392b39a7e7b1737a244100b419a52c Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Tue, 27 Oct 2026 20:08:50 -0600
-Subject: [PATCH 49/69] pre-commit: Format with rustfmt at the crate edition
+Subject: [PATCH 49/71] pre-commit: Format with rustfmt at the crate edition
 
 The rust-fmt hook ran `cargo +nightly fmt -- <files>`. With explicit
 file arguments that invokes rustfmt directly, and rustfmt then parses
@@ -9493,7 +9493,7 @@ Javier Tia
 From cad1b61e89a83e2f4d95c8624836ff14b7d00e86 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Tue, 27 Oct 2026 20:07:18 -0600
-Subject: [PATCH 50/69] compiler/c: Test that the task env reaches the
+Subject: [PATCH 50/71] compiler/c: Test that the task env reaches the
  toolchain packager's compiler
 
 The toolchain packager asks the compiler where its sub-tools live with
@@ -9721,7 +9721,7 @@ Javier Tia
 From d60ebd0dd395000b042040331527347d2b8732ff Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Tue, 27 Oct 2026 20:07:20 -0600
-Subject: [PATCH 51/69] dist/build: Test the production eviction path, not just
+Subject: [PATCH 51/71] dist/build: Test the production eviction path, not just
  Mutex::try_lock
 
 The only eviction test locked and try-locked a Mutex it created itself,
@@ -9911,7 +9911,7 @@ Javier Tia
 From 0125ff493b7e92c0536ecfd95785ce6099271ca3 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Tue, 27 Oct 2026 20:08:43 -0600
-Subject: [PATCH 52/69] dist/scheduler: Warn about a wedged build once per
+Subject: [PATCH 52/71] dist/scheduler: Warn about a wedged build once per
  interval, not per heartbeat
 
 A server names a stuck job in every heartbeat, about every 30 seconds,
@@ -10133,7 +10133,7 @@ Javier Tia
 From 65a8bfef508aea703d866693c8336edd8448e06d Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 16:27:03 -0600
-Subject: [PATCH 53/69] compiler: share the in-flight guard and the dist
+Subject: [PATCH 53/71] compiler: share the in-flight guard and the dist
  test-mock helpers
 
 PreprocInflightGuard in c.rs and DistInflightGuard in compiler.rs were
@@ -10413,7 +10413,7 @@ Javier Tia
 From b73aab490000ace2a99891b70329ca3bc352804d Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:32:28 -0600
-Subject: [PATCH 54/69] dist/scheduler: treat a heartbeat without a report as
+Subject: [PATCH 54/71] dist/scheduler: treat a heartbeat without a report as
  no liveness information
 
 A heartbeat from a server that predates the active-jobs report has no
@@ -10892,7 +10892,7 @@ Javier Tia
 From 65ea92a9baba228bfc9f705bcc4ba4ba83d192dd Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:33:24 -0600
-Subject: [PATCH 55/69] dist/http: accept heartbeats from servers that predate
+Subject: [PATCH 55/71] dist/http: accept heartbeats from servers that predate
  the active-jobs report
 
 The heartbeat request gained a trailing active_jobs field, and bincode
@@ -11329,7 +11329,7 @@ Javier Tia
 From 8d36f344a14b41076bab7a440e766ae9cc119b39 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:35:25 -0600
-Subject: [PATCH 56/69] dist/server: verify an uploaded toolchain's hash before
+Subject: [PATCH 56/71] dist/server: verify an uploaded toolchain's hash before
  it enters the cache
 
 The upload was grafted into the cache first and hashed afterwards, so a
@@ -11535,7 +11535,7 @@ Javier Tia
 From 4bed3b8fa53fea2533790054c34b4e956947d72e Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:42:38 -0600
-Subject: [PATCH 57/69] dist/server: create upload temp files with the prefix
+Subject: [PATCH 57/71] dist/server: create upload temp files with the prefix
  the cache scan removes
 
 The upload receiver streamed into a default-prefixed temporary file in
@@ -11696,7 +11696,7 @@ Javier Tia
 From aa02ef2cebf0e70ae237fca5990be4770bde51cb Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:43:54 -0600
-Subject: [PATCH 58/69] dist/build: skip eviction victims whose preparation
+Subject: [PATCH 58/71] dist/build: skip eviction victims whose preparation
  lock is held
 
 Eviction removed every victim from the toolchain map before checking
@@ -11882,7 +11882,7 @@ Javier Tia
 From d4144f0d66822b72d05c864573d57de9cac927ac Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:44:42 -0600
-Subject: [PATCH 59/69] compiler: report a dropped dist output when the
+Subject: [PATCH 59/71] compiler: report a dropped dist output when the
  fallback switch is off
 
 With `[dist] fallback = false` the returned-versus-declared output check
@@ -12167,7 +12167,7 @@ Javier Tia
 From f25d341e23374c259c1a2b377a020909fa5f00f4 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:47:44 -0600
-Subject: [PATCH 60/69] compiler/rust: keep every metadata member when trimming
+Subject: [PATCH 60/71] compiler/rust: keep every metadata member when trimming
  a dependency rlib
 
 Trimming looked only for the legacy `rust.metadata.bin` member. Current
@@ -12388,7 +12388,7 @@ Javier Tia
 From 785739a7442f81b0d61860f7d47fc47a9251b9f4 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:56:10 -0600
-Subject: [PATCH 61/69] server: report a dropped dist output as a plain failure
+Subject: [PATCH 61/71] server: report a dropped dist output as a plain failure
 
 The error added for a declared output the build server did not return
 fell through the server's compile handler to its generic branch, which
@@ -12502,7 +12502,7 @@ Javier Tia
 From a547f2488429832d9943f2153e79b5198ab520dc Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 18:07:11 -0600
-Subject: [PATCH 62/69] server: name the dropped output in the failure and log
+Subject: [PATCH 62/71] server: name the dropped output in the failure and log
  rejected uploads
 
 The dropped-output arm printed the error with plain Display, which shows
@@ -12581,7 +12581,7 @@ Javier Tia
 From 91e2ae4d63d254f63c63dd81afec534df9650295 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 19:33:33 -0600
-Subject: [PATCH 63/69] dist: share the packable-file filter and drop dead
+Subject: [PATCH 63/71] dist: share the packable-file filter and drop dead
  deregister pool settings
 
 add_dir_contents and add_shared_libraries each carried the same test for
@@ -12692,7 +12692,7 @@ Javier Tia
 From 1dc02e815eb7d0a54d6929c0a0607034e37957f7 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Sun, 1 Nov 2026 10:42:21 -0600
-Subject: [PATCH 64/69] scripts: add a loopback smoke test for the carry defect
+Subject: [PATCH 64/71] scripts: add a loopback smoke test for the carry defect
  fixes
 
 The fixes for older heartbeats, long compiles, forged and interrupted
@@ -13647,7 +13647,7 @@ Javier Tia
 From cc822154aacea54dfc7a163b042f8a9bc11effea Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Sun, 1 Nov 2026 11:51:30 -0600
-Subject: [PATCH 65/69] Cargo.lock: update the crates the advisory scan flags
+Subject: [PATCH 65/71] Cargo.lock: update the crates the advisory scan flags
 
 The lockfile inherited from the 0.19.0 release holds 29 RustSec
 findings in 15 crates, so the pre-push advisory scan rejects every push
@@ -14156,7 +14156,7 @@ Javier Tia
 From 8d794713e60bab04015542fb82cfe190bd950656 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Sun, 1 Nov 2026 11:52:10 -0600
-Subject: [PATCH 66/69] Cargo.toml: require zstd 0.14
+Subject: [PATCH 66/71] Cargo.toml: require zstd 0.14
 
 The zstd binding and its safe wrapper carry three RustSec findings
 (context reuse across abandoned streams, an unchecked seekable offset,
@@ -14268,7 +14268,7 @@ Javier Tia
 From 42f8a9aa03047b8a4d7e1ecafcc3eb9a0c098b87 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Sun, 1 Nov 2026 11:55:35 -0600
-Subject: [PATCH 67/69] Cargo.toml: require object 0.40
+Subject: [PATCH 67/71] Cargo.toml: require object 0.40
 
 ruzstd, the zstd decoder behind the object-file parser, has a
 decompression-bomb finding that is fixed only from ruzstd 0.9.1, and
@@ -14362,7 +14362,7 @@ Javier Tia
 From dd5e84aedfe12dedc43a5932f97904ee04d9eb4d Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Sun, 1 Nov 2026 11:57:17 -0600
-Subject: [PATCH 68/69] cache_io: port the cache entry writer to zip 9
+Subject: [PATCH 68/71] cache_io: port the cache entry writer to zip 9
 
 Three RustSec findings against the zip 0.6 series (SUID bits and
 symlinks preserved by the archive extraction calls) are fixed only from
@@ -14566,7 +14566,7 @@ Javier Tia
 From 0b53bb7cc5ad5e377de565e92fd9f8ef165cb1f4 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Sun, 1 Nov 2026 11:58:26 -0600
-Subject: [PATCH 69/69] audit: accept the rsa timing finding that has no fix
+Subject: [PATCH 69/71] audit: accept the rsa timing finding that has no fix
 
 After the dependency updates, the advisory scan reports one remaining
 vulnerability: the Marvin timing side channel in rsa 0.9.10, for which
@@ -14606,6 +14606,353 @@ index 00000000..09ac6185
 +    # Upgrade trigger: a fixed rsa release is published, or any host configures a cloud storage backend.
 +    "RUSTSEC-2023-0071",
 +]
+-- 
+Javier Tia
+
+
+From 32d9f38b865ece52aa490ceb9876b4df8c15c453 Mon Sep 17 00:00:00 2001
+From: Javier Tia <javier@peridio.com>
+Date: Sun, 1 Nov 2026 16:01:32 -0600
+Subject: [PATCH 70/71] cache: pin the cache entry writer and the damaged-entry
+ paths
+
+The zip 9 port changed the writer but the only tests of it round-trip
+through the same crate, so a change in what the writer emits that the
+reader tolerates but the previous package does not would pass. Compare
+the writer output with a fixture the zip 0.6 writer produced. zip 9
+differs in exactly the version-needed and version-made-by bytes, which
+the previous package reads without checking, so those nine bytes are
+the only ones the expected value patches.
+
+Add the negative paths the design names as reachable: a damaged zstd
+frame must surface as DecompressionFailure, and a truncated entry must
+be rejected at open.
+
+Signed-off-by: Javier Tia <javier@peridio.com>
+---
+ src/cache/cache_io.rs | 90 +++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 73 insertions(+), 17 deletions(-)
+
+diff --git a/src/cache/cache_io.rs b/src/cache/cache_io.rs
+index d04dac97..c6ff3e90 100644
+--- a/src/cache/cache_io.rs
++++ b/src/cache/cache_io.rs
+@@ -500,25 +500,81 @@ mod tests {
+         assert_entry_contents(w.finish().unwrap());
+     }
+ 
++    // Produced by CacheWrite at base commit 1dc02e81 (zip 0.6).
++    const FIXTURE: &[u8] = &[
++        80, 75, 3, 4, 20, 0, 0, 0, 0, 0, 0, 0, 33, 0, 183, 120, 88, 76, 21, 0, 0, 0, 21, 0, 0, 0,
++        3, 0, 0, 0, 111, 98, 106, 40, 181, 47, 253, 0, 88, 97, 0, 0, 111, 98, 106, 101, 99, 116,
++        32, 98, 121, 116, 101, 115, 80, 75, 3, 4, 20, 0, 0, 0, 0, 0, 0, 0, 33, 0, 48, 133, 147,
++        224, 12, 0, 0, 0, 12, 0, 0, 0, 6, 0, 0, 0, 115, 116, 100, 111, 117, 116, 40, 181, 47, 253,
++        0, 88, 25, 0, 0, 111, 117, 116, 80, 75, 3, 4, 20, 0, 0, 0, 0, 0, 0, 0, 33, 0, 20, 51, 38,
++        75, 12, 0, 0, 0, 12, 0, 0, 0, 6, 0, 0, 0, 115, 116, 100, 101, 114, 114, 40, 181, 47, 253,
++        0, 88, 25, 0, 0, 101, 114, 114, 80, 75, 1, 2, 46, 3, 20, 0, 0, 0, 0, 0, 0, 0, 33, 0, 183,
++        120, 88, 76, 21, 0, 0, 0, 21, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 237, 129, 0, 0,
++        0, 0, 111, 98, 106, 80, 75, 1, 2, 46, 3, 20, 0, 0, 0, 0, 0, 0, 0, 33, 0, 48, 133, 147, 224,
++        12, 0, 0, 0, 12, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 164, 129, 54, 0, 0, 0, 115,
++        116, 100, 111, 117, 116, 80, 75, 1, 2, 46, 3, 20, 0, 0, 0, 0, 0, 0, 0, 33, 0, 20, 51, 38,
++        75, 12, 0, 0, 0, 12, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 164, 129, 102, 0, 0, 0,
++        115, 116, 100, 101, 114, 114, 80, 75, 5, 6, 0, 0, 0, 0, 3, 0, 3, 0, 153, 0, 0, 0, 150, 0,
++        0, 0, 0, 0,
++    ];
++
+     #[test]
+     fn test_cache_entry_written_before_the_zip_9_port_is_readable() {
+-        // Produced by CacheWrite at base commit 1dc02e81 (zip 0.6).
+-        const FIXTURE: &[u8] = &[
+-            80, 75, 3, 4, 20, 0, 0, 0, 0, 0, 0, 0, 33, 0, 183, 120, 88, 76, 21, 0, 0, 0, 21, 0, 0,
+-            0, 3, 0, 0, 0, 111, 98, 106, 40, 181, 47, 253, 0, 88, 97, 0, 0, 111, 98, 106, 101, 99,
+-            116, 32, 98, 121, 116, 101, 115, 80, 75, 3, 4, 20, 0, 0, 0, 0, 0, 0, 0, 33, 0, 48, 133,
+-            147, 224, 12, 0, 0, 0, 12, 0, 0, 0, 6, 0, 0, 0, 115, 116, 100, 111, 117, 116, 40, 181,
+-            47, 253, 0, 88, 25, 0, 0, 111, 117, 116, 80, 75, 3, 4, 20, 0, 0, 0, 0, 0, 0, 0, 33, 0,
+-            20, 51, 38, 75, 12, 0, 0, 0, 12, 0, 0, 0, 6, 0, 0, 0, 115, 116, 100, 101, 114, 114, 40,
+-            181, 47, 253, 0, 88, 25, 0, 0, 101, 114, 114, 80, 75, 1, 2, 46, 3, 20, 0, 0, 0, 0, 0,
+-            0, 0, 33, 0, 183, 120, 88, 76, 21, 0, 0, 0, 21, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+-            0, 0, 237, 129, 0, 0, 0, 0, 111, 98, 106, 80, 75, 1, 2, 46, 3, 20, 0, 0, 0, 0, 0, 0, 0,
+-            33, 0, 48, 133, 147, 224, 12, 0, 0, 0, 12, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+-            164, 129, 54, 0, 0, 0, 115, 116, 100, 111, 117, 116, 80, 75, 1, 2, 46, 3, 20, 0, 0, 0,
+-            0, 0, 0, 0, 33, 0, 20, 51, 38, 75, 12, 0, 0, 0, 12, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0,
+-            0, 0, 0, 164, 129, 102, 0, 0, 0, 115, 116, 100, 101, 114, 114, 80, 75, 5, 6, 0, 0, 0,
+-            0, 3, 0, 3, 0, 153, 0, 0, 0, 150, 0, 0, 0, 0, 0,
+-        ];
+         assert_entry_contents(FIXTURE.to_vec());
+     }
++
++    #[test]
++    fn test_cache_entry_writer_output_matches_the_zip_0_6_bytes() {
++        // A reader of the previous package (zip 0.6) must accept what this writer emits, so pin the
++        // bytes: stored method, host byte 3, unix modes in the external attributes, no extra fields.
++        // zip 9 differs from zip 0.6 only in the "version needed to extract" and "version made by"
++        // fields, which it sets to 1.0 for a stored entry where zip 0.6 set 2.0 (and 4.6 made-by).
++        // The previous package reads them without checking, which the cross-binary check confirms.
++        const VERSION_BYTES: [(usize, u8); 9] = [
++            (4, 10),
++            (58, 10),
++            (106, 10),
++            (154, 10),
++            (156, 10),
++            (203, 10),
++            (205, 10),
++            (255, 10),
++            (257, 10),
++        ];
++        let mut expected = FIXTURE.to_vec();
++        for (at, value) in VERSION_BYTES {
++            expected[at] = value;
++        }
++        let mut w = CacheWrite::new();
++        w.put_object(
++            "obj",
++            &mut Cursor::new(b"object bytes".to_vec()),
++            Some(0o755),
++        )
++        .unwrap();
++        w.put_stdout(b"out").unwrap();
++        w.put_stderr(b"err").unwrap();
++        assert_eq!(w.finish().unwrap(), expected);
++    }
++
++    #[test]
++    fn test_cache_entry_with_a_damaged_zstd_frame_fails_with_decompression_failure() {
++        // The first zstd magic in the entry is the start of the "obj" frame.
++        const ZSTD_MAGIC: [u8; 4] = [0x28, 0xb5, 0x2f, 0xfd];
++        let mut bytes = FIXTURE.to_vec();
++        let at = bytes.windows(4).position(|w| w == ZSTD_MAGIC).unwrap();
++        bytes[at] ^= 0xff;
++        let mut read = CacheRead::from(Cursor::new(bytes)).unwrap();
++        let err = read.get_object("obj", &mut Vec::new()).unwrap_err();
++        assert!(
++            err.downcast_ref::<DecompressionFailure>().is_some(),
++            "expected DecompressionFailure, got: {err:#}"
++        );
++    }
++
++    #[test]
++    fn test_truncated_cache_entry_is_rejected() {
++        let truncated = FIXTURE[..FIXTURE.len() - 10].to_vec();
++        assert!(CacheRead::from(Cursor::new(truncated)).is_err());
++    }
+ }
+-- 
+Javier Tia
+
+
+From 06d5870110b36acd610e608d74f234355babbe25 Mon Sep 17 00:00:00 2001
+From: Javier Tia <javier@peridio.com>
+Date: Sun, 1 Nov 2026 16:49:26 -0600
+Subject: [PATCH 71/71] compiler/c: hash the files an .incbin embeds into the
+ cache key
+
+A source that embeds a file with .incbin preprocesses to text that only
+names the file, so the cache key was identical for any content of it.
+The kernel build embeds the module signing certificate, the compressed
+kernel, the initramfs and the purgatory image this way, and the
+certificate is regenerated on every build. A warm build was served the
+previous build's system_certificates.o, so vmlinux trusted a key that
+no module in the package was signed with. Reproduced with a two-line
+assembly file: changing only the embedded blob returned a cache hit
+whose object still held the old blob.
+
+Read the directives out of the preprocessed text (including the
+escaped-quote form inline assembly takes) and add a digest of each
+named file to the key. A file that cannot be read gets a digest that
+never repeats, so that compile misses instead of reusing an entry keyed
+on content nobody saw. Hashing was chosen over refusing to cache these
+objects because the unchanged ones stay cacheable.
+
+Signed-off-by: Javier Tia <javier@peridio.com>
+---
+ src/compiler/c.rs | 156 +++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 155 insertions(+), 1 deletion(-)
+
+diff --git a/src/compiler/c.rs b/src/compiler/c.rs
+index 6fbd0c0d..dafa68a6 100644
+--- a/src/compiler/c.rs
++++ b/src/compiler/c.rs
+@@ -694,13 +694,18 @@ where
+         let mut common_and_arch_args = self.parsed_args.common_args.clone();
+         common_and_arch_args.extend(self.parsed_args.arch_args.clone());
+ 
++        // The preprocessed text of an `.incbin` holds only the path, so without the
++        // file's content in the key a changed file would be served the old object.
++        let mut key_extra_hashes = extra_hashes;
++        key_extra_hashes.extend(incbin_digests(&preprocessor_output, &cwd, pool).await);
++
+         let key = HashKeyParams::new(
+             &self.executable_digest,
+             self.parsed_args.language,
+             &common_and_arch_args,
+             &preprocessor_output,
+         )
+-        .with_extra_hashes(&extra_hashes)
++        .with_extra_hashes(&key_extra_hashes)
+         .with_env_vars(&env_vars)
+         .with_plusplus(self.compiler.plusplus())
+         .with_basedirs(storage.basedirs())
+@@ -772,6 +777,71 @@ const HASH_31_COMMAND_LINE_NEWLINE: &[u8] = b"# 31 \"<command-line>\"\n";
+ const HASH_32_COMMAND_LINE_2_NEWLINE: &[u8] = b"# 32 \"<command-line>\" 2\n";
+ const INCBIN_DIRECTIVE: &[u8] = b".incbin";
+ 
++/// The files named by `.incbin` directives in preprocessed assembly or in inline
++/// assembly, which the compiler embeds by path and the preprocessor never reads.
++///
++/// Inline assembly reaches the compiler as a C string literal, so the quotes
++/// around the path may be escaped (`.incbin \"path\"`). The result is sorted and
++/// holds each path once so that the key built from it does not depend on the
++/// order the directives appear in.
++fn incbin_paths(preprocessed: &[u8]) -> Vec<PathBuf> {
++    let mut paths = Vec::new();
++    for at in memchr::memmem::find_iter(preprocessed, INCBIN_DIRECTIVE) {
++        let mut rest = &preprocessed[at + INCBIN_DIRECTIVE.len()..];
++        while let [b' ' | b'\t', tail @ ..] = rest {
++            rest = tail;
++        }
++        if let [b'\\', tail @ ..] = rest {
++            rest = tail;
++        }
++        let [b'"', path_and_tail @ ..] = rest else {
++            continue;
++        };
++        let Some(end) = path_and_tail.iter().position(|&b| b == b'"') else {
++            continue;
++        };
++        let mut path = &path_and_tail[..end];
++        if let [head @ .., b'\\'] = path {
++            path = head;
++        }
++        if !path.is_empty()
++            && let Ok(path) = decode_path(path)
++        {
++            paths.push(path);
++        }
++    }
++    paths.sort();
++    paths.dedup();
++    paths
++}
++
++/// One digest per file named by an `.incbin` directive, to be hashed into the
++/// cache key, since the preprocessed text only holds the path. A file that
++/// cannot be read yields a digest that never repeats, so such a compile is not
++/// served from the cache (and its result is not reused) rather than keyed on a
++/// path whose content is unknown.
++async fn incbin_digests(
++    preprocessed: &[u8],
++    cwd: &Path,
++    pool: &tokio::runtime::Handle,
++) -> Vec<String> {
++    let mut digests = Vec::new();
++    for path in incbin_paths(preprocessed) {
++        let absolute = cwd.join(&path);
++        match Digest::file(&absolute, pool).await {
++            Ok(digest) => digests.push(format!("incbin:{digest}")),
++            Err(e) => {
++                debug!("Cannot hash .incbin file {}: {}", absolute.display(), e);
++                let now = std::time::SystemTime::now()
++                    .duration_since(std::time::UNIX_EPOCH)
++                    .map_or(0, |d| d.as_nanos());
++                digests.push(format!("incbin-unreadable:{now}:{}", path.display()));
++            }
++        }
++    }
++    digests
++}
++
+ /// Remember the include files in the preprocessor output if it can be cached.
+ /// Returns `false` if preprocessor cache mode should be disabled.
+ fn process_preprocessed_file(
+@@ -2630,4 +2700,88 @@ int value;
+             "a93900c371d997927c5bc568ea538bed59ae5c960021dcfe7b0b369da5267528",
+         );
+     }
++
++    #[test]
++    fn test_incbin_paths_finds_assembly_directives() {
++        let src = b"# 1 \"piggy.S\"\n.section \".rodata..compressed\"\n\t.incbin \"arch/x86/boot/compressed/vmlinux.bin.zst\"\n.incbin\"certs/signing_key.x509\"\n";
++        assert_eq!(
++            incbin_paths(src),
++            vec![
++                PathBuf::from("arch/x86/boot/compressed/vmlinux.bin.zst"),
++                PathBuf::from("certs/signing_key.x509"),
++            ]
++        );
++    }
++
++    #[test]
++    fn test_incbin_paths_finds_directives_inside_c_string_asm() {
++        // Inline asm in C reaches the compiler as a string literal, so the quotes are escaped.
++        let src = b"asm(\".section .rodata\\n\" \".incbin \\\"kernel/config_data.gz\\\"\\n\");";
++        assert_eq!(
++            incbin_paths(src),
++            vec![PathBuf::from("kernel/config_data.gz")]
++        );
++    }
++
++    #[test]
++    fn test_incbin_paths_ignores_text_without_a_quoted_path() {
++        assert!(incbin_paths(b"int main(void) { return 0; }\n").is_empty());
++        assert!(incbin_paths(b".incbin_like_name foo\n").is_empty());
++        assert!(incbin_paths(b".incbin \"unterminated").is_empty());
++        assert!(incbin_paths(b".incbin\n").is_empty());
++    }
++
++    #[test]
++    fn test_incbin_paths_lists_each_path_once_in_sorted_order() {
++        let src = b".incbin \"b.bin\"\n.incbin \"a.bin\"\n.incbin \"b.bin\"\n";
++        assert_eq!(
++            incbin_paths(src),
++            vec![PathBuf::from("a.bin"), PathBuf::from("b.bin")]
++        );
++    }
++
++    fn test_runtime() -> tokio::runtime::Runtime {
++        tokio::runtime::Builder::new_current_thread()
++            .enable_all()
++            .build()
++            .unwrap()
++    }
++
++    #[test]
++    fn test_incbin_digests_change_with_the_embedded_file_content() {
++        let dir = tempfile::tempdir().unwrap();
++        let src = b".incbin \"blob\"\n";
++        let rt = test_runtime();
++        std::fs::write(dir.path().join("blob"), b"first").unwrap();
++        let first = rt.block_on(incbin_digests(src, dir.path(), rt.handle()));
++        std::fs::write(dir.path().join("blob"), b"second").unwrap();
++        let second = rt.block_on(incbin_digests(src, dir.path(), rt.handle()));
++        std::fs::write(dir.path().join("blob"), b"first").unwrap();
++        let first_again = rt.block_on(incbin_digests(src, dir.path(), rt.handle()));
++        assert_eq!(first.len(), 1);
++        assert_ne!(first, second);
++        assert_eq!(first, first_again);
++    }
++
++    #[test]
++    fn test_incbin_digests_of_a_missing_file_never_repeat() {
++        // An unreadable file cannot be hashed, so the key must not be reusable.
++        let dir = tempfile::tempdir().unwrap();
++        let src = b".incbin \"absent\"\n";
++        let rt = test_runtime();
++        let a = rt.block_on(incbin_digests(src, dir.path(), rt.handle()));
++        let b = rt.block_on(incbin_digests(src, dir.path(), rt.handle()));
++        assert_eq!(a.len(), 1);
++        assert_ne!(a, b);
++    }
++
++    #[test]
++    fn test_incbin_digests_are_empty_without_a_directive() {
++        let rt = test_runtime();
++        let dir = tempfile::tempdir().unwrap();
++        assert!(
++            rt.block_on(incbin_digests(b"int x;\n", dir.path(), rt.handle()))
++                .is_empty()
++        );
++    }
+ }
 -- 
 Javier Tia
 
