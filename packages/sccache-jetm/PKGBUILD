@@ -6,7 +6,7 @@
 # changes are applied on top as a patch in prepare(), so a release that no longer takes
 # the patch fails the build there instead of shipping a silently different sccache.
 #
-#   0001  jetm/sccache carry-cleanups: v0.19.0 plus 64 commits (the work behind
+#   0001  jetm/sccache carry-cleanups: v0.19.0 plus 69 commits (the work behind
 #         mozilla/sccache#2776 and #2777 and the scheduler, packaging and rust/gcc dist
 #         fixes not yet sent upstream, then the review and defect fixes on top of
 #         carry/0.19.0). Regenerate with
@@ -27,7 +27,7 @@ pkgname=sccache-jetm
 _upstream=sccache
 _target=x86_64-unknown-linux-gnu
 pkgver=0.19.0
-pkgrel=3
+pkgrel=4
 pkgdesc='Shared compilation cache - build with distributed-compile fixes'
 arch=(x86_64)
 url=https://github.com/mozilla/sccache
@@ -59,7 +59,7 @@ source=(
 # updpkgsums rewrites this array on every bump and drops any comment inside
 # it, so the labels live up here instead.
 sha256sums=('2da079033cd19fd8e2a09f56f9a7d9d1a72d591ff3acdc47d95b920145cf2671'
-            '6018018719d1acad79df7bfae309d828a7ec5d2ceadd5e5082a28603fd8ddbef')
+            'a1e1cdef9dcbff0a4338d5be74b9ed25037a4407a1e12f09d38175c4a7cb0aa3')
 
 prepare() {
   cd "$_upstream-$pkgver"

@@ -1,7 +1,7 @@
 From de70acefc6a2fb2a93d20dc7e8ec9d09e414483c Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:19:15 -0600
-Subject: [PATCH 01/64] server: don't panic when a finished compile has neither
+Subject: [PATCH 01/69] server: don't panic when a finished compile has neither
  code nor signal
 
 get_signal did `status.signal().expect("must have signal")`, assuming the
@@ -108,7 +108,7 @@ Javier Tia
 From d93e23bd615e743b5fd246b854983a05a212684c Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:22:04 -0600
-Subject: [PATCH 02/64] compiler: log distributed-compile decisions at info
+Subject: [PATCH 02/69] compiler: log distributed-compile decisions at info
  level
 
 sccache logged the distribute-vs-local decision only at debug ("Compiling
@@ -174,7 +174,7 @@ Javier Tia
 From d085ce4b09326a2c2cc61f5c0617f9d3ab43d61e Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:21:37 -0600
-Subject: [PATCH 03/64] compiler: fall back to local on distributed-compile
+Subject: [PATCH 03/69] compiler: fall back to local on distributed-compile
  failure
 
 A distributed compile the build-server rejects is often a distribution
@@ -252,7 +252,7 @@ Javier Tia
 From 49ddb9d8efc6015512c2f20a2215bd3f25c065d7 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:23:34 -0600
-Subject: [PATCH 04/64] compiler: fall back to local when a dist compile drops
+Subject: [PATCH 04/69] compiler: fall back to local when a dist compile drops
  an output
 
 A distributed compile can return a successful (exit 0) result yet omit a
@@ -445,7 +445,7 @@ Javier Tia
 From c630508eb9922955390287c84b57919abb6ec9ca Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:24:23 -0600
-Subject: [PATCH 05/64] logging: keep wrapper log output off the compiler's
+Subject: [PATCH 05/69] logging: keep wrapper log output off the compiler's
  stderr
 
 When sccache runs as a compiler wrapper (`sccache <compiler> ...`) it
@@ -549,7 +549,7 @@ Javier Tia
 From 2adc43ccb55c4c905886e5864db43fe6e1e6326b Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:24:00 -0600
-Subject: [PATCH 06/64] dist: don't fail a distributed compile over an optional
+Subject: [PATCH 06/69] dist: don't fail a distributed compile over an optional
  missing output
 
 After a distributed compile the client verifies every declared output
@@ -592,7 +592,7 @@ Javier Tia
 From 2132f6a42ea95fe8b658d59937a97d558c50e479 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:23:21 -0600
-Subject: [PATCH 07/64] compiler: log a failed distributed compile's remote
+Subject: [PATCH 07/69] compiler: log a failed distributed compile's remote
  output at debug
 
 When a distributed compile exits non-zero the client logs only the exit
@@ -645,7 +645,7 @@ Javier Tia
 From e982f9dad352a47cd9e2d8651990501dee342a96 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:29:10 -0600
-Subject: [PATCH 08/64] config: add the dist fallback switch
+Subject: [PATCH 08/69] config: add the dist fallback switch
 
 Kernel assembler sources that .incbin generated files fail on the
 build server, because the generated file is not among the shipped
@@ -765,7 +765,7 @@ Javier Tia
 From bbeab9f927b219311d30b91f27619960eb6b2b43 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:34:28 -0600
-Subject: [PATCH 09/64] compiler: honor the dist fallback switch
+Subject: [PATCH 09/69] compiler: honor the dist fallback switch
 
 A non-zero remote exit code or a missing declared output unconditionally
 triggered a local recompile. That contradicts upstream's behaviour, where
@@ -1119,7 +1119,7 @@ Javier Tia
 From cb8dc81aac4aed01eb882afb5142fc616145be21 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:36:02 -0600
-Subject: [PATCH 10/64] compiler/rust: ship the target spec so a remote rustc
+Subject: [PATCH 10/69] compiler/rust: ship the target spec so a remote rustc
  resolves --target
 
 A distributed rust compile against an OpenEmbedded custom target failed on
@@ -1501,7 +1501,7 @@ Javier Tia
 From 0d746cee92d95b8285cf38798e0a88b623e991d1 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:37:31 -0600
-Subject: [PATCH 11/64] compiler/rust: ship the target sysroot std to
+Subject: [PATCH 11/69] compiler/rust: ship the target sysroot std to
  distributed compiles
 
 A distributed cross-compile against an OpenEmbedded custom target failed on
@@ -1607,7 +1607,7 @@ Javier Tia
 From 03e12a3c5295ab373e15ad87004ad65342be2cfd Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:36:31 -0600
-Subject: [PATCH 12/64] compiler/rust: ship split-metadata rlibs whole instead
+Subject: [PATCH 12/69] compiler/rust: ship split-metadata rlibs whole instead
  of dropping them
 
 When packaging dist inputs, sccache trims a dependency rlib to just its
@@ -1767,7 +1767,7 @@ Javier Tia
 From 49fc6832068f8c900ca9660170dcb7fbb77fc89f Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:40:01 -0600
-Subject: [PATCH 13/64] compiler/gcc: fix distributed compile of relative input
+Subject: [PATCH 13/69] compiler/gcc: fix distributed compile of relative input
  paths
 
 sccache-dist ships the preprocessed input through the inputs packager
@@ -1883,7 +1883,7 @@ Javier Tia
 From 02817f77f0ba5b7e253847771b3673f9c561149d Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:44:01 -0600
-Subject: [PATCH 14/64] compiler/gcc: never distribute precompiled-header
+Subject: [PATCH 14/69] compiler/gcc: never distribute precompiled-header
  generation
 
 A distributed PCH build produced a .gch that broke every consumer of the
@@ -2011,7 +2011,7 @@ Javier Tia
 From 4888aae374ec5992585e7988d70d16d8b37617a5 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:42:12 -0600
-Subject: [PATCH 15/64] compiler/gcc: keep configure feature-probes local
+Subject: [PATCH 15/69] compiler/gcc: keep configure feature-probes local
 
 avocado-distro's do_configure phase ships ~900 autoconf conftest and
 CMake try_compile feature-probe compiles to the build-server. Each is a
@@ -2207,7 +2207,7 @@ Javier Tia
 From 23519a0cac3e50fcd89d7cd9976aba5bd528d1e9 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:45:02 -0600
-Subject: [PATCH 16/64] compiler/gcc: run /dev/null feature-probes locally
+Subject: [PATCH 16/69] compiler/gcc: run /dev/null feature-probes locally
 
 OpenSSL probes assembler support by running the compiler on /dev/null:
 `gcc -Wa,--help -c -o null.o -x assembler /dev/null`, then greps the
@@ -2287,7 +2287,7 @@ Javier Tia
 From 7e37206e67a2786adb228e11bc328be2daa6d97e Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:44:58 -0600
-Subject: [PATCH 17/64] dist/pkg: bundle relocated interpreter's libdir into
+Subject: [PATCH 17/69] dist/pkg: bundle relocated interpreter's libdir into
  the toolchain package
 
 sccache-dist packages a toolchain's shared libraries by parsing `ldd`
@@ -2432,7 +2432,7 @@ Javier Tia
 From c810f2000da448dfda9f9d56e86ff6a76bd67e05 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:46:56 -0600
-Subject: [PATCH 18/64] compiler: package the compile task's toolchain, not the
+Subject: [PATCH 18/69] compiler: package the compile task's toolchain, not the
  daemon's
 
 When sccache packages a C/C++ toolchain for distributed compilation it
@@ -2707,7 +2707,7 @@ Javier Tia
 From 243736304a2b9d729249be8d3fa6b6c3a1cfda8c Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:45:31 -0600
-Subject: [PATCH 19/64] dist/pkg: bundle the sysroot usr/lib for split-sysroot
+Subject: [PATCH 19/69] dist/pkg: bundle the sysroot usr/lib for split-sysroot
  toolchains
 
 A relocated toolchain interpreter (the OE buildtools SDK loader) already
@@ -2843,7 +2843,7 @@ Javier Tia
 From 56fa7b71bde7d90766163f5b34b1f7fefaeb5efe Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:47:12 -0600
-Subject: [PATCH 20/64] dist/pkg: skip dangling symlinks when packaging a
+Subject: [PATCH 20/69] dist/pkg: skip dangling symlinks when packaging a
  toolchain
 
 Cold toolchain packaging walked the relocated interpreter's sysroot and
@@ -2933,7 +2933,7 @@ Javier Tia
 From 1172153d845942a45df3e4e69970cc6f546d3d9a Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:49:52 -0600
-Subject: [PATCH 21/64] dist/pkg: ship long input paths via GNU tar long-name
+Subject: [PATCH 21/69] dist/pkg: ship long input paths via GNU tar long-name
 
 The input packager built each tar entry with a ustar header and set the
 entry path with Header::set_path, which overruns the ustar name (100 B)
@@ -3153,7 +3153,7 @@ Javier Tia
 From 42337626e9cdf857bc5a0a41e6f87b1e728fd8fa Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:51:46 -0600
-Subject: [PATCH 22/64] dist: report a per-server breakdown in scheduler status
+Subject: [PATCH 22/69] dist: report a per-server breakdown in scheduler status
 
 SchedulerStatusResult only carried cluster aggregates (num_servers,
 num_cpus, in_progress), so a client could see total capacity but not how
@@ -3315,7 +3315,7 @@ Javier Tia
 From 4abccea8af8a365b7883d7ed535bcd0e91b666e6 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:52:46 -0600
-Subject: [PATCH 23/64] dist/scheduler: drop a stopped server promptly
+Subject: [PATCH 23/69] dist/scheduler: drop a stopped server promptly
 
 A build server that stops is only removed once prune_servers sees its
 last_seen exceed the 90s heartbeat timeout, and prune runs only on the
@@ -3675,7 +3675,7 @@ Javier Tia
 From 257162490ca0382dd8358b87cc71fd339bf29ae4 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:55:39 -0600
-Subject: [PATCH 24/64] dist/scheduler: soften the error demotion so an idle
+Subject: [PATCH 24/69] dist/scheduler: soften the error demotion so an idle
  remote node is not stranded
 
 A server that fails a job assignment is dropped into the best_err bucket and
@@ -3963,7 +3963,7 @@ Javier Tia
 From 9a171b205ae097e2f879550f005728d52803de36 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:57:42 -0600
-Subject: [PATCH 25/64] dist/scheduler: make routing topology-aware and
+Subject: [PATCH 25/69] dist/scheduler: make routing topology-aware and
  deterministic
 
 The load model weighs every server as job_count/core_count with the raw
@@ -4187,7 +4187,7 @@ Javier Tia
 From b27bd55dd353d5cf8fe07d11bcfb24139dd8c977 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:57:28 -0600
-Subject: [PATCH 26/64] dist/scheduler: derive the colocated de-weight
+Subject: [PATCH 26/69] dist/scheduler: derive the colocated de-weight
  dynamically
 
 The advertised-cores override added earlier had to be a hardcoded absolute
@@ -4516,7 +4516,7 @@ Javier Tia
 From 9ee133b66333fcde1d4eddb6cfca77d98b47358d Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:00:54 -0600
-Subject: [PATCH 27/64] dist/scheduler: reap Started jobs whose Complete update
+Subject: [PATCH 27/69] dist/scheduler: reap Started jobs whose Complete update
  was lost
 
 A distributed job that reached the Started state but never reported
@@ -4777,7 +4777,7 @@ Javier Tia
 From 0f57afffb4271f3638f28edf2eb7d1c93c61704e Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:05:12 -0600
-Subject: [PATCH 28/64] dist/scheduler: add a between-nodes job-lifecycle leak
+Subject: [PATCH 28/69] dist/scheduler: add a between-nodes job-lifecycle leak
  detector
 
 Diagnosing scheduler slot leaks meant a rebuild-with-debug-logging cycle
@@ -4935,7 +4935,7 @@ Javier Tia
 From 252ca082e45277cf0bfc9fbbd6084efc273c785e Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:04:30 -0600
-Subject: [PATCH 29/64] dist/scheduler: make late job-state updates idempotent
+Subject: [PATCH 29/69] dist/scheduler: make late job-state updates idempotent
 
 The 180s Started-job reaper can discard a successful compile: it reclaims
 the slot at the timeout, then the build server's run_job propagates a
@@ -5057,7 +5057,7 @@ Javier Tia
 From a8b72b8f677c748c4cd4ccd7597c3546b24efffd Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:05:25 -0600
-Subject: [PATCH 30/64] dist/scheduler: measure the unclaimed reservation
+Subject: [PATCH 30/69] dist/scheduler: measure the unclaimed reservation
  timeout from Ready
 
 The unclaimed-reservation reaper timed a job out from its allocation
@@ -5166,7 +5166,7 @@ Javier Tia
 From e01a31c69427db49a1ab0575409b4091f3e9caae Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:10:32 -0600
-Subject: [PATCH 31/64] dist: make scheduler restart safe for job accounting
+Subject: [PATCH 31/69] dist: make scheduler restart safe for job accounting
 
 A build server that keeps running across a scheduler restart can be
 handed a job id it still holds a job_toolchains entry for, and
@@ -5334,7 +5334,7 @@ Javier Tia
 From c930b831dc3ebe16723eaf7687c28e803956b308 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:12:40 -0600
-Subject: [PATCH 32/64] dist: reap Started jobs by liveness lease, not a fixed
+Subject: [PATCH 32/69] dist: reap Started jobs by liveness lease, not a fixed
  timeout
 
 The scheduler reaped a Started job purely on a fixed 180s timeout, so a
@@ -5971,7 +5971,7 @@ Javier Tia
 From fb924f23c8e0bc863df963dced4b593cb75fd6f1 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:19:17 -0600
-Subject: [PATCH 33/64] dist/http: reuse connections and offload large
+Subject: [PATCH 33/69] dist/http: reuse connections and offload large
  deserialize
 
 The single client daemon is the throughput chokepoint of a full image
@@ -6648,7 +6648,7 @@ Javier Tia
 From 2fafebdcb3c6aacafeac79e976f4bfe5f9d1c981 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:20:42 -0600
-Subject: [PATCH 34/64] dist/http: re-close the connection on chunked toolchain
+Subject: [PATCH 34/69] dist/http: re-close the connection on chunked toolchain
  submit
 
 do_submit_toolchain posts a chunked body (wrap_stream, no Content-Length),
@@ -6717,7 +6717,7 @@ Javier Tia
 From b89f531e02a2633998f3d6b7951c26e921a0ced1 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:21:42 -0600
-Subject: [PATCH 35/64] dist/server: shrink toolchain locks so compiles stop
+Subject: [PATCH 35/69] dist/server: shrink toolchain locks so compiles stop
  convoying
 
 The build server serialized all concurrent compiles behind two global
@@ -7531,7 +7531,7 @@ Javier Tia
 From 7adee95f0f089aae697f21c5b9e69b9453119c4d Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:31:41 -0600
-Subject: [PATCH 36/64] dist/server: bound the shutdown deregister and poll the
+Subject: [PATCH 36/69] dist/server: bound the shutdown deregister and poll the
  stop flag faster
 
 The SIGINT/SIGTERM handler installed for graceful deregistration runs a
@@ -7581,7 +7581,7 @@ Javier Tia
 From 4e4b035d0f3758b3f5d69810b4f0bce1957ecc42 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:33:13 -0600
-Subject: [PATCH 37/64] tests/harness: wait for dist servers to exit on
+Subject: [PATCH 37/69] tests/harness: wait for dist servers to exit on
  teardown
 
 DistSystem::drop sent SIGINT to each dist server, slept a fixed 100 ms
@@ -7664,7 +7664,7 @@ Javier Tia
 From 7b5b6d0a5bab86b150c6b0f823f56aba0351d071 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:38:09 -0600
-Subject: [PATCH 38/64] dist: instrument job scheduling and client dispatch for
+Subject: [PATCH 38/69] dist: instrument job scheduling and client dispatch for
  load diagnosis
 
 The 2-node cluster leaves both build servers idle for long stretches of a
@@ -7890,7 +7890,7 @@ Javier Tia
 From d2b3db2f6f47d929494d91f57d9d8a9e91e2d689 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:41:13 -0600
-Subject: [PATCH 39/64] dist: time local preprocessing in the per-job load
+Subject: [PATCH 39/69] dist: time local preprocessing in the per-job load
  diagnostics
 
 The R0 dist instrumentation times put_toolchain, alloc, submit, and
@@ -8051,7 +8051,7 @@ Javier Tia
 From 7d5374ae1951defc51ea0d8b35f3e25c4514a2ba Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:42:44 -0600
-Subject: [PATCH 40/64] compiler/c: gauge live local preprocess concurrency
+Subject: [PATCH 40/69] compiler/c: gauge live local preprocess concurrency
 
 The preprocessing wall - the client jobserver's cores saturated by local
 cc1 -E for the whole cluster while remote nodes idle - was only ever an
@@ -8142,7 +8142,7 @@ Javier Tia
 From 0414008068bf178dc25e3b3d6da23af667bc8c7b Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:44:38 -0600
-Subject: [PATCH 41/64] compiler: concatenate strings without relying on deref
+Subject: [PATCH 41/69] compiler: concatenate strings without relying on deref
  coercion
 
 The lib test target links the thirtyfour dev-dependency, whose 0.36
@@ -8182,7 +8182,7 @@ Javier Tia
 From b7f70580ebe7690d77fb7f1e433d9ea950f82eea Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:46:08 -0600
-Subject: [PATCH 42/64] ci: mirror the CI validation gate in pre-commit
+Subject: [PATCH 42/69] ci: mirror the CI validation gate in pre-commit
 
 The pre-commit config only ran nightly fmt and clippy with no failure
 gate, so a break reached CI before anyone noticed - a changed function
@@ -8279,7 +8279,7 @@ Javier Tia
 From f868d96dd45928eac778c653f2328f53abe2b9d0 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:51:43 -0600
-Subject: [PATCH 43/64] dist: satisfy clippy under the all-features gate
+Subject: [PATCH 43/69] dist: satisfy clippy under the all-features gate
 
 The tree fails `clippy -D warnings --features all,dist-server` with the
 current toolchain. The failing sites in this commit are in
@@ -8623,7 +8623,7 @@ Javier Tia
 From 57ca4823938e5602aea91b9d72069d30572cf697 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:51:33 -0600
-Subject: [PATCH 44/64] chore: fix clippy lints flagged by a newer toolchain
+Subject: [PATCH 44/69] chore: fix clippy lints flagged by a newer toolchain
 
 Clippy 1.99 rejects the tree under `-D warnings` at more sites than
 the dist-specific commit covers: collapsible_if in
@@ -8730,7 +8730,7 @@ Javier Tia
 From ef1710d34d65f9a992281c2fac1e736878bad83b Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 15:55:24 -0600
-Subject: [PATCH 45/64] compiler: keep the server annotation on a reported
+Subject: [PATCH 45/69] compiler: keep the server annotation on a reported
  remote failure
 
 With the dist fallback switch off, the remote result is meant to reach
@@ -8799,7 +8799,7 @@ Javier Tia
 From 4e3def9704d7eddeed5b8c8d3dd1311d6267e2e1 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 17:54:55 -0600
-Subject: [PATCH 46/64] compiler/rust: ship sysroot rlibs whose name has no
+Subject: [PATCH 46/69] compiler/rust: ship sysroot rlibs whose name has no
  hash suffix
 
 The inputs packager skips a hashless library when rustc dependency
@@ -8909,7 +8909,7 @@ Javier Tia
 From 3c0c7a4a2f2d04c068debc22527618b309251889 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 17:57:25 -0600
-Subject: [PATCH 47/64] dist: compare returned outputs, not path existence,
+Subject: [PATCH 47/69] dist: compare returned outputs, not path existence,
  after a remote compile
 
 After a successful remote compile the client fell back to a local
@@ -9318,7 +9318,7 @@ Javier Tia
 From f8c2b9b1a1997e70b768803618e488ee811b2230 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 18:58:14 -0600
-Subject: [PATCH 48/64] dist/scheduler: test the Started backstop, deregister
+Subject: [PATCH 48/69] dist/scheduler: test the Started backstop, deregister
  and status paths
 
 Mutation testing showed three guards that no test failed without: the
@@ -9457,7 +9457,7 @@ Javier Tia
 From 2df26335ab392b39a7e7b1737a244100b419a52c Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Tue, 27 Oct 2026 20:08:50 -0600
-Subject: [PATCH 49/64] pre-commit: Format with rustfmt at the crate edition
+Subject: [PATCH 49/69] pre-commit: Format with rustfmt at the crate edition
 
 The rust-fmt hook ran `cargo +nightly fmt -- <files>`. With explicit
 file arguments that invokes rustfmt directly, and rustfmt then parses
@@ -9493,7 +9493,7 @@ Javier Tia
 From cad1b61e89a83e2f4d95c8624836ff14b7d00e86 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Tue, 27 Oct 2026 20:07:18 -0600
-Subject: [PATCH 50/64] compiler/c: Test that the task env reaches the
+Subject: [PATCH 50/69] compiler/c: Test that the task env reaches the
  toolchain packager's compiler
 
 The toolchain packager asks the compiler where its sub-tools live with
@@ -9721,7 +9721,7 @@ Javier Tia
 From d60ebd0dd395000b042040331527347d2b8732ff Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Tue, 27 Oct 2026 20:07:20 -0600
-Subject: [PATCH 51/64] dist/build: Test the production eviction path, not just
+Subject: [PATCH 51/69] dist/build: Test the production eviction path, not just
  Mutex::try_lock
 
 The only eviction test locked and try-locked a Mutex it created itself,
@@ -9911,7 +9911,7 @@ Javier Tia
 From 0125ff493b7e92c0536ecfd95785ce6099271ca3 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Tue, 27 Oct 2026 20:08:43 -0600
-Subject: [PATCH 52/64] dist/scheduler: Warn about a wedged build once per
+Subject: [PATCH 52/69] dist/scheduler: Warn about a wedged build once per
  interval, not per heartbeat
 
 A server names a stuck job in every heartbeat, about every 30 seconds,
@@ -10133,7 +10133,7 @@ Javier Tia
 From 65a8bfef508aea703d866693c8336edd8448e06d Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 16:27:03 -0600
-Subject: [PATCH 53/64] compiler: share the in-flight guard and the dist
+Subject: [PATCH 53/69] compiler: share the in-flight guard and the dist
  test-mock helpers
 
 PreprocInflightGuard in c.rs and DistInflightGuard in compiler.rs were
@@ -10413,7 +10413,7 @@ Javier Tia
 From b73aab490000ace2a99891b70329ca3bc352804d Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:32:28 -0600
-Subject: [PATCH 54/64] dist/scheduler: treat a heartbeat without a report as
+Subject: [PATCH 54/69] dist/scheduler: treat a heartbeat without a report as
  no liveness information
 
 A heartbeat from a server that predates the active-jobs report has no
@@ -10892,7 +10892,7 @@ Javier Tia
 From 65ea92a9baba228bfc9f705bcc4ba4ba83d192dd Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:33:24 -0600
-Subject: [PATCH 55/64] dist/http: accept heartbeats from servers that predate
+Subject: [PATCH 55/69] dist/http: accept heartbeats from servers that predate
  the active-jobs report
 
 The heartbeat request gained a trailing active_jobs field, and bincode
@@ -11329,7 +11329,7 @@ Javier Tia
 From 8d36f344a14b41076bab7a440e766ae9cc119b39 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:35:25 -0600
-Subject: [PATCH 56/64] dist/server: verify an uploaded toolchain's hash before
+Subject: [PATCH 56/69] dist/server: verify an uploaded toolchain's hash before
  it enters the cache
 
 The upload was grafted into the cache first and hashed afterwards, so a
@@ -11535,7 +11535,7 @@ Javier Tia
 From 4bed3b8fa53fea2533790054c34b4e956947d72e Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:42:38 -0600
-Subject: [PATCH 57/64] dist/server: create upload temp files with the prefix
+Subject: [PATCH 57/69] dist/server: create upload temp files with the prefix
  the cache scan removes
 
 The upload receiver streamed into a default-prefixed temporary file in
@@ -11696,7 +11696,7 @@ Javier Tia
 From aa02ef2cebf0e70ae237fca5990be4770bde51cb Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:43:54 -0600
-Subject: [PATCH 58/64] dist/build: skip eviction victims whose preparation
+Subject: [PATCH 58/69] dist/build: skip eviction victims whose preparation
  lock is held
 
 Eviction removed every victim from the toolchain map before checking
@@ -11882,7 +11882,7 @@ Javier Tia
 From d4144f0d66822b72d05c864573d57de9cac927ac Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:44:42 -0600
-Subject: [PATCH 59/64] compiler: report a dropped dist output when the
+Subject: [PATCH 59/69] compiler: report a dropped dist output when the
  fallback switch is off
 
 With `[dist] fallback = false` the returned-versus-declared output check
@@ -12167,7 +12167,7 @@ Javier Tia
 From f25d341e23374c259c1a2b377a020909fa5f00f4 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:47:44 -0600
-Subject: [PATCH 60/64] compiler/rust: keep every metadata member when trimming
+Subject: [PATCH 60/69] compiler/rust: keep every metadata member when trimming
  a dependency rlib
 
 Trimming looked only for the legacy `rust.metadata.bin` member. Current
@@ -12388,7 +12388,7 @@ Javier Tia
 From 785739a7442f81b0d61860f7d47fc47a9251b9f4 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:56:10 -0600
-Subject: [PATCH 61/64] server: report a dropped dist output as a plain failure
+Subject: [PATCH 61/69] server: report a dropped dist output as a plain failure
 
 The error added for a declared output the build server did not return
 fell through the server's compile handler to its generic branch, which
@@ -12502,7 +12502,7 @@ Javier Tia
 From a547f2488429832d9943f2153e79b5198ab520dc Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 18:07:11 -0600
-Subject: [PATCH 62/64] server: name the dropped output in the failure and log
+Subject: [PATCH 62/69] server: name the dropped output in the failure and log
  rejected uploads
 
 The dropped-output arm printed the error with plain Display, which shows
@@ -12581,7 +12581,7 @@ Javier Tia
 From 91e2ae4d63d254f63c63dd81afec534df9650295 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 19:33:33 -0600
-Subject: [PATCH 63/64] dist: share the packable-file filter and drop dead
+Subject: [PATCH 63/69] dist: share the packable-file filter and drop dead
  deregister pool settings
 
 add_dir_contents and add_shared_libraries each carried the same test for
@@ -12692,7 +12692,7 @@ Javier Tia
 From 1dc02e815eb7d0a54d6929c0a0607034e37957f7 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Sun, 1 Nov 2026 10:42:21 -0600
-Subject: [PATCH 64/64] scripts: add a loopback smoke test for the carry defect
+Subject: [PATCH 64/69] scripts: add a loopback smoke test for the carry defect
  fixes
 
 The fixes for older heartbeats, long compiles, forged and interrupted
@@ -13640,6 +13640,972 @@ index 00000000..18dd83d1
 +
 +if __name__ == "__main__":
 +    main()
+-- 
+Javier Tia
+
+
+From cc822154aacea54dfc7a163b042f8a9bc11effea Mon Sep 17 00:00:00 2001
+From: Javier Tia <javier@peridio.com>
+Date: Sun, 1 Nov 2026 11:51:30 -0600
+Subject: [PATCH 65/69] Cargo.lock: update the crates the advisory scan flags
+
+The lockfile inherited from the 0.19.0 release holds 29 RustSec
+findings in 15 crates, so the pre-push advisory scan rejects every push
+of this branch. Most of them (bytes, h2, quinn-proto, rustls and its
+certificate checker, time, tracing-subscriber, the web PKI root bundles
+and zstd-sys) are fixed by releases that satisfy the existing manifest.
+
+The crates are updated one family at a time rather than with a full
+update, which would move about 265 packages and add a second zip copy
+with findings of its own. pkg-config moves first because rustls 0.23.46
+pulls a bundled crypto library that needs a newer one than the lock
+held. The manifest is untouched; what the scan still reports (rsa,
+ruzstd, zip, zstd, zstd-safe) needs newer series or has no fix and is
+handled by the following commits.
+
+Signed-off-by: Javier Tia <javier@peridio.com>
+---
+ Cargo.lock | 174 +++++++++++++++++++++--------------------------------
+ 1 file changed, 69 insertions(+), 105 deletions(-)
+
+diff --git a/Cargo.lock b/Cargo.lock
+index f41f1f7e..6991e595 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -202,9 +202,9 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
+ 
+ [[package]]
+ name = "aws-lc-rs"
+-version = "1.17.0"
++version = "1.19.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5ec2f1fc3ec205783a5da9a7e6c1509cc69dedf09a1949e412c1e18469326d00"
++checksum = "048006790404103c488e6c5616b3e7e702a71292aadda08e8f7698a9e0d2eb53"
+ dependencies = [
+  "aws-lc-sys",
+  "zeroize",
+@@ -212,14 +212,15 @@ dependencies = [
+ 
+ [[package]]
+ name = "aws-lc-sys"
+-version = "0.41.0"
++version = "0.47.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "1a2f9779ce85b93ab6170dd940ad0169b5766ff848247aff13bb788b832fe3f4"
++checksum = "8bfbe32ac36b3c428696ce315464181bc4029d689fd58e3f2a4e58c252242f52"
+ dependencies = [
+  "cc",
+  "cmake",
+  "dunce",
+  "fs_extra",
++ "pkg-config",
+ ]
+ 
+ [[package]]
+@@ -344,7 +345,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "c48f0051a4b4c5e0b6d365cd04af53aeaa209e3cc15ec2cdb69e73cc87fbd0dc"
+ dependencies = [
+  "memchr",
+- "regex-automata 0.4.18",
++ "regex-automata",
+  "serde",
+ ]
+ 
+@@ -372,9 +373,9 @@ checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
+ 
+ [[package]]
+ name = "bytes"
+-version = "1.10.1"
++version = "1.12.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "d71b6127be86fdcfddb610f7182ac57211d4b18a3e9c82eb2d17662f2227ad6a"
++checksum = "fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04"
+ 
+ [[package]]
+ name = "cbc"
+@@ -815,9 +816,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "ctutils"
+-version = "0.4.2"
++version = "0.4.7"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "7d5515a3834141de9eafb9717ad39eea8247b5674e6066c404e8c4b365d2a29e"
++checksum = "a2376ffd6f96d8a9db59875b4b6b0237d6900b5baf64279714e05493ce64828a"
+ dependencies = [
+  "cmov",
+ ]
+@@ -881,12 +882,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "deranged"
+-version = "0.3.11"
++version = "0.5.9"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b42b6fa04a440b495c8b04d0e71b707c585f83cb9cb28cf8cd0d976c315e31b4"
+-dependencies = [
+- "powerfmt",
+-]
++checksum = "9e9de72ce2ad1f90dc62fa25f0f430ef85eb4b0d8fa0be4f30373bc40a21d28e"
+ 
+ [[package]]
+ name = "difflib"
+@@ -936,7 +934,7 @@ dependencies = [
+  "libc",
+  "option-ext",
+  "redox_users",
+- "windows-sys 0.61.1",
++ "windows-sys 0.59.0",
+ ]
+ 
+ [[package]]
+@@ -1033,7 +1031,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
+ dependencies = [
+  "libc",
+- "windows-sys 0.61.1",
++ "windows-sys 0.59.0",
+ ]
+ 
+ [[package]]
+@@ -1358,9 +1356,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "h2"
+-version = "0.4.5"
++version = "0.4.20"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "fa82e28a107a8cc405f0839610bdc9b15f1e25ec7d696aa5cf173edbcb1486ab"
++checksum = "7d29020232d6aa3fb1daca64c1127cf662cf97f254ae16c18c05b8ab635fc118"
+ dependencies = [
+  "atomic-waker",
+  "bytes",
+@@ -1592,20 +1590,18 @@ dependencies = [
+ 
+ [[package]]
+ name = "hyper-rustls"
+-version = "0.27.2"
++version = "0.27.10"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5ee4be2c948921a1a5320b629c4193916ed787a7f7f293fd3f7f5a6c9de74155"
++checksum = "dfa8e654703247911e29c23fbeaa261834bd9bb74efba2f9acddc37bfb127f53"
+ dependencies = [
+- "futures-util",
+  "http",
+  "hyper",
+  "hyper-util",
+  "rustls",
+- "rustls-pki-types",
+  "tokio",
+  "tokio-rustls",
+  "tower-service",
+- "webpki-roots 0.26.2",
++ "webpki-roots",
+ ]
+ 
+ [[package]]
+@@ -2079,11 +2075,11 @@ checksum = "112b39cec0b298b6c1999fee3e31427f74f676e4cb9879ed1a121b43661a4154"
+ 
+ [[package]]
+ name = "matchers"
+-version = "0.1.0"
++version = "0.2.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "8263075bb86c5a1b1427b5ae862e8889656f126e9f77c484496e8b47cf5c5558"
++checksum = "d1525a2a28c7f4fa0fc98bb91ae755d1e2d1505079e05539e35bc876b5d65ae9"
+ dependencies = [
+- "regex-automata 0.1.10",
++ "regex-automata",
+ ]
+ 
+ [[package]]
+@@ -2259,12 +2255,11 @@ checksum = "61807f77802ff30975e01f4f071c8ba10c022052f98b3294119f3e615d13e5be"
+ 
+ [[package]]
+ name = "nu-ansi-term"
+-version = "0.46.0"
++version = "0.50.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "77a8165726e8236064dbb45459242600304b42a5ea24ee2948e18e023bf7ba84"
++checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
+ dependencies = [
+- "overload",
+- "winapi",
++ "windows-sys 0.59.0",
+ ]
+ 
+ [[package]]
+@@ -2295,9 +2290,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "num-conv"
+-version = "0.1.0"
++version = "0.2.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "51d515d32fb182ee37cda2ccdcb92950d6a3c2893aa280e540671c2cd0f3b1d9"
++checksum = "521739c6d2bac4aa25192232afe6841231376b2b26d4d9fae5ecf8ca5772e441"
+ 
+ [[package]]
+ name = "num-integer"
+@@ -2690,12 +2685,6 @@ dependencies = [
+  "hashbrown 0.14.3",
+ ]
+ 
+-[[package]]
+-name = "overload"
+-version = "0.1.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
+-
+ [[package]]
+ name = "parking"
+ version = "2.2.1"
+@@ -2848,9 +2837,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "pkg-config"
+-version = "0.3.28"
++version = "0.3.34"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "69d3587f8a9e599cc7ec2c00e331f71c4e69a5f9a4b8a6efd5b07466b9736f9a"
++checksum = "f6b464fbc74e149a392436b17d523f769e057cb6877f6a5c4618bc6f11800548"
+ 
+ [[package]]
+ name = "portable-atomic"
+@@ -3008,9 +2997,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "quinn-proto"
+-version = "0.11.16"
++version = "0.11.19"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "2f4bfc015262b9df63c8845072ce59068853ff5872180c2ce2f13038b970e560"
++checksum = "0e750cca55fe4f0439a15d0bb529da9651e79993e8e72c61a899a36d462befbe"
+ dependencies = [
+  "aws-lc-rs",
+  "bytes",
+@@ -3040,7 +3029,7 @@ dependencies = [
+  "once_cell",
+  "socket2",
+  "tracing",
+- "windows-sys 0.61.1",
++ "windows-sys 0.59.0",
+ ]
+ 
+ [[package]]
+@@ -3193,17 +3182,8 @@ checksum = "f020237b6c8eed93db2e2cb53c00c60a8e1bc73da7d073199a1180401450218d"
+ dependencies = [
+  "aho-corasick",
+  "memchr",
+- "regex-automata 0.4.18",
+- "regex-syntax 0.8.11",
+-]
+-
+-[[package]]
+-name = "regex-automata"
+-version = "0.1.10"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "6c230d73fb8d8c1b9c0b3135c5142a8acee3a0558fb8db5cf1cb65f8d7862132"
+-dependencies = [
+- "regex-syntax 0.6.29",
++ "regex-automata",
++ "regex-syntax",
+ ]
+ 
+ [[package]]
+@@ -3214,7 +3194,7 @@ checksum = "ad8553b9b26413251cbf30e620595c7a41b3887f03da04579c0e6b0d6a06b4b2"
+ dependencies = [
+  "aho-corasick",
+  "memchr",
+- "regex-syntax 0.8.11",
++ "regex-syntax",
+ ]
+ 
+ [[package]]
+@@ -3223,12 +3203,6 @@ version = "0.1.8"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "8d942b98df5e658f56f20d592c7f868833fe38115e65c33003d8cd224b0155da"
+ 
+-[[package]]
+-name = "regex-syntax"
+-version = "0.6.29"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "f162c6dd7b008981e4d40210aca20b4bd0f9b60ca9271061b07f78537722f2e1"
+-
+ [[package]]
+ name = "regex-syntax"
+ version = "0.8.11"
+@@ -3413,7 +3387,7 @@ dependencies = [
+  "wasm-bindgen",
+  "wasm-bindgen-futures",
+  "web-sys",
+- "webpki-roots 1.0.5",
++ "webpki-roots",
+ ]
+ 
+ [[package]]
+@@ -3575,9 +3549,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "rustls"
+-version = "0.23.31"
++version = "0.23.46"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "c0ebcbd2f03de0fc1122ad9bb24b127a5a6cd51d72604a3f3c50ac459762b6cc"
++checksum = "48e13bd8c0e9365c43cfa5c9e8f9ad49d3c8444926c9aac819e0e4dc503c8fdf"
+ dependencies = [
+  "aws-lc-rs",
+  "once_cell",
+@@ -3628,7 +3602,7 @@ dependencies = [
+  "security-framework",
+  "security-framework-sys",
+  "webpki-root-certs",
+- "windows-sys 0.61.1",
++ "windows-sys 0.59.0",
+ ]
+ 
+ [[package]]
+@@ -3639,9 +3613,9 @@ checksum = "f87165f0995f63a9fbeea62b64d10b4d9d8e78ec6d7d51fb2125fda7bb36788f"
+ 
+ [[package]]
+ name = "rustls-webpki"
+-version = "0.103.4"
++version = "0.103.16"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "0a17884ae0c1b773f1ccd2bd4a8c72f16da897310a98b0e84bf349ad5ead92fc"
++checksum = "4443b1b6d39d7c663139942cc4558262562d2c84123bb6282ef177009ca8b281"
+ dependencies = [
+  "aws-lc-rs",
+  "ring",
+@@ -3657,9 +3631,9 @@ checksum = "b39cdef0fa800fc44525c84ccb54a029961a8215f9619753635a9c0d2538d46d"
+ 
+ [[package]]
+ name = "ruzstd"
+-version = "0.8.1"
++version = "0.8.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "3640bec8aad418d7d03c72ea2de10d5c646a598f9883c7babc160d91e3c1b26c"
++checksum = "a7c1c839d570d835527c9a5e4db7cb2198683a988cb9d7293fc8674e6bd58fc8"
+ dependencies = [
+  "twox-hash",
+ ]
+@@ -4448,32 +4422,31 @@ dependencies = [
+ 
+ [[package]]
+ name = "time"
+-version = "0.3.36"
++version = "0.3.55"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5dfd88e563464686c916c7e46e623e520ddc6d79fa6641390f2e3fa86e83e885"
++checksum = "cdb87b95ec50ddfa440816d227a17b2ccbdda963a316a727fda0fc4334f7d134"
+ dependencies = [
+  "deranged",
+- "itoa",
+  "libc",
+  "num-conv",
+  "num_threads",
+  "powerfmt",
+- "serde",
++ "serde_core",
+  "time-core",
+  "time-macros",
+ ]
+ 
+ [[package]]
+ name = "time-core"
+-version = "0.1.2"
++version = "0.1.9"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "ef927ca75afb808a4d64dd374f00a2adf8d0fcff8e7b184af886c3c87ec4a3f3"
++checksum = "9e1c906769ad99c88eaa54e728060edef082f8e358ff32030cb7c7d315e81109"
+ 
+ [[package]]
+ name = "time-macros"
+-version = "0.2.18"
++version = "0.2.32"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "3f252a68540fde3a3877aeea552b832b40ab9a69e318efd078774a01ddee1ccf"
++checksum = "7e689342a48d2ea927c87ea50cabf8594854bf940e9310208848d680d668ed85"
+ dependencies = [
+  "num-conv",
+  "time-core",
+@@ -4699,9 +4672,9 @@ checksum = "8df9b6e13f2d32c91b9bd719c00d1958837bc7dec474d94952798cc8e69eeec3"
+ 
+ [[package]]
+ name = "tracing"
+-version = "0.1.40"
++version = "0.1.44"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "c3523ab5a71916ccf420eebdf5521fcef02141234bbc0b8a49f2fdc4544364ef"
++checksum = "63e71662fa4b2a2c3a26f570f037eb95bb1f85397f3cd8076caed2f026a6d100"
+ dependencies = [
+  "pin-project-lite",
+  "tracing-attributes",
+@@ -4710,9 +4683,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "tracing-attributes"
+-version = "0.1.27"
++version = "0.1.31"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "34704c8d6ebcbc939824180af020566b01a7c01f80641264eba0999f6c2b6be7"
++checksum = "7490cfa5ec963746568740651ac6781f701c9c5ea257c58e057f3ba8cf69e8da"
+ dependencies = [
+  "proc-macro2",
+  "quote",
+@@ -4721,9 +4694,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "tracing-core"
+-version = "0.1.32"
++version = "0.1.36"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "c06d3da6113f116aaee68e4d601191614c9053067f9ab7f6edbcb161237daa54"
++checksum = "db97caf9d906fbde555dd62fa95ddba9eecfd14cb388e4f491a66d74cd5fb79a"
+ dependencies = [
+  "once_cell",
+  "valuable",
+@@ -4742,14 +4715,14 @@ dependencies = [
+ 
+ [[package]]
+ name = "tracing-subscriber"
+-version = "0.3.18"
++version = "0.3.20"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "ad0f048c97dbd9faa9b7df56362b8ebcaa52adb06b498c050d2f4e32f90a7a8b"
++checksum = "2054a14f5307d601f88daf0553e1cbf472acc4f2c51afab632431cdcd72124d5"
+ dependencies = [
+  "matchers",
+  "nu-ansi-term",
+  "once_cell",
+- "regex",
++ "regex-automata",
+  "sharded-slab",
+  "smallvec",
+  "thread_local",
+@@ -5051,27 +5024,18 @@ dependencies = [
+ 
+ [[package]]
+ name = "webpki-root-certs"
+-version = "1.0.9"
++version = "1.0.11"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b96554aa2acc8ccdb7e1c9a58a7a68dd5d13bccc69cd124cb09406db612a1c9b"
++checksum = "e49d0e65abc00c142e8f9428da991da9f1a250c39be97459901eb12b9b49f62a"
+ dependencies = [
+  "rustls-pki-types",
+ ]
+ 
+ [[package]]
+ name = "webpki-roots"
+-version = "0.26.2"
++version = "1.0.11"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "3c452ad30530b54a4d8e71952716a212b08efd0f3562baa66c29a618b07da7c3"
+-dependencies = [
+- "rustls-pki-types",
+-]
+-
+-[[package]]
+-name = "webpki-roots"
+-version = "1.0.5"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "12bed680863276c63889429bfd6cab3b99943659923822de1c8a39c49e4d722c"
++checksum = "f5f280bbb2b287bc8e7de7e3852945a0ff50d1bbcb5ed42b6c7a568c546df171"
+ dependencies = [
+  "rustls-pki-types",
+ ]
+@@ -5501,27 +5465,27 @@ dependencies = [
+ 
+ [[package]]
+ name = "zstd"
+-version = "0.13.1"
++version = "0.13.4"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "2d789b1514203a1120ad2429eae43a7bd32b90976a7bb8a05f7ec02fa88cc23a"
++checksum = "cdb02c3132d251ab1606e9fc913a7da6c6ed08cc263df15edf082e1dc497d157"
+ dependencies = [
+  "zstd-safe",
+ ]
+ 
+ [[package]]
+ name = "zstd-safe"
+-version = "7.1.0"
++version = "7.4.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "1cd99b45c6bc03a018c8b8a86025678c87e55526064e38f9df301989dce7ec0a"
++checksum = "1c8ea04668f5de8d8d51051714ba560c9536519cadcdb8829bba4fe2ad159b03"
+ dependencies = [
+  "zstd-sys",
+ ]
+ 
+ [[package]]
+ name = "zstd-sys"
+-version = "2.0.10+zstd.1.5.6"
++version = "2.1.2+zstd.1.5.7"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "c253a4914af5bafc8fa8c86ee400827e83cf6ec01195ec1f1ed8441bf00d65aa"
++checksum = "481ada9c543b2323cbb7bbdbb5249177fbf0188ed959ed2c15e4b22421c84ed3"
+ dependencies = [
+  "cc",
+  "pkg-config",
+-- 
+Javier Tia
+
+
+From 8d794713e60bab04015542fb82cfe190bd950656 Mon Sep 17 00:00:00 2001
+From: Javier Tia <javier@peridio.com>
+Date: Sun, 1 Nov 2026 11:52:10 -0600
+Subject: [PATCH 66/69] Cargo.toml: require zstd 0.14
+
+The zstd binding and its safe wrapper carry three RustSec findings
+(context reuse across abandoned streams, an unchecked seekable offset,
+and uninitialised memory after a failed legacy-frame streaming decode).
+Their fixes exist only in zstd 0.14.3 and zstd-safe 8.2.0, so no
+update inside the 0.13 series can clear them. The streaming-decoder
+finding is reachable: the cache read path decodes entries through
+copy_decode.
+
+Only the requirement line and the two locked packages move. The code
+calls copy_encode and copy_decode, whose signatures are unchanged, so
+no source file changes and the stored frame format is the standard one.
+
+Signed-off-by: Javier Tia <javier@peridio.com>
+---
+ Cargo.lock | 18 +++++++++---------
+ Cargo.toml |  2 +-
+ 2 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/Cargo.lock b/Cargo.lock
+index 6991e595..dd84f0c3 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -934,7 +934,7 @@ dependencies = [
+  "libc",
+  "option-ext",
+  "redox_users",
+- "windows-sys 0.59.0",
++ "windows-sys 0.61.1",
+ ]
+ 
+ [[package]]
+@@ -1031,7 +1031,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
+ dependencies = [
+  "libc",
+- "windows-sys 0.59.0",
++ "windows-sys 0.61.1",
+ ]
+ 
+ [[package]]
+@@ -2259,7 +2259,7 @@ version = "0.50.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
+ dependencies = [
+- "windows-sys 0.59.0",
++ "windows-sys 0.61.1",
+ ]
+ 
+ [[package]]
+@@ -3029,7 +3029,7 @@ dependencies = [
+  "once_cell",
+  "socket2",
+  "tracing",
+- "windows-sys 0.59.0",
++ "windows-sys 0.61.1",
+ ]
+ 
+ [[package]]
+@@ -3602,7 +3602,7 @@ dependencies = [
+  "security-framework",
+  "security-framework-sys",
+  "webpki-root-certs",
+- "windows-sys 0.59.0",
++ "windows-sys 0.61.1",
+ ]
+ 
+ [[package]]
+@@ -5465,18 +5465,18 @@ dependencies = [
+ 
+ [[package]]
+ name = "zstd"
+-version = "0.13.4"
++version = "0.14.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "cdb02c3132d251ab1606e9fc913a7da6c6ed08cc263df15edf082e1dc497d157"
++checksum = "db3ae9bf90af6e40197bef767eeefc46ad6397420fe873830bd85e5fbbfb3c70"
+ dependencies = [
+  "zstd-safe",
+ ]
+ 
+ [[package]]
+ name = "zstd-safe"
+-version = "7.4.0"
++version = "8.2.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "1c8ea04668f5de8d8d51051714ba560c9536519cadcdb8829bba4fe2ad159b03"
++checksum = "ded520f16b29e1a9b771c722221b2b0a0398c2316d9bb3c42b458a5414d7434b"
+ dependencies = [
+  "zstd-sys",
+ ]
+diff --git a/Cargo.toml b/Cargo.toml
+index ca611e1c..890bb728 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -122,7 +122,7 @@ webpki-root-certs = { version = "1", optional = true }
+ # by default which pulls in an outdated failure version
+ which = { version = "6", default-features = false }
+ zip = { version = "0.6", default-features = false }
+-zstd = "0.13"
++zstd = "0.14"
+ 
+ # dist-server only
+ nix = { version = "0.30.0", optional = true, features = [
+-- 
+Javier Tia
+
+
+From 42f8a9aa03047b8a4d7e1ecafcc3eb9a0c098b87 Mon Sep 17 00:00:00 2001
+From: Javier Tia <javier@peridio.com>
+Date: Sun, 1 Nov 2026 11:55:35 -0600
+Subject: [PATCH 67/69] Cargo.toml: require object 0.40
+
+ruzstd, the zstd decoder behind the object-file parser, has a
+decompression-bomb finding that is fixed only from ruzstd 0.9.1, and
+object 0.37 pins the 0.8 series. Raising the requirement moves the
+parser to a release that depends on the fixed decoder.
+
+The code uses object only to read archive, Mach-O fat and ELF program
+headers, and compiles unchanged at 0.40. The lock keeps an older
+object release because the backtrace crate, enabled through anyhow's
+backtrace feature, still requires the 0.37 series; that copy no longer
+pulls the vulnerable decoder.
+
+Signed-off-by: Javier Tia <javier@peridio.com>
+---
+ Cargo.lock | 21 +++++++++++++++------
+ Cargo.toml |  2 +-
+ 2 files changed, 16 insertions(+), 7 deletions(-)
+
+diff --git a/Cargo.lock b/Cargo.lock
+index dd84f0c3..29144288 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -242,7 +242,7 @@ dependencies = [
+  "cfg-if 1.0.4",
+  "libc",
+  "miniz_oxide",
+- "object",
++ "object 0.37.3",
+  "rustc-demangle",
+  "windows-link 0.2.1",
+ ]
+@@ -2351,9 +2351,18 @@ checksum = "830b246a0e5f20af87141b25c173cd1b609bd7779a4617d6ec582abaf90870f3"
+ 
+ [[package]]
+ name = "object"
+-version = "0.37.1"
++version = "0.37.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "03fd943161069e1768b4b3d050890ba48730e590f57e56d4aa04e7e090e61b4a"
++checksum = "ff76201f031d8863c38aa7f905eca4f53abbfa15f609db4277d44cd8938f33fe"
++dependencies = [
++ "memchr",
++]
++
++[[package]]
++name = "object"
++version = "0.40.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "dd229a0361b9d0d4396176e02d65897f487eebeab7caa6d443855ee152ca0b9c"
+ dependencies = [
+  "flate2",
+  "memchr",
+@@ -3631,9 +3640,9 @@ checksum = "b39cdef0fa800fc44525c84ccb54a029961a8215f9619753635a9c0d2538d46d"
+ 
+ [[package]]
+ name = "ruzstd"
+-version = "0.8.3"
++version = "0.9.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "a7c1c839d570d835527c9a5e4db7cb2198683a988cb9d7293fc8674e6bd58fc8"
++checksum = "69e4ce4a039f42bf25920b95667e4d789e98749ab11bbb8d2c2936f788421bb5"
+ dependencies = [
+  "twox-hash",
+ ]
+@@ -3722,7 +3731,7 @@ dependencies = [
+  "mime",
+  "nix 0.30.1",
+  "number_prefix",
+- "object",
++ "object 0.40.0",
+  "opendal",
+  "opendal-http-transport-reqwest",
+  "opendal-layer-logging",
+diff --git a/Cargo.toml b/Cargo.toml
+index 890bb728..33d8ece5 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -80,7 +80,7 @@ memchr = "2"
+ memmap2 = "0.9.4"
+ mime = "0.3"
+ number_prefix = "0.4"
+-object = "0.37"
++object = "0.40"
+ opendal = { version = "0.58.1", optional = true, default-features = false }
+ opendal-http-transport-reqwest = { version = "0.58.1", optional = true }
+ opendal-layer-logging = { version = "0.58.1", optional = true }
+-- 
+Javier Tia
+
+
+From dd5e84aedfe12dedc43a5932f97904ee04d9eb4d Mon Sep 17 00:00:00 2001
+From: Javier Tia <javier@peridio.com>
+Date: Sun, 1 Nov 2026 11:57:17 -0600
+Subject: [PATCH 68/69] cache_io: port the cache entry writer to zip 9
+
+Three RustSec findings against the zip 0.6 series (SUID bits and
+symlinks preserved by the archive extraction calls) are fixed only from
+zip 9.0.0. Nothing here calls extraction, but leaving an unmaintained
+series in place means the scan stays red or a reasoned ignore must be
+kept true by every future change.
+
+The port is the file-options type, the call that builds it, and a
+binding that no longer needs to be mutable because the writer's finish
+now consumes it. Two tests pin the stored format first: a round trip of
+an object, standard output, standard error and the file mode, and the
+same assertions on a 325-byte entry produced by the pre-port code at
+the base commit, so an entry written by the previous package is proven
+readable by this one. The new zip pulls in nix and typed-path.
+
+Signed-off-by: Javier Tia <javier@peridio.com>
+---
+ Cargo.lock            | 34 +++++++++++++++++++++------
+ Cargo.toml            |  2 +-
+ src/cache/cache_io.rs | 54 ++++++++++++++++++++++++++++++++++++++++---
+ 3 files changed, 79 insertions(+), 11 deletions(-)
+
+diff --git a/Cargo.lock b/Cargo.lock
+index 29144288..c84f9657 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -739,9 +739,9 @@ checksum = "338089f42c427b86394a5ee60ff321da23a5c89c9d89514c829687b26359fcff"
+ 
+ [[package]]
+ name = "crc32fast"
+-version = "1.3.2"
++version = "1.5.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b540bd8bc810d3885c6ea91e2018302f68baba2129ab3e88f32389ee9370880d"
++checksum = "0ba106e844045ddc02c20768ac4b0b7cb45f2cc2ecbd833ac9f5dacb183c2055"
+ dependencies = [
+  "cfg-if 1.0.4",
+ ]
+@@ -2247,6 +2247,18 @@ dependencies = [
+  "libc",
+ ]
+ 
++[[package]]
++name = "nix"
++version = "0.31.3"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "cf20d2fde8ff38632c426f1165ed7436270b44f199fc55284c38276f9db47c3d"
++dependencies = [
++ "bitflags 2.13.1",
++ "cfg-if 1.0.4",
++ "cfg_aliases",
++ "libc",
++]
++
+ [[package]]
+ name = "normalize-line-endings"
+ version = "0.3.0"
+@@ -3759,7 +3771,7 @@ dependencies = [
+  "tokio-util",
+  "toml",
+  "tower-service",
+- "typed-path",
++ "typed-path 0.13.0",
+  "url",
+  "uuid",
+  "version-compare",
+@@ -4767,6 +4779,12 @@ version = "2.1.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "8b907da542cbced5261bd3256de1b3a1bf340a3d37f93425a07362a1d687de56"
+ 
++[[package]]
++name = "typed-path"
++version = "0.12.4"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "54ec2755506471f54baf5e4bb5499d8e510cc1caf271270e778a736bd2d7336c"
++
+ [[package]]
+ name = "typed-path"
+ version = "0.13.0"
+@@ -5463,13 +5481,15 @@ dependencies = [
+ 
+ [[package]]
+ name = "zip"
+-version = "0.6.6"
++version = "9.0.5"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "760394e246e4c28189f19d488c058bf16f564016aefac5d32bb1f3b51d5e9261"
++checksum = "6e04976da629d3b04204ba8105b396a193af8ad2583b2c79bfb3ab8af580a11e"
+ dependencies = [
+- "byteorder",
+  "crc32fast",
+- "crossbeam-utils",
++ "indexmap",
++ "memchr",
++ "nix 0.31.3",
++ "typed-path 0.12.4",
+ ]
+ 
+ [[package]]
+diff --git a/Cargo.toml b/Cargo.toml
+index 33d8ece5..2745e76b 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -121,7 +121,7 @@ walkdir = "2"
+ webpki-root-certs = { version = "1", optional = true }
+ # by default which pulls in an outdated failure version
+ which = { version = "6", default-features = false }
+-zip = { version = "0.6", default-features = false }
++zip = { version = "9", default-features = false }
+ zstd = "0.14"
+ 
+ # dist-server only
+diff --git a/src/cache/cache_io.rs b/src/cache/cache_io.rs
+index e24bc42c..d04dac97 100644
+--- a/src/cache/cache_io.rs
++++ b/src/cache/cache_io.rs
+@@ -18,7 +18,7 @@ use std::fmt;
+ use std::io::{Cursor, Read, Seek, Write};
+ use std::path::{Path, PathBuf};
+ use tempfile::NamedTempFile;
+-use zip::write::FileOptions;
++use zip::write::SimpleFileOptions;
+ use zip::{CompressionMethod, ZipArchive, ZipWriter};
+ 
+ /// Cache object sourced by a file.
+@@ -271,7 +271,7 @@ impl CacheWrite {
+     {
+         // We're going to declare the compression method as "stored",
+         // but we're actually going to store zstd-compressed blobs.
+-        let opts = FileOptions::default().compression_method(CompressionMethod::Stored);
++        let opts = SimpleFileOptions::default().compression_method(CompressionMethod::Stored);
+         let opts = if let Some(mode) = mode {
+             opts.unix_permissions(mode)
+         } else {
+@@ -307,7 +307,7 @@ impl CacheWrite {
+ 
+     /// Finish writing data to the cache entry writer, and return the data.
+     pub fn finish(self) -> Result<Vec<u8>> {
+-        let CacheWrite { mut zip } = self;
++        let CacheWrite { zip } = self;
+         let cur = zip.finish().context("Failed to finish cache entry zip")?;
+         Ok(cur.into_inner())
+     }
+@@ -473,4 +473,52 @@ mod tests {
+         let result = runtime.block_on(cache_read.extract_objects(objects, pool));
+         assert!(result.is_ok(), "Extracting to NUL should succeed");
+     }
++
++    fn assert_entry_contents(bytes: Vec<u8>) {
++        let mut read = CacheRead::from(Cursor::new(bytes)).unwrap();
++        let mut obj = Vec::new();
++        #[cfg_attr(not(unix), allow(unused_variables))]
++        let mode = read.get_object("obj", &mut obj).unwrap();
++        assert_eq!(obj, b"object bytes");
++        #[cfg(unix)]
++        assert_eq!(mode.map(|m| m & 0o777), Some(0o755));
++        assert_eq!(read.get_stdout(), b"out");
++        assert_eq!(read.get_stderr(), b"err");
++    }
++
++    #[test]
++    fn test_cache_entry_round_trips_objects_stdout_stderr_and_mode() {
++        let mut w = CacheWrite::new();
++        w.put_object(
++            "obj",
++            &mut Cursor::new(b"object bytes".to_vec()),
++            Some(0o755),
++        )
++        .unwrap();
++        w.put_stdout(b"out").unwrap();
++        w.put_stderr(b"err").unwrap();
++        assert_entry_contents(w.finish().unwrap());
++    }
++
++    #[test]
++    fn test_cache_entry_written_before_the_zip_9_port_is_readable() {
++        // Produced by CacheWrite at base commit 1dc02e81 (zip 0.6).
++        const FIXTURE: &[u8] = &[
++            80, 75, 3, 4, 20, 0, 0, 0, 0, 0, 0, 0, 33, 0, 183, 120, 88, 76, 21, 0, 0, 0, 21, 0, 0,
++            0, 3, 0, 0, 0, 111, 98, 106, 40, 181, 47, 253, 0, 88, 97, 0, 0, 111, 98, 106, 101, 99,
++            116, 32, 98, 121, 116, 101, 115, 80, 75, 3, 4, 20, 0, 0, 0, 0, 0, 0, 0, 33, 0, 48, 133,
++            147, 224, 12, 0, 0, 0, 12, 0, 0, 0, 6, 0, 0, 0, 115, 116, 100, 111, 117, 116, 40, 181,
++            47, 253, 0, 88, 25, 0, 0, 111, 117, 116, 80, 75, 3, 4, 20, 0, 0, 0, 0, 0, 0, 0, 33, 0,
++            20, 51, 38, 75, 12, 0, 0, 0, 12, 0, 0, 0, 6, 0, 0, 0, 115, 116, 100, 101, 114, 114, 40,
++            181, 47, 253, 0, 88, 25, 0, 0, 101, 114, 114, 80, 75, 1, 2, 46, 3, 20, 0, 0, 0, 0, 0,
++            0, 0, 33, 0, 183, 120, 88, 76, 21, 0, 0, 0, 21, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0,
++            0, 0, 237, 129, 0, 0, 0, 0, 111, 98, 106, 80, 75, 1, 2, 46, 3, 20, 0, 0, 0, 0, 0, 0, 0,
++            33, 0, 48, 133, 147, 224, 12, 0, 0, 0, 12, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
++            164, 129, 54, 0, 0, 0, 115, 116, 100, 111, 117, 116, 80, 75, 1, 2, 46, 3, 20, 0, 0, 0,
++            0, 0, 0, 0, 33, 0, 20, 51, 38, 75, 12, 0, 0, 0, 12, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0,
++            0, 0, 0, 164, 129, 102, 0, 0, 0, 115, 116, 100, 101, 114, 114, 80, 75, 5, 6, 0, 0, 0,
++            0, 3, 0, 3, 0, 153, 0, 0, 0, 150, 0, 0, 0, 0, 0,
++        ];
++        assert_entry_contents(FIXTURE.to_vec());
++    }
+ }
+-- 
+Javier Tia
+
+
+From 0b53bb7cc5ad5e377de565e92fd9f8ef165cb1f4 Mon Sep 17 00:00:00 2001
+From: Javier Tia <javier@peridio.com>
+Date: Sun, 1 Nov 2026 11:58:26 -0600
+Subject: [PATCH 69/69] audit: accept the rsa timing finding that has no fix
+
+After the dependency updates, the advisory scan reports one remaining
+vulnerability: the Marvin timing side channel in rsa 0.9.10, for which
+no fixed release exists. Left unrecorded it keeps the pre-push hook red
+and forces every push to skip the hook, which hides the next finding
+too.
+
+The scan's project-level ignore file now lists only that identifier,
+with the reason (rsa is compiled in only through the request-signing
+crates of the object-storage layer, and this cluster's cache is local
+disk, so no RSA private-key operation runs), the ceiling (valid only
+while no cloud storage backend is configured with an RSA key) and the
+upgrade trigger (a fixed rsa release, or a host configuring a cloud
+backend). The hook command is unchanged. The file's directory is
+gitignored, so it was added with a forced add.
+
+Signed-off-by: Javier Tia <javier@peridio.com>
+---
+ .cargo/audit.toml | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+ create mode 100644 .cargo/audit.toml
+
+diff --git a/.cargo/audit.toml b/.cargo/audit.toml
+new file mode 100644
+index 00000000..09ac6185
+--- /dev/null
++++ b/.cargo/audit.toml
+@@ -0,0 +1,11 @@
++[advisories]
++ignore = [
++    # RUSTSEC-2023-0071: rsa 0.9.10, Marvin Attack timing side channel.
++    # Reason: no fixed release exists. The crate is compiled in only through
++    # the request-signing crates (reqsign) of the object-storage layer, and
++    # this cluster's cache is local disk (`sccache --show-stats` prints
++    # "Cache location Local disk"), so no RSA private-key operation runs.
++    # Ceiling: valid only while no cloud storage backend is configured with an RSA key.
++    # Upgrade trigger: a fixed rsa release is published, or any host configures a cloud storage backend.
++    "RUSTSEC-2023-0071",
++]
 -- 
 Javier Tia
 
