@@ -1,7 +1,7 @@
 From de70acefc6a2fb2a93d20dc7e8ec9d09e414483c Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:19:15 -0600
-Subject: [PATCH 01/71] server: don't panic when a finished compile has neither
+Subject: [PATCH 01/72] server: don't panic when a finished compile has neither
  code nor signal
 
 get_signal did `status.signal().expect("must have signal")`, assuming the
@@ -108,7 +108,7 @@ Javier Tia
 From d93e23bd615e743b5fd246b854983a05a212684c Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:22:04 -0600
-Subject: [PATCH 02/71] compiler: log distributed-compile decisions at info
+Subject: [PATCH 02/72] compiler: log distributed-compile decisions at info
  level
 
 sccache logged the distribute-vs-local decision only at debug ("Compiling
@@ -174,7 +174,7 @@ Javier Tia
 From d085ce4b09326a2c2cc61f5c0617f9d3ab43d61e Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:21:37 -0600
-Subject: [PATCH 03/71] compiler: fall back to local on distributed-compile
+Subject: [PATCH 03/72] compiler: fall back to local on distributed-compile
  failure
 
 A distributed compile the build-server rejects is often a distribution
@@ -252,7 +252,7 @@ Javier Tia
 From 49ddb9d8efc6015512c2f20a2215bd3f25c065d7 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:23:34 -0600
-Subject: [PATCH 04/71] compiler: fall back to local when a dist compile drops
+Subject: [PATCH 04/72] compiler: fall back to local when a dist compile drops
  an output
 
 A distributed compile can return a successful (exit 0) result yet omit a
@@ -445,7 +445,7 @@ Javier Tia
 From c630508eb9922955390287c84b57919abb6ec9ca Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:24:23 -0600
-Subject: [PATCH 05/71] logging: keep wrapper log output off the compiler's
+Subject: [PATCH 05/72] logging: keep wrapper log output off the compiler's
  stderr
 
 When sccache runs as a compiler wrapper (`sccache <compiler> ...`) it
@@ -549,7 +549,7 @@ Javier Tia
 From 2adc43ccb55c4c905886e5864db43fe6e1e6326b Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:24:00 -0600
-Subject: [PATCH 06/71] dist: don't fail a distributed compile over an optional
+Subject: [PATCH 06/72] dist: don't fail a distributed compile over an optional
  missing output
 
 After a distributed compile the client verifies every declared output
@@ -592,7 +592,7 @@ Javier Tia
 From 2132f6a42ea95fe8b658d59937a97d558c50e479 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:23:21 -0600
-Subject: [PATCH 07/71] compiler: log a failed distributed compile's remote
+Subject: [PATCH 07/72] compiler: log a failed distributed compile's remote
  output at debug
 
 When a distributed compile exits non-zero the client logs only the exit
@@ -645,7 +645,7 @@ Javier Tia
 From e982f9dad352a47cd9e2d8651990501dee342a96 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:29:10 -0600
-Subject: [PATCH 08/71] config: add the dist fallback switch
+Subject: [PATCH 08/72] config: add the dist fallback switch
 
 Kernel assembler sources that .incbin generated files fail on the
 build server, because the generated file is not among the shipped
@@ -765,7 +765,7 @@ Javier Tia
 From bbeab9f927b219311d30b91f27619960eb6b2b43 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 11:34:28 -0600
-Subject: [PATCH 09/71] compiler: honor the dist fallback switch
+Subject: [PATCH 09/72] compiler: honor the dist fallback switch
 
 A non-zero remote exit code or a missing declared output unconditionally
 triggered a local recompile. That contradicts upstream's behaviour, where
@@ -1119,7 +1119,7 @@ Javier Tia
 From cb8dc81aac4aed01eb882afb5142fc616145be21 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:36:02 -0600
-Subject: [PATCH 10/71] compiler/rust: ship the target spec so a remote rustc
+Subject: [PATCH 10/72] compiler/rust: ship the target spec so a remote rustc
  resolves --target
 
 A distributed rust compile against an OpenEmbedded custom target failed on
@@ -1501,7 +1501,7 @@ Javier Tia
 From 0d746cee92d95b8285cf38798e0a88b623e991d1 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:37:31 -0600
-Subject: [PATCH 11/71] compiler/rust: ship the target sysroot std to
+Subject: [PATCH 11/72] compiler/rust: ship the target sysroot std to
  distributed compiles
 
 A distributed cross-compile against an OpenEmbedded custom target failed on
@@ -1607,7 +1607,7 @@ Javier Tia
 From 03e12a3c5295ab373e15ad87004ad65342be2cfd Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:36:31 -0600
-Subject: [PATCH 12/71] compiler/rust: ship split-metadata rlibs whole instead
+Subject: [PATCH 12/72] compiler/rust: ship split-metadata rlibs whole instead
  of dropping them
 
 When packaging dist inputs, sccache trims a dependency rlib to just its
@@ -1767,7 +1767,7 @@ Javier Tia
 From 49fc6832068f8c900ca9660170dcb7fbb77fc89f Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:40:01 -0600
-Subject: [PATCH 13/71] compiler/gcc: fix distributed compile of relative input
+Subject: [PATCH 13/72] compiler/gcc: fix distributed compile of relative input
  paths
 
 sccache-dist ships the preprocessed input through the inputs packager
@@ -1883,7 +1883,7 @@ Javier Tia
 From 02817f77f0ba5b7e253847771b3673f9c561149d Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:44:01 -0600
-Subject: [PATCH 14/71] compiler/gcc: never distribute precompiled-header
+Subject: [PATCH 14/72] compiler/gcc: never distribute precompiled-header
  generation
 
 A distributed PCH build produced a .gch that broke every consumer of the
@@ -2011,7 +2011,7 @@ Javier Tia
 From 4888aae374ec5992585e7988d70d16d8b37617a5 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:42:12 -0600
-Subject: [PATCH 15/71] compiler/gcc: keep configure feature-probes local
+Subject: [PATCH 15/72] compiler/gcc: keep configure feature-probes local
 
 avocado-distro's do_configure phase ships ~900 autoconf conftest and
 CMake try_compile feature-probe compiles to the build-server. Each is a
@@ -2207,7 +2207,7 @@ Javier Tia
 From 23519a0cac3e50fcd89d7cd9976aba5bd528d1e9 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:45:02 -0600
-Subject: [PATCH 16/71] compiler/gcc: run /dev/null feature-probes locally
+Subject: [PATCH 16/72] compiler/gcc: run /dev/null feature-probes locally
 
 OpenSSL probes assembler support by running the compiler on /dev/null:
 `gcc -Wa,--help -c -o null.o -x assembler /dev/null`, then greps the
@@ -2287,7 +2287,7 @@ Javier Tia
 From 7e37206e67a2786adb228e11bc328be2daa6d97e Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:44:58 -0600
-Subject: [PATCH 17/71] dist/pkg: bundle relocated interpreter's libdir into
+Subject: [PATCH 17/72] dist/pkg: bundle relocated interpreter's libdir into
  the toolchain package
 
 sccache-dist packages a toolchain's shared libraries by parsing `ldd`
@@ -2432,7 +2432,7 @@ Javier Tia
 From c810f2000da448dfda9f9d56e86ff6a76bd67e05 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:46:56 -0600
-Subject: [PATCH 18/71] compiler: package the compile task's toolchain, not the
+Subject: [PATCH 18/72] compiler: package the compile task's toolchain, not the
  daemon's
 
 When sccache packages a C/C++ toolchain for distributed compilation it
@@ -2707,7 +2707,7 @@ Javier Tia
 From 243736304a2b9d729249be8d3fa6b6c3a1cfda8c Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:45:31 -0600
-Subject: [PATCH 19/71] dist/pkg: bundle the sysroot usr/lib for split-sysroot
+Subject: [PATCH 19/72] dist/pkg: bundle the sysroot usr/lib for split-sysroot
  toolchains
 
 A relocated toolchain interpreter (the OE buildtools SDK loader) already
@@ -2843,7 +2843,7 @@ Javier Tia
 From 56fa7b71bde7d90766163f5b34b1f7fefaeb5efe Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:47:12 -0600
-Subject: [PATCH 20/71] dist/pkg: skip dangling symlinks when packaging a
+Subject: [PATCH 20/72] dist/pkg: skip dangling symlinks when packaging a
  toolchain
 
 Cold toolchain packaging walked the relocated interpreter's sysroot and
@@ -2933,7 +2933,7 @@ Javier Tia
 From 1172153d845942a45df3e4e69970cc6f546d3d9a Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:49:52 -0600
-Subject: [PATCH 21/71] dist/pkg: ship long input paths via GNU tar long-name
+Subject: [PATCH 21/72] dist/pkg: ship long input paths via GNU tar long-name
 
 The input packager built each tar entry with a ustar header and set the
 entry path with Header::set_path, which overruns the ustar name (100 B)
@@ -3153,7 +3153,7 @@ Javier Tia
 From 42337626e9cdf857bc5a0a41e6f87b1e728fd8fa Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:51:46 -0600
-Subject: [PATCH 22/71] dist: report a per-server breakdown in scheduler status
+Subject: [PATCH 22/72] dist: report a per-server breakdown in scheduler status
 
 SchedulerStatusResult only carried cluster aggregates (num_servers,
 num_cpus, in_progress), so a client could see total capacity but not how
@@ -3315,7 +3315,7 @@ Javier Tia
 From 4abccea8af8a365b7883d7ed535bcd0e91b666e6 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:52:46 -0600
-Subject: [PATCH 23/71] dist/scheduler: drop a stopped server promptly
+Subject: [PATCH 23/72] dist/scheduler: drop a stopped server promptly
 
 A build server that stops is only removed once prune_servers sees its
 last_seen exceed the 90s heartbeat timeout, and prune runs only on the
@@ -3675,7 +3675,7 @@ Javier Tia
 From 257162490ca0382dd8358b87cc71fd339bf29ae4 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:55:39 -0600
-Subject: [PATCH 24/71] dist/scheduler: soften the error demotion so an idle
+Subject: [PATCH 24/72] dist/scheduler: soften the error demotion so an idle
  remote node is not stranded
 
 A server that fails a job assignment is dropped into the best_err bucket and
@@ -3963,7 +3963,7 @@ Javier Tia
 From 9a171b205ae097e2f879550f005728d52803de36 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:57:42 -0600
-Subject: [PATCH 25/71] dist/scheduler: make routing topology-aware and
+Subject: [PATCH 25/72] dist/scheduler: make routing topology-aware and
  deterministic
 
 The load model weighs every server as job_count/core_count with the raw
@@ -4187,7 +4187,7 @@ Javier Tia
 From b27bd55dd353d5cf8fe07d11bcfb24139dd8c977 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 12:57:28 -0600
-Subject: [PATCH 26/71] dist/scheduler: derive the colocated de-weight
+Subject: [PATCH 26/72] dist/scheduler: derive the colocated de-weight
  dynamically
 
 The advertised-cores override added earlier had to be a hardcoded absolute
@@ -4516,7 +4516,7 @@ Javier Tia
 From 9ee133b66333fcde1d4eddb6cfca77d98b47358d Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:00:54 -0600
-Subject: [PATCH 27/71] dist/scheduler: reap Started jobs whose Complete update
+Subject: [PATCH 27/72] dist/scheduler: reap Started jobs whose Complete update
  was lost
 
 A distributed job that reached the Started state but never reported
@@ -4777,7 +4777,7 @@ Javier Tia
 From 0f57afffb4271f3638f28edf2eb7d1c93c61704e Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:05:12 -0600
-Subject: [PATCH 28/71] dist/scheduler: add a between-nodes job-lifecycle leak
+Subject: [PATCH 28/72] dist/scheduler: add a between-nodes job-lifecycle leak
  detector
 
 Diagnosing scheduler slot leaks meant a rebuild-with-debug-logging cycle
@@ -4935,7 +4935,7 @@ Javier Tia
 From 252ca082e45277cf0bfc9fbbd6084efc273c785e Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:04:30 -0600
-Subject: [PATCH 29/71] dist/scheduler: make late job-state updates idempotent
+Subject: [PATCH 29/72] dist/scheduler: make late job-state updates idempotent
 
 The 180s Started-job reaper can discard a successful compile: it reclaims
 the slot at the timeout, then the build server's run_job propagates a
@@ -5057,7 +5057,7 @@ Javier Tia
 From a8b72b8f677c748c4cd4ccd7597c3546b24efffd Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:05:25 -0600
-Subject: [PATCH 30/71] dist/scheduler: measure the unclaimed reservation
+Subject: [PATCH 30/72] dist/scheduler: measure the unclaimed reservation
  timeout from Ready
 
 The unclaimed-reservation reaper timed a job out from its allocation
@@ -5166,7 +5166,7 @@ Javier Tia
 From e01a31c69427db49a1ab0575409b4091f3e9caae Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:10:32 -0600
-Subject: [PATCH 31/71] dist: make scheduler restart safe for job accounting
+Subject: [PATCH 31/72] dist: make scheduler restart safe for job accounting
 
 A build server that keeps running across a scheduler restart can be
 handed a job id it still holds a job_toolchains entry for, and
@@ -5334,7 +5334,7 @@ Javier Tia
 From c930b831dc3ebe16723eaf7687c28e803956b308 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:12:40 -0600
-Subject: [PATCH 32/71] dist: reap Started jobs by liveness lease, not a fixed
+Subject: [PATCH 32/72] dist: reap Started jobs by liveness lease, not a fixed
  timeout
 
 The scheduler reaped a Started job purely on a fixed 180s timeout, so a
@@ -5971,7 +5971,7 @@ Javier Tia
 From fb924f23c8e0bc863df963dced4b593cb75fd6f1 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:19:17 -0600
-Subject: [PATCH 33/71] dist/http: reuse connections and offload large
+Subject: [PATCH 33/72] dist/http: reuse connections and offload large
  deserialize
 
 The single client daemon is the throughput chokepoint of a full image
@@ -6648,7 +6648,7 @@ Javier Tia
 From 2fafebdcb3c6aacafeac79e976f4bfe5f9d1c981 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:20:42 -0600
-Subject: [PATCH 34/71] dist/http: re-close the connection on chunked toolchain
+Subject: [PATCH 34/72] dist/http: re-close the connection on chunked toolchain
  submit
 
 do_submit_toolchain posts a chunked body (wrap_stream, no Content-Length),
@@ -6717,7 +6717,7 @@ Javier Tia
 From b89f531e02a2633998f3d6b7951c26e921a0ced1 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:21:42 -0600
-Subject: [PATCH 35/71] dist/server: shrink toolchain locks so compiles stop
+Subject: [PATCH 35/72] dist/server: shrink toolchain locks so compiles stop
  convoying
 
 The build server serialized all concurrent compiles behind two global
@@ -7531,7 +7531,7 @@ Javier Tia
 From 7adee95f0f089aae697f21c5b9e69b9453119c4d Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:31:41 -0600
-Subject: [PATCH 36/71] dist/server: bound the shutdown deregister and poll the
+Subject: [PATCH 36/72] dist/server: bound the shutdown deregister and poll the
  stop flag faster
 
 The SIGINT/SIGTERM handler installed for graceful deregistration runs a
@@ -7581,7 +7581,7 @@ Javier Tia
 From 4e4b035d0f3758b3f5d69810b4f0bce1957ecc42 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:33:13 -0600
-Subject: [PATCH 37/71] tests/harness: wait for dist servers to exit on
+Subject: [PATCH 37/72] tests/harness: wait for dist servers to exit on
  teardown
 
 DistSystem::drop sent SIGINT to each dist server, slept a fixed 100 ms
@@ -7664,7 +7664,7 @@ Javier Tia
 From 7b5b6d0a5bab86b150c6b0f823f56aba0351d071 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:38:09 -0600
-Subject: [PATCH 38/71] dist: instrument job scheduling and client dispatch for
+Subject: [PATCH 38/72] dist: instrument job scheduling and client dispatch for
  load diagnosis
 
 The 2-node cluster leaves both build servers idle for long stretches of a
@@ -7890,7 +7890,7 @@ Javier Tia
 From d2b3db2f6f47d929494d91f57d9d8a9e91e2d689 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:41:13 -0600
-Subject: [PATCH 39/71] dist: time local preprocessing in the per-job load
+Subject: [PATCH 39/72] dist: time local preprocessing in the per-job load
  diagnostics
 
 The R0 dist instrumentation times put_toolchain, alloc, submit, and
@@ -8051,7 +8051,7 @@ Javier Tia
 From 7d5374ae1951defc51ea0d8b35f3e25c4514a2ba Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:42:44 -0600
-Subject: [PATCH 40/71] compiler/c: gauge live local preprocess concurrency
+Subject: [PATCH 40/72] compiler/c: gauge live local preprocess concurrency
 
 The preprocessing wall - the client jobserver's cores saturated by local
 cc1 -E for the whole cluster while remote nodes idle - was only ever an
@@ -8142,7 +8142,7 @@ Javier Tia
 From 0414008068bf178dc25e3b3d6da23af667bc8c7b Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:44:38 -0600
-Subject: [PATCH 41/71] compiler: concatenate strings without relying on deref
+Subject: [PATCH 41/72] compiler: concatenate strings without relying on deref
  coercion
 
 The lib test target links the thirtyfour dev-dependency, whose 0.36
@@ -8182,7 +8182,7 @@ Javier Tia
 From b7f70580ebe7690d77fb7f1e433d9ea950f82eea Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:46:08 -0600
-Subject: [PATCH 42/71] ci: mirror the CI validation gate in pre-commit
+Subject: [PATCH 42/72] ci: mirror the CI validation gate in pre-commit
 
 The pre-commit config only ran nightly fmt and clippy with no failure
 gate, so a break reached CI before anyone noticed - a changed function
@@ -8279,7 +8279,7 @@ Javier Tia
 From f868d96dd45928eac778c653f2328f53abe2b9d0 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:51:43 -0600
-Subject: [PATCH 43/71] dist: satisfy clippy under the all-features gate
+Subject: [PATCH 43/72] dist: satisfy clippy under the all-features gate
 
 The tree fails `clippy -D warnings --features all,dist-server` with the
 current toolchain. The failing sites in this commit are in
@@ -8623,7 +8623,7 @@ Javier Tia
 From 57ca4823938e5602aea91b9d72069d30572cf697 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 13:51:33 -0600
-Subject: [PATCH 44/71] chore: fix clippy lints flagged by a newer toolchain
+Subject: [PATCH 44/72] chore: fix clippy lints flagged by a newer toolchain
 
 Clippy 1.99 rejects the tree under `-D warnings` at more sites than
 the dist-specific commit covers: collapsible_if in
@@ -8730,7 +8730,7 @@ Javier Tia
 From ef1710d34d65f9a992281c2fac1e736878bad83b Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 15:55:24 -0600
-Subject: [PATCH 45/71] compiler: keep the server annotation on a reported
+Subject: [PATCH 45/72] compiler: keep the server annotation on a reported
  remote failure
 
 With the dist fallback switch off, the remote result is meant to reach
@@ -8799,7 +8799,7 @@ Javier Tia
 From 4e3def9704d7eddeed5b8c8d3dd1311d6267e2e1 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 17:54:55 -0600
-Subject: [PATCH 46/71] compiler/rust: ship sysroot rlibs whose name has no
+Subject: [PATCH 46/72] compiler/rust: ship sysroot rlibs whose name has no
  hash suffix
 
 The inputs packager skips a hashless library when rustc dependency
@@ -8909,7 +8909,7 @@ Javier Tia
 From 3c0c7a4a2f2d04c068debc22527618b309251889 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 17:57:25 -0600
-Subject: [PATCH 47/71] dist: compare returned outputs, not path existence,
+Subject: [PATCH 47/72] dist: compare returned outputs, not path existence,
  after a remote compile
 
 After a successful remote compile the client fell back to a local
@@ -9318,7 +9318,7 @@ Javier Tia
 From f8c2b9b1a1997e70b768803618e488ee811b2230 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Mon, 26 Oct 2026 18:58:14 -0600
-Subject: [PATCH 48/71] dist/scheduler: test the Started backstop, deregister
+Subject: [PATCH 48/72] dist/scheduler: test the Started backstop, deregister
  and status paths
 
 Mutation testing showed three guards that no test failed without: the
@@ -9457,7 +9457,7 @@ Javier Tia
 From 2df26335ab392b39a7e7b1737a244100b419a52c Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Tue, 27 Oct 2026 20:08:50 -0600
-Subject: [PATCH 49/71] pre-commit: Format with rustfmt at the crate edition
+Subject: [PATCH 49/72] pre-commit: Format with rustfmt at the crate edition
 
 The rust-fmt hook ran `cargo +nightly fmt -- <files>`. With explicit
 file arguments that invokes rustfmt directly, and rustfmt then parses
@@ -9493,7 +9493,7 @@ Javier Tia
 From cad1b61e89a83e2f4d95c8624836ff14b7d00e86 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Tue, 27 Oct 2026 20:07:18 -0600
-Subject: [PATCH 50/71] compiler/c: Test that the task env reaches the
+Subject: [PATCH 50/72] compiler/c: Test that the task env reaches the
  toolchain packager's compiler
 
 The toolchain packager asks the compiler where its sub-tools live with
@@ -9721,7 +9721,7 @@ Javier Tia
 From d60ebd0dd395000b042040331527347d2b8732ff Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Tue, 27 Oct 2026 20:07:20 -0600
-Subject: [PATCH 51/71] dist/build: Test the production eviction path, not just
+Subject: [PATCH 51/72] dist/build: Test the production eviction path, not just
  Mutex::try_lock
 
 The only eviction test locked and try-locked a Mutex it created itself,
@@ -9911,7 +9911,7 @@ Javier Tia
 From 0125ff493b7e92c0536ecfd95785ce6099271ca3 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Tue, 27 Oct 2026 20:08:43 -0600
-Subject: [PATCH 52/71] dist/scheduler: Warn about a wedged build once per
+Subject: [PATCH 52/72] dist/scheduler: Warn about a wedged build once per
  interval, not per heartbeat
 
 A server names a stuck job in every heartbeat, about every 30 seconds,
@@ -10133,7 +10133,7 @@ Javier Tia
 From 65a8bfef508aea703d866693c8336edd8448e06d Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 16:27:03 -0600
-Subject: [PATCH 53/71] compiler: share the in-flight guard and the dist
+Subject: [PATCH 53/72] compiler: share the in-flight guard and the dist
  test-mock helpers
 
 PreprocInflightGuard in c.rs and DistInflightGuard in compiler.rs were
@@ -10413,7 +10413,7 @@ Javier Tia
 From b73aab490000ace2a99891b70329ca3bc352804d Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:32:28 -0600
-Subject: [PATCH 54/71] dist/scheduler: treat a heartbeat without a report as
+Subject: [PATCH 54/72] dist/scheduler: treat a heartbeat without a report as
  no liveness information
 
 A heartbeat from a server that predates the active-jobs report has no
@@ -10892,7 +10892,7 @@ Javier Tia
 From 65ea92a9baba228bfc9f705bcc4ba4ba83d192dd Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:33:24 -0600
-Subject: [PATCH 55/71] dist/http: accept heartbeats from servers that predate
+Subject: [PATCH 55/72] dist/http: accept heartbeats from servers that predate
  the active-jobs report
 
 The heartbeat request gained a trailing active_jobs field, and bincode
@@ -11329,7 +11329,7 @@ Javier Tia
 From 8d36f344a14b41076bab7a440e766ae9cc119b39 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:35:25 -0600
-Subject: [PATCH 56/71] dist/server: verify an uploaded toolchain's hash before
+Subject: [PATCH 56/72] dist/server: verify an uploaded toolchain's hash before
  it enters the cache
 
 The upload was grafted into the cache first and hashed afterwards, so a
@@ -11535,7 +11535,7 @@ Javier Tia
 From 4bed3b8fa53fea2533790054c34b4e956947d72e Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:42:38 -0600
-Subject: [PATCH 57/71] dist/server: create upload temp files with the prefix
+Subject: [PATCH 57/72] dist/server: create upload temp files with the prefix
  the cache scan removes
 
 The upload receiver streamed into a default-prefixed temporary file in
@@ -11696,7 +11696,7 @@ Javier Tia
 From aa02ef2cebf0e70ae237fca5990be4770bde51cb Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:43:54 -0600
-Subject: [PATCH 58/71] dist/build: skip eviction victims whose preparation
+Subject: [PATCH 58/72] dist/build: skip eviction victims whose preparation
  lock is held
 
 Eviction removed every victim from the toolchain map before checking
@@ -11882,7 +11882,7 @@ Javier Tia
 From d4144f0d66822b72d05c864573d57de9cac927ac Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:44:42 -0600
-Subject: [PATCH 59/71] compiler: report a dropped dist output when the
+Subject: [PATCH 59/72] compiler: report a dropped dist output when the
  fallback switch is off
 
 With `[dist] fallback = false` the returned-versus-declared output check
@@ -12167,7 +12167,7 @@ Javier Tia
 From f25d341e23374c259c1a2b377a020909fa5f00f4 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:47:44 -0600
-Subject: [PATCH 60/71] compiler/rust: keep every metadata member when trimming
+Subject: [PATCH 60/72] compiler/rust: keep every metadata member when trimming
  a dependency rlib
 
 Trimming looked only for the legacy `rust.metadata.bin` member. Current
@@ -12388,7 +12388,7 @@ Javier Tia
 From 785739a7442f81b0d61860f7d47fc47a9251b9f4 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 17:56:10 -0600
-Subject: [PATCH 61/71] server: report a dropped dist output as a plain failure
+Subject: [PATCH 61/72] server: report a dropped dist output as a plain failure
 
 The error added for a declared output the build server did not return
 fell through the server's compile handler to its generic branch, which
@@ -12502,7 +12502,7 @@ Javier Tia
 From a547f2488429832d9943f2153e79b5198ab520dc Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 18:07:11 -0600
-Subject: [PATCH 62/71] server: name the dropped output in the failure and log
+Subject: [PATCH 62/72] server: name the dropped output in the failure and log
  rejected uploads
 
 The dropped-output arm printed the error with plain Display, which shows
@@ -12581,7 +12581,7 @@ Javier Tia
 From 91e2ae4d63d254f63c63dd81afec534df9650295 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Fri, 30 Oct 2026 19:33:33 -0600
-Subject: [PATCH 63/71] dist: share the packable-file filter and drop dead
+Subject: [PATCH 63/72] dist: share the packable-file filter and drop dead
  deregister pool settings
 
 add_dir_contents and add_shared_libraries each carried the same test for
@@ -12692,7 +12692,7 @@ Javier Tia
 From 1dc02e815eb7d0a54d6929c0a0607034e37957f7 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Sun, 1 Nov 2026 10:42:21 -0600
-Subject: [PATCH 64/71] scripts: add a loopback smoke test for the carry defect
+Subject: [PATCH 64/72] scripts: add a loopback smoke test for the carry defect
  fixes
 
 The fixes for older heartbeats, long compiles, forged and interrupted
@@ -13647,7 +13647,7 @@ Javier Tia
 From cc822154aacea54dfc7a163b042f8a9bc11effea Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Sun, 1 Nov 2026 11:51:30 -0600
-Subject: [PATCH 65/71] Cargo.lock: update the crates the advisory scan flags
+Subject: [PATCH 65/72] Cargo.lock: update the crates the advisory scan flags
 
 The lockfile inherited from the 0.19.0 release holds 29 RustSec
 findings in 15 crates, so the pre-push advisory scan rejects every push
@@ -14156,7 +14156,7 @@ Javier Tia
 From 8d794713e60bab04015542fb82cfe190bd950656 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Sun, 1 Nov 2026 11:52:10 -0600
-Subject: [PATCH 66/71] Cargo.toml: require zstd 0.14
+Subject: [PATCH 66/72] Cargo.toml: require zstd 0.14
 
 The zstd binding and its safe wrapper carry three RustSec findings
 (context reuse across abandoned streams, an unchecked seekable offset,
@@ -14268,7 +14268,7 @@ Javier Tia
 From 42f8a9aa03047b8a4d7e1ecafcc3eb9a0c098b87 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Sun, 1 Nov 2026 11:55:35 -0600
-Subject: [PATCH 67/71] Cargo.toml: require object 0.40
+Subject: [PATCH 67/72] Cargo.toml: require object 0.40
 
 ruzstd, the zstd decoder behind the object-file parser, has a
 decompression-bomb finding that is fixed only from ruzstd 0.9.1, and
@@ -14362,7 +14362,7 @@ Javier Tia
 From dd5e84aedfe12dedc43a5932f97904ee04d9eb4d Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Sun, 1 Nov 2026 11:57:17 -0600
-Subject: [PATCH 68/71] cache_io: port the cache entry writer to zip 9
+Subject: [PATCH 68/72] cache_io: port the cache entry writer to zip 9
 
 Three RustSec findings against the zip 0.6 series (SUID bits and
 symlinks preserved by the archive extraction calls) are fixed only from
@@ -14566,7 +14566,7 @@ Javier Tia
 From 0b53bb7cc5ad5e377de565e92fd9f8ef165cb1f4 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Sun, 1 Nov 2026 11:58:26 -0600
-Subject: [PATCH 69/71] audit: accept the rsa timing finding that has no fix
+Subject: [PATCH 69/72] audit: accept the rsa timing finding that has no fix
 
 After the dependency updates, the advisory scan reports one remaining
 vulnerability: the Marvin timing side channel in rsa 0.9.10, for which
@@ -14613,7 +14613,7 @@ Javier Tia
 From 32d9f38b865ece52aa490ceb9876b4df8c15c453 Mon Sep 17 00:00:00 2001
 From: Javier Tia <javier@peridio.com>
 Date: Sun, 1 Nov 2026 16:01:32 -0600
-Subject: [PATCH 70/71] cache: pin the cache entry writer and the damaged-entry
+Subject: [PATCH 70/72] cache: pin the cache entry writer and the damaged-entry
  paths
 
 The zip 9 port changed the writer but the only tests of it round-trip
@@ -14740,219 +14740,1330 @@ index d04dac97..c6ff3e90 100644
 Javier Tia
 
 
-From 06d5870110b36acd610e608d74f234355babbe25 Mon Sep 17 00:00:00 2001
-From: Javier Tia <javier@peridio.com>
-Date: Sun, 1 Nov 2026 16:49:26 -0600
-Subject: [PATCH 71/71] compiler/c: hash the files an .incbin embeds into the
- cache key
-
-A source that embeds a file with .incbin preprocesses to text that only
-names the file, so the cache key was identical for any content of it.
-The kernel build embeds the module signing certificate, the compressed
-kernel, the initramfs and the purgatory image this way, and the
-certificate is regenerated on every build. A warm build was served the
-previous build's system_certificates.o, so vmlinux trusted a key that
-no module in the package was signed with. Reproduced with a two-line
-assembly file: changing only the embedded blob returned a cache hit
-whose object still held the old blob.
-
-Read the directives out of the preprocessed text (including the
-escaped-quote form inline assembly takes) and add a digest of each
-named file to the key. A file that cannot be read gets a digest that
-never repeats, so that compile misses instead of reusing an entry keyed
-on content nobody saw. Hashing was chosen over refusing to cache these
-objects because the unchanged ones stay cacheable.
+From 1043e2b1379c9ac5646617efc1f92f722426369f Mon Sep 17 00:00:00 2001
+From: Benjamin Leggett <benjamin@edera.io>
+Date: Wed, 5 Aug 2026 14:01:12 -0400
+Subject: [PATCH 71/72] fix(cache): invalidate cache for .include and .incbin
+ directives
 
 Signed-off-by: Javier Tia <javier@peridio.com>
 ---
- src/compiler/c.rs | 156 +++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 155 insertions(+), 1 deletion(-)
+ src/compiler/c.rs        | 516 ++++++++++++++++++++++++++++++++++++++-
+ src/compiler/compiler.rs |  27 +-
+ src/compiler/rust.rs     |   1 +
+ tests/system.rs          | 202 +++++++++++++++
+ 4 files changed, 730 insertions(+), 16 deletions(-)
 
 diff --git a/src/compiler/c.rs b/src/compiler/c.rs
-index 6fbd0c0d..dafa68a6 100644
+index 6fbd0c0d..a899d9c8 100644
 --- a/src/compiler/c.rs
 +++ b/src/compiler/c.rs
-@@ -694,13 +694,18 @@ where
-         let mut common_and_arch_args = self.parsed_args.common_args.clone();
-         common_and_arch_args.extend(self.parsed_args.arch_args.clone());
+@@ -32,7 +32,7 @@ use crate::util::{
+ use async_trait::async_trait;
+ use fs_err as fs;
+ use std::borrow::Cow;
+-use std::collections::{HashMap, HashSet};
++use std::collections::{HashMap, HashSet, VecDeque};
+ use std::ffi::{OsStr, OsString};
+ use std::fmt;
+ use std::hash::Hash;
+@@ -563,6 +563,9 @@ where
+                         );
+                         return Ok(HashResult {
+                             key,
++                            // Preprocessor cache mode is explicitly disabled for any
++                            // translation unit containing an `.incbin`.
++                            cacheable: Cacheable::Yes,
+                             compilation: Box::new(CCompilation {
+                                 parsed_args: self.parsed_args.clone(),
+                                 is_locally_preprocessed: false,
+@@ -689,6 +692,78 @@ where
+             )
+         };
  
-+        // The preprocessed text of an `.incbin` holds only the path, so without the
-+        // file's content in the key a changed file would be served the old object.
-+        let mut key_extra_hashes = extra_hashes;
-+        key_extra_hashes.extend(incbin_digests(&preprocessor_output, &cwd, pool).await);
++        // Files named by `.incbin` and `.include` are read by the assembler, so
++        // they are not part of the preprocessor output and have to be hashed
++        // separately. `.include` names assembly source, which can name further
++        // files in turn, so the queue grows as those are read.
++        let mut extra_hashes = extra_hashes;
++        let mut cacheable = Cacheable::Yes;
++        let mut pending: VecDeque<_> = find_asm_dependencies(&preprocessor_output).into();
++        let mut included = HashSet::new();
++        while let Some(dependency) = pending.pop_front() {
++            let (tag, name, assembled_in_place) = match &dependency {
++                AsmDependency::Embedded(name) => ("incbin", name, false),
++                AsmDependency::Source(name) => ("include", name, true),
++                AsmDependency::Unparsable => {
++                    debug!(
++                        "[{}]: Not cacheable: an assembler directive names a file we cannot identify",
++                        self.parsed_args.output_pretty()
++                    );
++                    cacheable = Cacheable::No;
++                    break;
++                }
++            };
 +
-         let key = HashKeyParams::new(
-             &self.executable_digest,
-             self.parsed_args.language,
-             &common_and_arch_args,
-             &preprocessor_output,
-         )
--        .with_extra_hashes(&extra_hashes)
-+        .with_extra_hashes(&key_extra_hashes)
-         .with_env_vars(&env_vars)
-         .with_plusplus(self.compiler.plusplus())
-         .with_basedirs(storage.basedirs())
-@@ -772,6 +777,71 @@ const HASH_31_COMMAND_LINE_NEWLINE: &[u8] = b"# 31 \"<command-line>\"\n";
- const HASH_32_COMMAND_LINE_2_NEWLINE: &[u8] = b"# 32 \"<command-line>\" 2\n";
- const INCBIN_DIRECTIVE: &[u8] = b".incbin";
- 
-+/// The files named by `.incbin` directives in preprocessed assembly or in inline
-+/// assembly, which the compiler embeds by path and the preprocessor never reads.
-+///
-+/// Inline assembly reaches the compiler as a C string literal, so the quotes
-+/// around the path may be escaped (`.incbin \"path\"`). The result is sorted and
-+/// holds each path once so that the key built from it does not depend on the
-+/// order the directives appear in.
-+fn incbin_paths(preprocessed: &[u8]) -> Vec<PathBuf> {
-+    let mut paths = Vec::new();
-+    for at in memchr::memmem::find_iter(preprocessed, INCBIN_DIRECTIVE) {
-+        let mut rest = &preprocessed[at + INCBIN_DIRECTIVE.len()..];
-+        while let [b' ' | b'\t', tail @ ..] = rest {
-+            rest = tail;
-+        }
-+        if let [b'\\', tail @ ..] = rest {
-+            rest = tail;
-+        }
-+        let [b'"', path_and_tail @ ..] = rest else {
-+            continue;
-+        };
-+        let Some(end) = path_and_tail.iter().position(|&b| b == b'"') else {
-+            continue;
-+        };
-+        let mut path = &path_and_tail[..end];
-+        if let [head @ .., b'\\'] = path {
-+            path = head;
-+        }
-+        if !path.is_empty()
-+            && let Ok(path) = decode_path(path)
-+        {
-+            paths.push(path);
-+        }
-+    }
-+    paths.sort();
-+    paths.dedup();
-+    paths
-+}
++            // gas resolves a relative operand against the working directory before
++            // consulting its own include path, so that is the only location we can
++            // resolve without replicating the assembler's search. An operand we
++            // cannot parse or a file we cannot hash makes the translation unit
++            // explicitly non-cacheable.
++            let path = decode_path(name).ok().map(|name| {
++                if name.is_absolute() {
++                    name
++                } else {
++                    cwd.join(name)
++                }
++            });
 +
-+/// One digest per file named by an `.incbin` directive, to be hashed into the
-+/// cache key, since the preprocessed text only holds the path. A file that
-+/// cannot be read yields a digest that never repeats, so such a compile is not
-+/// served from the cache (and its result is not reused) rather than keyed on a
-+/// path whose content is unknown.
-+async fn incbin_digests(
-+    preprocessed: &[u8],
-+    cwd: &Path,
-+    pool: &tokio::runtime::Handle,
-+) -> Vec<String> {
-+    let mut digests = Vec::new();
-+    for path in incbin_paths(preprocessed) {
-+        let absolute = cwd.join(&path);
-+        match Digest::file(&absolute, pool).await {
-+            Ok(digest) => digests.push(format!("incbin:{digest}")),
-+            Err(e) => {
-+                debug!("Cannot hash .incbin file {}: {}", absolute.display(), e);
-+                let now = std::time::SystemTime::now()
-+                    .duration_since(std::time::UNIX_EPOCH)
-+                    .map_or(0, |d| d.as_nanos());
-+                digests.push(format!("incbin-unreadable:{now}:{}", path.display()));
++            let hash = match &path {
++                // Included assembly is read rather than streamed, because the
++                // directives inside it have to be followed as well.
++                Some(path) if assembled_in_place => {
++                    if !included.insert(path.clone()) {
++                        // Already hashed and scanned: a repeated or cyclic include.
++                        continue;
++                    }
++                    match fs::read(path) {
++                        Ok(bytes) => {
++                            pending.extend(find_asm_dependencies(&bytes));
++                            Digest::reader_sync(&bytes[..]).ok()
++                        }
++                        Err(_) => None,
++                    }
++                }
++                Some(path) => Digest::file(path, pool).await.ok(),
++                None => None,
++            };
++
++            match hash {
++                // Tagged so these digests cannot collide with each other or with an
++                // entry contributed by `extra_hash_files`.
++                Some(hash) => extra_hashes.push(format!("{tag}:{hash}")),
++                None => {
++                    debug!(
++                        "[{}]: Not cacheable: cannot hash {:?} named by a .{tag} directive",
++                        self.parsed_args.output_pretty(),
++                        path.as_deref()
++                            .unwrap_or(Path::new("<undecodable operand>"))
++                    );
++                    cacheable = Cacheable::No;
++                    break;
++                }
 +            }
 +        }
-+    }
-+    digests
++
+         // Create an argument vector containing both common and arch args, to
+         // use in creating a hash key
+         let mut common_and_arch_args = self.parsed_args.common_args.clone();
+@@ -734,6 +809,7 @@ where
+             c_weak_toolchain_key(&self.executable, &self.executable_digest, &env_vars);
+         Ok(HashResult {
+             key,
++            cacheable,
+             compilation: Box::new(CCompilation {
+                 parsed_args: self.parsed_args.clone(),
+                 is_locally_preprocessed: true,
+@@ -771,6 +847,189 @@ const PRAGMA_GCC_PCH_PREPROCESS: &[u8] = b"pragma GCC pch_preprocess";
+ const HASH_31_COMMAND_LINE_NEWLINE: &[u8] = b"# 31 \"<command-line>\"\n";
+ const HASH_32_COMMAND_LINE_2_NEWLINE: &[u8] = b"# 32 \"<command-line>\" 2\n";
+ const INCBIN_DIRECTIVE: &[u8] = b".incbin";
++const INCLUDE_DIRECTIVE: &[u8] = b".include";
++
++/// Upper bound on the length of a directive operand we are willing to parse.
++/// A file name longer than this is treated as unparsable rather than scanned to
++/// the end of the translation unit.
++const OPERAND_MAX_LEN: usize = 4096;
++
++/// A file an assembler directive pulls in, which the preprocessor never reports.
++#[derive(Debug, PartialEq, Eq)]
++enum AsmDependency {
++    /// `.incbin "file"`: the file's bytes are embedded verbatim.
++    Embedded(Vec<u8>),
++    /// `.include "file"`: the file is assembly source assembled in place, so it
++    /// can pull in further files itself.
++    Source(Vec<u8>),
++    /// A directive whose operand is not a plain quoted file name, leaving the
++    /// file it names unknown.
++    Unparsable,
 +}
 +
++/// The operand of an assembler directive that names a file.
++#[derive(Debug, PartialEq, Eq)]
++enum FileOperand {
++    /// The file name, exactly as written in the source.
++    Name(Vec<u8>),
++    /// The operand could not be parsed as a plain quoted file name.
++    Unparsable,
++}
++
++/// Whether the quotes around a directive operand are backslash-escaped.
++#[derive(Copy, Clone)]
++enum OperandQuoting {
++    /// `"file"`, as written directly in assembly.
++    Plain,
++    /// `\"file\"`, as written inside a C string literal in inline assembly.
++    Escaped,
++}
++
++/// Skips whitespace between an assembler directive and its operand.
++///
++/// Inside a C string literal the whitespace may be spelled as a two-character
++/// escape sequence rather than appearing literally, so both forms are accepted.
++fn skip_asm_whitespace(bytes: &[u8]) -> (&[u8], bool) {
++    let mut rest = bytes;
++    let mut skipped = false;
++    loop {
++        rest = match rest {
++            [b' ' | b'\t', tail @ ..] => tail,
++            [b'\\', b't' | b'n' | b'r' | b'f' | b'v' | b' ', tail @ ..] => tail,
++            _ => return (rest, skipped),
++        };
++        skipped = true;
++    }
++}
++
++/// Parses the file operand of a directive from the bytes that immediately follow
++/// the directive name, also returning how many of those bytes it spans.
++///
++/// Returns `None` if the name did not end where the caller thought it did, as in
++/// `.incbinary`.
++fn parse_file_operand(after_directive: &[u8]) -> Option<(FileOperand, usize)> {
++    // A directive name continuing past the one we matched is a different directive.
++    if after_directive
++        .first()
++        .is_some_and(|c| c.is_ascii_alphanumeric() || matches!(c, b'_' | b'.' | b'$'))
++    {
++        return None;
++    }
++
++    let (rest, skipped_whitespace) = skip_asm_whitespace(after_directive);
++    let (quoting, body) = if let Some(body) = rest.strip_prefix(b"\\\"") {
++        (OperandQuoting::Escaped, body)
++    } else if let Some(body) = rest.strip_prefix(b"\"") {
++        (OperandQuoting::Plain, body)
++    } else if skipped_whitespace {
++        // gas requires a quoted file name. Not finding one means the operand was
++        // produced some other way, so we cannot tell what this depends on.
++        return Some((FileOperand::Unparsable, 0));
++    } else {
++        return None;
++    };
++
++    let terminator: &[u8] = match quoting {
++        OperandQuoting::Plain => b"\"",
++        OperandQuoting::Escaped => b"\\\"",
++    };
++    let window = &body[..body.len().min(OPERAND_MAX_LEN)];
++    let mut end = None;
++    let mut i = 0;
++    while i < window.len() {
++        if window[i..].starts_with(terminator) {
++            end = Some(i);
++            break;
++        }
++        // A quote, backslash or newline before the terminator means the operand
++        // is escaped, concatenated or otherwise not a plain file name.
++        if matches!(window[i], b'"' | b'\\' | b'\n') {
++            break;
++        }
++        i += 1;
++    }
++
++    Some(match end {
++        Some(0) | None => (FileOperand::Unparsable, 0),
++        Some(end) => {
++            let spanned = after_directive.len() - body.len() + end + terminator.len();
++            (FileOperand::Name(window[..end].to_vec()), spanned)
++        }
++    })
++}
++
++/// Matches an assembler directive naming a file at the start of `slice`, also
++/// returning how many bytes of `slice` it spans.
++///
++/// Returns `None` if no such directive starts there.
++fn asm_dependency_at(slice: &[u8]) -> Option<(AsmDependency, usize)> {
++    let (wrap, directive_len, after_directive): (fn(Vec<u8>) -> AsmDependency, _, _) =
++        if let Some(rest) = slice.strip_prefix(INCBIN_DIRECTIVE) {
++            (AsmDependency::Embedded, INCBIN_DIRECTIVE.len(), rest)
++        } else if let Some(rest) = slice.strip_prefix(INCLUDE_DIRECTIVE) {
++            (AsmDependency::Source, INCLUDE_DIRECTIVE.len(), rest)
++        } else {
++            return None;
++        };
++
++    Some(match parse_file_operand(after_directive)? {
++        (FileOperand::Name(name), spanned) => (wrap(name), directive_len + spanned),
++        // The operand's extent is unknown, so resume right after the directive
++        // name; a spurious extra match is harmless once we are not caching.
++        (FileOperand::Unparsable, _) => (AsmDependency::Unparsable, directive_len),
++    })
++}
++
++/// Whether an assembler statement can begin at `pos` in `bytes`.
++///
++/// Missing a directive serves a stale object, which is not acceptable, so this is
++/// necessarily strict about ruling a position out. An identifier character in front
++/// of the directive makes this a C member access, and no gas statement can end in
++/// one. Every other position is treated as a statement start, which covers the
++/// line starts, whitespace, `;` separators and label colons used by gas.
++fn starts_asm_statement(bytes: &[u8], pos: usize) -> bool {
++    let before = &bytes[..pos];
++    let identifier_start = before
++        .iter()
++        .rposition(|c| !(c.is_ascii_alphanumeric() || matches!(c, b'_' | b'$')))
++        .map_or(0, |end| end + 1);
++    if identifier_start == before.len() {
++        return true;
++    }
++    // Inline assembly writes the line break in front of a directive as a C escape
++    // sequence, whose own characters are identifier characters: "\n.incbin",
++    // "\012.incbin", "\x0a.incbin".
++    identifier_start > 0 && before[identifier_start - 1] == b'\\'
++}
++
++/// Finds every file an assembler directive pulls into `bytes`, in the order the
++/// directives appear.
++///
++/// `.incbin` and `.include` are handled by the assembler, not the preprocessor,
++/// so the files they name never appear in preprocessor output. Hashing that
++/// output alone therefore misses the dependency entirely: the named file can
++/// change while the cache key stays the same, and a stale object gets served,
++/// which we do not want.
++///
++/// `.include` names assembly source, so its contents have to be scanned in turn.
++/// That is the caller's job, since it is the one reading the files.
++fn find_asm_dependencies(bytes: &[u8]) -> Vec<AsmDependency> {
++    let mut dependencies = Vec::new();
++    let mut offset = 0;
++    while let Some(pos) = memchr::memchr(b'.', &bytes[offset..]) {
++        let start = offset + pos;
++        match asm_dependency_at(&bytes[start..]) {
++            // Resume past the operand, so a file name that itself contains
++            // ".incbin" or ".include" is not mistaken for another directive.
++            Some((dependency, spanned)) if starts_asm_statement(bytes, start) => {
++                dependencies.push(dependency);
++                offset = start + spanned;
++            }
++            _ => offset = start + 1,
++        }
++    }
++    dependencies
++}
+ 
  /// Remember the include files in the preprocessor output if it can be cached.
  /// Returns `false` if preprocessor cache mode should be disabled.
- fn process_preprocessed_file(
-@@ -2630,4 +2700,88 @@ int value;
-             "a93900c371d997927c5bc568ea538bed59ae5c960021dcfe7b0b369da5267528",
-         );
+@@ -848,18 +1107,14 @@ fn process_preprocessed_file(
+                     continue;
+                 }
+             }
+-        } else if slice
+-            .strip_prefix(INCBIN_DIRECTIVE)
+-            .filter(|slice| {
+-                slice.starts_with(b"\"") || slice.starts_with(b" \"") || slice.starts_with(b" \\\"")
+-            })
+-            .is_some()
+-        {
+-            // An assembler .inc bin (without the space) statement, which could be
+-            // part of inline assembly, refers to an external file. If the file
+-            // changes, the hash should change as well, but finding out what file to
+-            // hash is too hard for sccache, so just bail out.
+-            debug!("Found potential unsupported .inc bin directive in source code");
++        // The directive match runs first.
++        } else if asm_dependency_at(slice).is_some() && starts_asm_statement(bytes, start) {
++            // An assembler .inc bin or .include statement, which could be part of
++            // inline assembly, refers to an external file. Preprocessor cache mode
++            // keys on the include files alone and never sees the preprocessed
++            // output, so it cannot account for that file; `generate_hash_key`
++            // handles it for the normal path instead.
++            debug!("Found potential unsupported assembler file directive in source code");
+             return Ok(false);
+         } else if slice.starts_with(b"___________") && (start == 0 || bytes[start - 1] == b'\n') {
+             // Unfortunately the distcc-pump wrapper outputs standard output lines:
+@@ -2220,6 +2475,241 @@ mod test {
+         t("Cu");
      }
+ 
++    /// Convenience for asserting on a source fragment holding a single directive.
++    fn asm_dependency(source: &str) -> Option<AsmDependency> {
++        let mut dependencies = find_asm_dependencies(source.as_bytes());
++        assert!(dependencies.len() <= 1, "expected at most one dependency");
++        dependencies.pop()
++    }
++
++    fn embedded_file(source: &str) -> Option<String> {
++        match asm_dependency(source) {
++            Some(AsmDependency::Embedded(name)) => Some(String::from_utf8(name).unwrap()),
++            _ => None,
++        }
++    }
 +
 +    #[test]
-+    fn test_incbin_paths_finds_assembly_directives() {
-+        let src = b"# 1 \"piggy.S\"\n.section \".rodata..compressed\"\n\t.incbin \"arch/x86/boot/compressed/vmlinux.bin.zst\"\n.incbin\"certs/signing_key.x509\"\n";
++    fn test_asm_dependency_plain_assembly() {
++        // As written directly in a .S file.
 +        assert_eq!(
-+            incbin_paths(src),
++            embedded_file("\t.incbin \"certs/signing_key.x509\"\n"),
++            Some("certs/signing_key.x509".to_string())
++        );
++        // Tab between the directive and its operand, as in the kernel's rmpiggy.S.
++        assert_eq!(
++            embedded_file("\t.incbin\t\"realmode.bin\"\n"),
++            Some("realmode.bin".to_string())
++        );
++        // gas does not require any separator before a quoted operand.
++        assert_eq!(
++            embedded_file(".incbin\"blob.bin\""),
++            Some("blob.bin".to_string())
++        );
++        // A skip/count suffix does not change which file is embedded.
++        assert_eq!(
++            embedded_file(".incbin \"blob.bin\",16,32\n"),
++            Some("blob.bin".to_string())
++        );
++    }
++
++    #[test]
++    fn test_asm_dependency_include_is_source() {
++        // `.include` pulls in assembly source rather than embedding bytes, so it is
++        // distinguished: its contents have to be scanned for further directives.
++        assert_eq!(
++            asm_dependency("\t.include \"macros.s\"\n"),
++            Some(AsmDependency::Source(b"macros.s".to_vec()))
++        );
++        assert_eq!(
++            asm_dependency("\"\t.include \\\"macros.s\\\"\\n\""),
++            Some(AsmDependency::Source(b"macros.s".to_vec()))
++        );
++        // A longer directive that merely starts with ".include".
++        assert_eq!(asm_dependency(".included \"macros.s\""), None);
++        // Embedding and including the same file must not hash the same way.
++        assert_ne!(
++            asm_dependency(".incbin \"x\"\n"),
++            asm_dependency(".include \"x\"\n")
++        );
++    }
++
++    #[test]
++    fn test_asm_dependency_in_c_string_literal() {
++        // Inline assembly, where the operand's quotes are backslash-escaped. This
++        // is how the Linux kernel's kernel/configs.c embeds config_data.gz.
++        assert_eq!(
++            embedded_file("\"\t.incbin \\\"kernel/config_data.gz\\\"\t\\n\""),
++            Some("kernel/config_data.gz".to_string())
++        );
++        // Whitespace spelled as an escape sequence rather than appearing literally.
++        assert_eq!(
++            embedded_file("\"\\t.incbin\\t\\\"blob.bin\\\"\\n\""),
++            Some("blob.bin".to_string())
++        );
++    }
++
++    #[test]
++    fn test_asm_dependency_not_a_directive() {
++        // A longer directive that merely starts with ".incbin".
++        assert_eq!(asm_dependency(".incbinary \"blob.bin\""), None);
++        assert_eq!(asm_dependency(".incbin_data \"blob.bin\""), None);
++        // The bare word with no operand at all is not something we can attribute a
++        // file to, but neither is it a directive we recognize.
++        assert_eq!(asm_dependency(".incbin"), None);
++    }
++
++    #[test]
++    fn test_asm_dependency_unparsable_operands() {
++        let unparsable = |source| {
++            assert_eq!(
++                asm_dependency(source),
++                Some(AsmDependency::Unparsable),
++                "{source:?}"
++            );
++        };
++        // Not a quoted string: assembled from something we cannot evaluate.
++        unparsable(".incbin BLOB_PATH\n");
++        unparsable(".include MACRO_PATH\n");
++        // Operand split across two C string literals, which the compiler
++        // concatenates but we cannot.
++        unparsable("\".incbin \\\"bl\" \"ob.bin\\\"\\n\"");
++        // Never terminated.
++        unparsable(".incbin \"blob.bin\n");
++        // Empty file name.
++        unparsable(".incbin \"\"\n");
++        // An escape inside the file name.
++        unparsable(".incbin \"bl\\ob.bin\"\n");
++        // Longer than we are willing to scan.
++        let long = "x".repeat(OPERAND_MAX_LEN + 1);
++        unparsable(&format!(".incbin \"{long}\"\n"));
++    }
++
++    #[test]
++    fn test_asm_dependency_multiple_directives() {
++        // certs/system_certificates.S embeds two files in one translation unit,
++        // and both have to be accounted for.
++        let source = "__module_cert_start:\n\t.incbin \"certs/signing_key.x509\"\n\
++                      __module_cert_end:\n\t.incbin \"certs/x509_certificate_list\"\n\
++                      \t.include \"trailer.s\"\n";
++        assert_eq!(
++            find_asm_dependencies(source.as_bytes()),
 +            vec![
-+                PathBuf::from("arch/x86/boot/compressed/vmlinux.bin.zst"),
-+                PathBuf::from("certs/signing_key.x509"),
++                AsmDependency::Embedded(b"certs/signing_key.x509".to_vec()),
++                AsmDependency::Embedded(b"certs/x509_certificate_list".to_vec()),
++                AsmDependency::Source(b"trailer.s".to_vec()),
 +            ]
 +        );
 +    }
 +
 +    #[test]
-+    fn test_incbin_paths_finds_directives_inside_c_string_asm() {
-+        // Inline asm in C reaches the compiler as a string literal, so the quotes are escaped.
-+        let src = b"asm(\".section .rodata\\n\" \".incbin \\\"kernel/config_data.gz\\\"\\n\");";
++    fn test_asm_dependency_directive_name_inside_operand() {
++        // The scan resumes past the operand, so a file whose own name contains a
++        // directive name does not look like a second directive.
 +        assert_eq!(
-+            incbin_paths(src),
-+            vec![PathBuf::from("kernel/config_data.gz")]
++            find_asm_dependencies(b"\t.incbin \"payload.incbin\"\n"),
++            vec![AsmDependency::Embedded(b"payload.incbin".to_vec())]
 +        );
-+    }
-+
-+    #[test]
-+    fn test_incbin_paths_ignores_text_without_a_quoted_path() {
-+        assert!(incbin_paths(b"int main(void) { return 0; }\n").is_empty());
-+        assert!(incbin_paths(b".incbin_like_name foo\n").is_empty());
-+        assert!(incbin_paths(b".incbin \"unterminated").is_empty());
-+        assert!(incbin_paths(b".incbin\n").is_empty());
-+    }
-+
-+    #[test]
-+    fn test_incbin_paths_lists_each_path_once_in_sorted_order() {
-+        let src = b".incbin \"b.bin\"\n.incbin \"a.bin\"\n.incbin \"b.bin\"\n";
 +        assert_eq!(
-+            incbin_paths(src),
-+            vec![PathBuf::from("a.bin"), PathBuf::from("b.bin")]
++            find_asm_dependencies(b"\t.include \"a.include\"\n\t.incbin \"b.bin\"\n"),
++            vec![
++                AsmDependency::Source(b"a.include".to_vec()),
++                AsmDependency::Embedded(b"b.bin".to_vec()),
++            ]
 +        );
 +    }
 +
-+    fn test_runtime() -> tokio::runtime::Runtime {
-+        tokio::runtime::Builder::new_current_thread()
-+            .enable_all()
-+            .build()
-+            .unwrap()
-+    }
-+
 +    #[test]
-+    fn test_incbin_digests_change_with_the_embedded_file_content() {
-+        let dir = tempfile::tempdir().unwrap();
-+        let src = b".incbin \"blob\"\n";
-+        let rt = test_runtime();
-+        std::fs::write(dir.path().join("blob"), b"first").unwrap();
-+        let first = rt.block_on(incbin_digests(src, dir.path(), rt.handle()));
-+        std::fs::write(dir.path().join("blob"), b"second").unwrap();
-+        let second = rt.block_on(incbin_digests(src, dir.path(), rt.handle()));
-+        std::fs::write(dir.path().join("blob"), b"first").unwrap();
-+        let first_again = rt.block_on(incbin_digests(src, dir.path(), rt.handle()));
-+        assert_eq!(first.len(), 1);
-+        assert_ne!(first, second);
-+        assert_eq!(first, first_again);
-+    }
-+
-+    #[test]
-+    fn test_incbin_digests_of_a_missing_file_never_repeat() {
-+        // An unreadable file cannot be hashed, so the key must not be reusable.
-+        let dir = tempfile::tempdir().unwrap();
-+        let src = b".incbin \"absent\"\n";
-+        let rt = test_runtime();
-+        let a = rt.block_on(incbin_digests(src, dir.path(), rt.handle()));
-+        let b = rt.block_on(incbin_digests(src, dir.path(), rt.handle()));
-+        assert_eq!(a.len(), 1);
-+        assert_ne!(a, b);
-+    }
-+
-+    #[test]
-+    fn test_incbin_digests_are_empty_without_a_directive() {
-+        let rt = test_runtime();
-+        let dir = tempfile::tempdir().unwrap();
-+        assert!(
-+            rt.block_on(incbin_digests(b"int x;\n", dir.path(), rt.handle()))
-+                .is_empty()
++    fn test_asm_dependency_needs_a_statement_boundary() {
++        // A member access only spells a directive name.
++        assert!(find_asm_dependencies(b"opts.include = 1;\n").is_empty());
++        assert!(find_asm_dependencies(b"x = y.incbin + 1;\n").is_empty());
++        assert!(find_asm_dependencies(b"cfg->opts.incbin(path);\n").is_empty());
++        assert_eq!(
++            find_asm_dependencies(b"nop;.incbin \"blob.bin\"\n"),
++            vec![AsmDependency::Embedded(b"blob.bin".to_vec())]
++        );
++        assert_eq!(
++            find_asm_dependencies(b"payload:.incbin \"blob.bin\"\n"),
++            vec![AsmDependency::Embedded(b"blob.bin".to_vec())]
++        );
++        // A directive at the very start of a C string literal, which is how inline
++        // assembly is usually written.
++        assert_eq!(
++            find_asm_dependencies(b"__asm__(\".incbin \\\"blob.bin\\\"\");\n"),
++            vec![AsmDependency::Embedded(b"blob.bin".to_vec())]
 +        );
 +    }
++
++    #[test]
++    fn test_asm_dependency_after_an_escaped_line_break() {
++        // The line break in front of a directive in inline assembly is a C escape
++        // sequence, whose characters are identifier characters. Every spelling of
++        // it still has to reach the directive.
++        for line_break in ["\\n", "\\012", "\\x0a"] {
++            assert_eq!(
++                embedded_file(&format!("\"nop{line_break}.incbin \\\"blob.bin\\\"\"")),
++                Some("blob.bin".to_string()),
++                "{line_break}"
++            );
++        }
++    }
++
++    #[test]
++    fn test_asm_dependency_in_string_literal_stays_parsimonious() {
++        // A string literal starting with a directive name is indistinguishable from
++        // inline assembly at this point, so it must be reported rather than skipped.
++        assert_eq!(
++            asm_dependency("printf(\".include %s\\n\", path);\n"),
++            Some(AsmDependency::Unparsable)
++        );
++    }
++
++    #[test]
++    fn test_asm_dependency_absent() {
++        assert!(find_asm_dependencies(b"int main(void) { return 0; }\n").is_empty());
++        assert!(find_asm_dependencies(b"").is_empty());
++    }
++
++    #[test]
++    fn test_process_preprocessed_file_asm_directive_disables_preprocessor_cache() {
++        // Preprocessor cache mode keys on include files only and never sees the
++        // preprocessed output, so it cannot account for a file named by an
++        // assembler directive and has to be turned off for every form the scanner
++        // recognizes.
++        for source in [
++            "\t.incbin \"blob.bin\"\n",
++            "\t.incbin\t\"blob.bin\"\n",
++            "\"\t.incbin \\\"blob.bin\\\"\t\\n\"\n",
++            ".incbin BLOB_PATH\n",
++            "\t.include \"macros.s\"\n",
++            "\t.include\t\"macros.s\"\n",
++            "\"\t.include \\\"macros.s\\\"\t\\n\"\n",
++            ".include MACRO_PATH\n",
++        ] {
++            // Pad past the 7-byte minimum the scan loop requires.
++            let mut bytes = format!("# 1 \"test.c\"\n{source}          ").into_bytes();
++            let success = process_preprocessed_file(
++                Path::new("test.c"),
++                Path::new(""),
++                &mut bytes,
++                &mut HashMap::new(),
++                PreprocessorCacheModeConfig {
++                    use_preprocessor_cache_mode: true,
++                    skip_system_headers: true,
++                    ..Default::default()
++                },
++                std::time::SystemTime::now(),
++                StandardFsAbstraction,
++            )
++            .unwrap();
++            assert!(
++                !success,
++                "{source:?} should disable preprocessor cache mode"
++            );
++        }
++    }
++
+     #[test]
+     fn test_process_preprocessed_file() {
+         env_logger::builder()
+diff --git a/src/compiler/compiler.rs b/src/compiler/compiler.rs
+index 8893b41f..8431fd3a 100644
+--- a/src/compiler/compiler.rs
++++ b/src/compiler/compiler.rs
+@@ -583,7 +583,7 @@ where
+             out_pretty,
+             fmt_duration_as_secs(&start.elapsed())
+         );
+-        let (key, compilation, weak_toolchain_key) = match result {
++        let (key, key_cacheable, compilation, weak_toolchain_key) = match result {
+             Err(e) => {
+                 return match e.downcast::<ProcessError>() {
+                     Ok(ProcessError(output)) => {
+@@ -595,15 +595,19 @@ where
+             }
+             Ok(HashResult {
+                 key,
++                cacheable,
+                 compilation,
+                 weak_toolchain_key,
+-            }) => (key, compilation, weak_toolchain_key),
++            }) => (key, cacheable, compilation, weak_toolchain_key),
+         };
+         debug!("[{}]: Hash key: {}", out_pretty, key);
+         // If `ForceRecache` is enabled, we won't check the cache.
+         let start = Instant::now();
+         let cache_status = async {
+-            if cache_control == CacheControl::ForceNoCache {
++            // A key that does not cover every dependency must not be looked up,
++            // an entry stored under it may have been produced from different
++            // inputs.
++            if key_cacheable == Cacheable::No || cache_control == CacheControl::ForceNoCache {
+                 Ok(Cache::None)
+             } else if cache_control == CacheControl::ForceRecache {
+                 Ok(Cache::Recache)
+@@ -773,6 +777,18 @@ where
+                         compiler_result,
+                     ));
+                 }
++                if key_cacheable != Cacheable::Yes {
++                    // The hash key does not cover every dependency, so we cannot cache it.
++                    debug!(
++                        "[{}]: Compiled in {}, but the hash key is not cacheable",
++                        out_pretty,
++                        fmt_duration_as_secs(&duration_compilation)
++                    );
++                    return Ok((
++                        CompileResult::NotCacheable(dist_type, duration_compilation),
++                        compiler_result,
++                    ));
++                }
+                 if miss_type == MissType::ForcedNoCache {
+                     // Do not cache
+                     debug!(
+@@ -1353,6 +1369,11 @@ where
+ {
+     /// The hash key of the inputs.
+     pub key: String,
++    /// Whether `key` accounts for everything the compilation depends on.
++    ///
++    /// `Cacheable::No` means a dependency was found that the key cannot cover,
++    /// so the cache must be neither read nor written for this compilation.
++    pub cacheable: Cacheable,
+     /// An object to use for the actual compilation, if necessary.
+     pub compilation: Box<dyn Compilation<T> + 'static>,
+     /// A weak key that may be used to identify the toolchain
+diff --git a/src/compiler/rust.rs b/src/compiler/rust.rs
+index be5c3222..1a557e8c 100644
+--- a/src/compiler/rust.rs
++++ b/src/compiler/rust.rs
+@@ -2056,6 +2056,7 @@ where
+ 
+         Ok(HashResult {
+             key: m.finish(),
++            cacheable: Cacheable::Yes,
+             compilation: Box::new(RustCompilation {
+                 executable: self.executable.clone(),
+                 host: self.host.clone(),
+diff --git a/tests/system.rs b/tests/system.rs
+index 3ae8445a..4d0fcc4a 100644
+--- a/tests/system.rs
++++ b/tests/system.rs
+@@ -567,6 +567,205 @@ int main(int argc, char** argv) {
+     });
  }
+ 
++/// The assembler reads the file named by `.incbin` directly, so its contents never
++/// appear in preprocessor output and hashing that output alone does not see them.
++/// Changing the embedded file has to change the cache key, or a stale object gets
++/// served for the new contents.
++fn test_incbin_embedded_file_changes(compiler: Compiler, tempdir: &Path) {
++    let Compiler {
++        name,
++        exe,
++        env_vars,
++    } = compiler;
++    println!("test_incbin_embedded_file_changes: {}", name);
++    zero_stats();
++
++    const SRC: &str = "incbin.c";
++    const BLOB: &str = "blob.bin";
++    write_source(
++        tempdir,
++        SRC,
++        "__asm__(\".incbin \\\"blob.bin\\\"\\n\");
++int main(int argc, char** argv) {
++  return 0;
++}
++",
++    );
++    write_source(tempdir, BLOB, "embedded contents, take one");
++
++    let args = compile_cmdline(name, exe, SRC, OUTPUT, Vec::new());
++    let compile = |env_vars: Vec<(OsString, OsString)>| {
++        sccache_command()
++            .args(&args)
++            .current_dir(tempdir)
++            .envs(env_vars)
++            .assert()
++            .success();
++    };
++
++    trace!("compile with the original blob");
++    compile(env_vars.clone());
++    get_stats(|info| {
++        assert_eq!(0, info.stats.cache_hits.all());
++        assert_eq!(1, info.stats.cache_misses.all());
++    });
++
++    // Nothing changed, so an embedded file must not cost us the cache entirely.
++    trace!("compile again unchanged");
++    compile(env_vars.clone());
++    get_stats(|info| {
++        assert_eq!(1, info.stats.cache_hits.all());
++        assert_eq!(1, info.stats.cache_misses.all());
++    });
++
++    // The source preprocesses identically, so only the blob's contents distinguish
++    // this compilation from the previous one.
++    trace!("compile with a changed blob");
++    write_source(tempdir, BLOB, "embedded contents, take two");
++    compile(env_vars.clone());
++    get_stats(|info| {
++        assert_eq!(1, info.stats.cache_hits.all());
++        assert_eq!(2, info.stats.cache_misses.all());
++    });
++
++    // Keyed on the blob's contents rather than merely noticing that it changed.
++    trace!("compile with the original blob restored");
++    write_source(tempdir, BLOB, "embedded contents, take one");
++    compile(env_vars);
++    get_stats(|info| {
++        assert_eq!(2, info.stats.cache_hits.all());
++        assert_eq!(2, info.stats.cache_misses.all());
++    });
++}
++
++/// `.include` pulls in assembly source, which is likewise absent from preprocessor
++/// output, and which can name further files of its own. Every file reachable that
++/// way has to reach the cache key, however deep.
++fn test_include_transitive_dependency_changes(compiler: Compiler, tempdir: &Path) {
++    let Compiler {
++        name,
++        exe,
++        env_vars,
++    } = compiler;
++    println!("test_include_transitive_dependency_changes: {}", name);
++    zero_stats();
++
++    const SRC: &str = "include.c";
++    const OUTER: &str = "outer.s";
++    const INNER: &str = "inner.s";
++    const BLOB: &str = "nested_blob.bin";
++    write_source(
++        tempdir,
++        SRC,
++        "__asm__(\".include \\\"outer.s\\\"\\n\");
++int main(int argc, char** argv) {
++  return 0;
++}
++",
++    );
++    // The source names outer.s, which names inner.s, which embeds the blob. None of
++    // the three appears anywhere in the preprocessed output.
++    write_source(tempdir, OUTER, "\t.include \"inner.s\"\n");
++    write_source(tempdir, INNER, "\t.incbin \"nested_blob.bin\"\n");
++    write_source(tempdir, BLOB, "nested contents, take one");
++
++    let args = compile_cmdline(name, exe, SRC, OUTPUT, Vec::new());
++    let compile = |env_vars: Vec<(OsString, OsString)>| {
++        sccache_command()
++            .args(&args)
++            .current_dir(tempdir)
++            .envs(env_vars)
++            .assert()
++            .success();
++    };
++
++    trace!("compile the include chain");
++    compile(env_vars.clone());
++    get_stats(|info| {
++        assert_eq!(0, info.stats.cache_hits.all());
++        assert_eq!(1, info.stats.cache_misses.all());
++    });
++
++    trace!("compile again unchanged");
++    compile(env_vars.clone());
++    get_stats(|info| {
++        assert_eq!(1, info.stats.cache_hits.all());
++        assert_eq!(1, info.stats.cache_misses.all());
++    });
++
++    // Two levels down from the translation unit, reachable only by following
++    // `.include` into `.incbin`.
++    trace!("compile with the transitively embedded blob changed");
++    write_source(tempdir, BLOB, "nested contents, take two");
++    compile(env_vars.clone());
++    get_stats(|info| {
++        assert_eq!(1, info.stats.cache_hits.all());
++        assert_eq!(2, info.stats.cache_misses.all());
++    });
++
++    // One level down: the included source itself, rather than what it embeds.
++    trace!("compile with the intermediate included source changed");
++    write_source(tempdir, INNER, "\t.incbin \"nested_blob.bin\"\n\tnop\n");
++    compile(env_vars.clone());
++    get_stats(|info| {
++        assert_eq!(1, info.stats.cache_hits.all());
++        assert_eq!(3, info.stats.cache_misses.all());
++    });
++
++    // Restoring the whole chain returns us to a key seen before.
++    trace!("compile with the chain restored");
++    write_source(tempdir, INNER, "\t.incbin \"nested_blob.bin\"\n");
++    write_source(tempdir, BLOB, "nested contents, take one");
++    compile(env_vars);
++    get_stats(|info| {
++        assert_eq!(2, info.stats.cache_hits.all());
++        assert_eq!(3, info.stats.cache_misses.all());
++    });
++}
++
++/// An `.incbin` operand we cannot resolve to a file leaves us unable to tell what
++/// the translation unit depends on, so it must not be cached at all. Caching it
++/// under a key that ignores the embedded file is what produces stale objects.
++fn test_incbin_unresolvable_operand_not_cacheable(compiler: Compiler, tempdir: &Path) {
++    let Compiler {
++        name,
++        exe,
++        env_vars,
++    } = compiler;
++    println!("test_incbin_unresolvable_operand_not_cacheable: {}", name);
++    zero_stats();
++
++    const SRC: &str = "incbin_split.c";
++    const BLOB: &str = "blob.bin";
++    // The compiler concatenates the adjacent string literals and assembles
++    // `.incbin "blob.bin"`; we only see an operand split across two literals.
++    write_source(
++        tempdir,
++        SRC,
++        "__asm__(\".incbin \\\"bl\" \"ob.bin\\\"\\n\");
++int main(int argc, char** argv) {
++  return 0;
++}
++",
++    );
++    write_source(tempdir, BLOB, "embedded contents");
++
++    let args = compile_cmdline(name, exe, SRC, OUTPUT, Vec::new());
++    for _ in 0..2 {
++        sccache_command()
++            .args(&args)
++            .current_dir(tempdir)
++            .envs(env_vars.clone())
++            .assert()
++            .success();
++    }
++    get_stats(|info| {
++        assert_eq!(0, info.stats.cache_hits.all());
++        assert_eq!(0, info.stats.cache_misses.all());
++        assert_eq!(2, info.stats.non_cacheable_compilations);
++    });
++}
++
+ /* test case like this:
+     echo "int test(){}" > test.cc
+     mkdir o1 o2
+@@ -755,6 +954,9 @@ fn run_sccache_command_tests(compiler: Compiler, tempdir: &Path, preprocessor_ca
+         test_gcc_clang_no_warnings_from_macro_expansion(compiler.clone(), tempdir);
+         test_split_dwarf_object_generate_output_dir_changes(compiler.clone(), tempdir);
+         test_gcc_clang_depfile(compiler.clone(), tempdir);
++        test_incbin_embedded_file_changes(compiler.clone(), tempdir);
++        test_include_transitive_dependency_changes(compiler.clone(), tempdir);
++        test_incbin_unresolvable_operand_not_cacheable(compiler.clone(), tempdir);
+     }
+     if compiler.name == "clang++" {
+         test_clang_multicall(compiler.clone(), tempdir);
+-- 
+Javier Tia
+
+
+From 09292a3a7ce36b7738fe95dc138ff96ad3514644 Mon Sep 17 00:00:00 2001
+From: Benjamin Leggett <benjamin@edera.io>
+Date: Wed, 5 Aug 2026 16:56:25 -0400
+Subject: [PATCH 72/72] fix(cache): also fix a few more similar issues
+
+Signed-off-by: Javier Tia <javier@peridio.com>
+---
+ src/compiler/c.rs     |  45 ++++++++++++++++---
+ src/compiler/clang.rs |  38 ++++++++++++++++
+ src/compiler/gcc.rs   | 100 ++++++++++++++++++++++++++++++++++++++++--
+ src/compiler/msvc.rs  |   1 +
+ tests/system.rs       |  80 +++++++++++++++++++++++++++++++++
+ 5 files changed, 256 insertions(+), 8 deletions(-)
+
+diff --git a/src/compiler/c.rs b/src/compiler/c.rs
+index a899d9c8..71f10854 100644
+--- a/src/compiler/c.rs
++++ b/src/compiler/c.rs
+@@ -27,7 +27,7 @@ use crate::dist::pkg;
+ use crate::mock_command::CommandCreatorSync;
+ use crate::util::{
+     Digest, HashToDigest, MetadataCtimeExt, TimeMacroFinder, Timestamp, decode_path, encode_path,
+-    hash_all, strip_basedirs, strip_basedirs_from_arg,
++    strip_basedirs, strip_basedirs_from_arg,
+ };
+ use async_trait::async_trait;
+ use fs_err as fs;
+@@ -427,7 +427,28 @@ where
+     ) -> Result<HashResult<T>> {
+         let start_of_compilation = std::time::SystemTime::now();
+ 
+-        let extra_hashes = hash_all(&self.parsed_args.extra_hash_files, &pool.clone()).await?;
++        // An argument may name a file whose contents the compiler reads directly,
++        // making it an input the preprocessor never reports. A file we cannot hash
++        // leaves us unable to tell what the compilation depends on, so it must not
++        // be cached.
++        let mut cacheable = Cacheable::Yes;
++        let mut extra_hashes = Vec::with_capacity(self.parsed_args.extra_hash_files.len());
++        for path in &self.parsed_args.extra_hash_files {
++            match Digest::file(path, pool).await {
++                Ok(hash) => extra_hashes.push(hash),
++                Err(e) => {
++                    debug!(
++                        "[{}]: Not cacheable: cannot hash {:?}: {}",
++                        self.parsed_args.output_pretty(),
++                        path,
++                        e
++                    );
++                    cacheable = Cacheable::No;
++                    break;
++                }
++            }
++        }
++
+         // The assembler that turns the compiler's output into the object file is
+         // as much a part of the result as the compiler itself.
+         let assembler_digest = if self.parsed_args.uses_external_assembler {
+@@ -465,9 +486,13 @@ where
+         let needs_preprocessing = self.parsed_args.language.needs_c_preprocessing();
+ 
+         let use_preprocessor_cache_mode = if needs_preprocessing {
++            // Preprocessor cache mode maps include files to a hash key computed
++            // elsewhere, so it must not record one for a compilation whose key we
++            // already know is untrustworthy.
+             let can_use_preprocessor_cache_mode = preprocessor_cache_mode_config
+                 .use_preprocessor_cache_mode
+-                && !too_hard_for_preprocessor_cache_mode;
++                && !too_hard_for_preprocessor_cache_mode
++                && cacheable == Cacheable::Yes;
+ 
+             let mut use_preprocessor_cache_mode = can_use_preprocessor_cache_mode;
+ 
+@@ -696,8 +721,6 @@ where
+         // they are not part of the preprocessor output and have to be hashed
+         // separately. `.include` names assembly source, which can name further
+         // files in turn, so the queue grows as those are read.
+-        let mut extra_hashes = extra_hashes;
+-        let mut cacheable = Cacheable::Yes;
+         let mut pending: VecDeque<_> = find_asm_dependencies(&preprocessor_output).into();
+         let mut included = HashSet::new();
+         while let Some(dependency) = pending.pop_front() {
+@@ -1874,6 +1897,18 @@ static CACHED_ENV_VARS: LazyLock<HashSet<&'static OsStr>> = LazyLock::new(|| {
+         "WATCHOS_DEPLOYMENT_TARGET",
+         "SDKROOT",
+         "CCC_OVERRIDE_OPTIONS",
++        // Selects which cc1/as the driver runs, so it changes the generated code
++        // without changing the driver binary we hash.
++        "COMPILER_PATH",
++        // Turns on -fcompare-debug, which changes what the compiler does.
++        "GCC_COMPARE_DEBUG",
++        // Adds include directories. Preprocessing reflects these, but preprocessor
++        // cache mode skips preprocessing and would keep matching the files it
++        // recorded before the search path changed.
++        "CPATH",
++        "C_INCLUDE_PATH",
++        "CPLUS_INCLUDE_PATH",
++        "OBJC_INCLUDE_PATH",
+     ]
+     .iter()
+     .map(OsStr::new)
+diff --git a/src/compiler/clang.rs b/src/compiler/clang.rs
+index ee50f73b..65b1e5e8 100644
+--- a/src/compiler/clang.rs
++++ b/src/compiler/clang.rs
+@@ -260,6 +260,8 @@ counted_array!(pub static ARGS: [ArgInfo<gcc::ArgData>; _] = [
+     take_arg!("-fprofile-remapping-file", PathBuf, Concatenated(b'='), ExtraHashFile),
+     // Note: this overrides the -fprofile-use option in gcc.rs.
+     take_arg!("-fprofile-use", PathBuf, Concatenated(b'='), ClangProfileUse),
++    // The seed file's contents decide struct field ordering, so two builds that
++    // differ only in this file must not share an object.
+     take_arg!("-frandomize-layout-seed-file", PathBuf, Concatenated(b'='), ExtraHashFile),
+     take_arg!("-fsanitize-blacklist", PathBuf, Concatenated(b'='), ExtraHashFile),
+     take_arg!("-fsanitize-ignorelist", PathBuf, Concatenated(b'='), ExtraHashFile),
+@@ -1097,6 +1099,42 @@ mod test {
+         );
+     }
+ 
++    /// The seed file decides struct field ordering under randstruct, so two builds
++    /// differing only in its contents must not share an object.
++    #[test]
++    fn test_parse_frandomize_layout_seed_file() {
++        let a = parses!(
++            "-c",
++            "foo.c",
++            "-o",
++            "foo.o",
++            "-frandomize-layout-seed-file=seed.txt"
++        );
++        assert_eq!(
++            ovec!["-frandomize-layout-seed-file=seed.txt"],
++            a.common_args
++        );
++        assert_eq!(
++            ovec![std::env::current_dir().unwrap().join("seed.txt")],
++            a.extra_hash_files
++        );
++    }
++
++    /// The string form carries its value in the argument itself, which is already
++    /// hashed, so it must not be mistaken for the file form.
++    #[test]
++    fn test_parse_frandomize_layout_seed_string_not_a_file() {
++        let a = parses!(
++            "-c",
++            "foo.c",
++            "-o",
++            "foo.o",
++            "-frandomize-layout-seed=abcdef"
++        );
++        assert!(a.extra_hash_files.is_empty());
++        assert_eq!(ovec!["-frandomize-layout-seed=abcdef"], a.common_args);
++    }
++
+     #[test]
+     fn test_parse_fsanitize_blacklist() {
+         let a = parses!(
+diff --git a/src/compiler/gcc.rs b/src/compiler/gcc.rs
+index ef78bee1..405163cb 100644
+--- a/src/compiler/gcc.rs
++++ b/src/compiler/gcc.rs
+@@ -165,6 +165,11 @@ ArgData! { pub
+     Coverage,
+     ModuleOnlyFlag,
+     ExtraHashFile(PathBuf),
++    // For arguments naming a file whose contents are an input, where the value is
++    // a path only when it contains a directory separator; otherwise the compiler
++    // resolves the bare name against a search path of its own that we cannot
++    // reproduce. Used by -fplugin and -specs.
++    ExtraHashFileRequiringPath(PathBuf),
+     // Only valid for clang, but this needs to be here since clang shares gcc's arg parsing.
+     // For -fmodule-file which can be either "path" or "name=path"
+     ExtraHashFileClangModuleFile(OsString),
+@@ -194,6 +199,9 @@ counted_array!(pub static ARGS: [ArgInfo<ArgData>; _] = [
+     flag!("--save-temps=cwd", TooHardFlag),
+     flag!("--save-temps=obj", TooHardFlag),
+     take_arg!("--serialize-diagnostics", PathBuf, Separated, SerializeDiagnostics),
++    // A spec file rewrites the command line, so it can change anything about the
++    // compilation while the arguments we hash stay the same.
++    take_arg!("--specs", PathBuf, CanBeConcatenated(b'='), ExtraHashFileRequiringPath),
+     take_arg!("--sysroot", PathBuf, Separated, PassThroughPath),
+     take_arg!("-A", OsString, Separated, PassThrough),
+     take_arg!("-B", PathBuf, CanBeSeparated, PassThroughPath),
+@@ -236,7 +244,11 @@ counted_array!(pub static ARGS: [ArgInfo<ArgData>; _] = [
+     flag!("-fno-profile-generate", TooHardFlag),
+     flag!("-fno-profile-use", TooHardFlag),
+     flag!("-fno-working-directory", PreprocessorArgumentFlag),
+-    take_arg!("-fplugin", OsString, Concatenated(b'='), TooHard),
++    // A plugin's code runs as part of the compilation, so its contents are an
++    // input rather than just the path naming it. This also covers the one plugin
++    // that used to be singled out here, libcc1plugin, which is passed as a bare
++    // name and so lands in the same bucket as any other name we cannot resolve.
++    take_arg!("-fplugin", PathBuf, CanBeConcatenated(b'='), ExtraHashFileRequiringPath),
+     flag!("-fprofile-arcs", ProfileGenerate),
+     flag!("-fprofile-generate", ProfileGenerate),
+     take_arg!("-fprofile-use", OsString, Concatenated, TooHard),
+@@ -270,6 +282,7 @@ counted_array!(pub static ARGS: [ArgInfo<ArgData>; _] = [
+     flag!("-save-temps", TooHardFlag),
+     flag!("-save-temps=cwd", TooHardFlag),
+     flag!("-save-temps=obj", TooHardFlag),
++    take_arg!("-specs", PathBuf, CanBeConcatenated(b'='), ExtraHashFileRequiringPath),
+     take_arg!("-std", OsString, Concatenated(b'='), Standard),
+     take_arg!("-stdlib", OsString, Concatenated(b'='), PreprocessorArgument),
+     flag!("-trigraphs", PreprocessorArgumentFlag),
+@@ -435,6 +448,7 @@ where
+                 serialize_diagnostics = Some(path.clone());
+             }
+             Some(ExtraHashFile(_))
++            | Some(ExtraHashFileRequiringPath(_))
+             | Some(ExtraHashFileClangModuleFile(_))
+             | Some(PassThroughFlag)
+             | Some(PreprocessorArgumentFlag)
+@@ -519,6 +533,19 @@ where
+                 extra_hash_files.push(cwd.join(path));
+                 &mut common_args
+             }
++            Some(ExtraHashFileRequiringPath(path)) => {
++                // Without a directory separator the compiler resolves this name
++                // itself, against its plugin directory or its spec search path. We
++                // cannot reproduce that, and guessing at the working directory
++                // could hash an unrelated file that happens to share the name.
++                // (Note: ccache queries the compiler with -print-file-name to resolve
++                // spec files, we settle for not caching.)
++                if path.components().count() < 2 {
++                    cannot_cache!("file argument without a path");
++                }
++                extra_hash_files.push(cwd.join(path));
++                &mut common_args
++            }
+             Some(ExtraHashFileClangModuleFile(val)) => {
+                 extra_hash_files.push(cwd.join(module_file_path(val)));
+                 &mut common_args
+@@ -583,6 +610,7 @@ where
+             | Some(XClang(_))
+             | Some(IntegratedAs)
+             | Some(NoIntegratedAs)
++            | Some(ExtraHashFileRequiringPath(_))
+             | Some(TooHard(_)) => cannot_cache!(
+                 arg.flag_str()
+                     .unwrap_or("Can't handle complex arguments through clang",)
+@@ -2003,6 +2031,72 @@ mod test {
+         );
+     }
+ 
++    /// A gcc plugin's code runs as part of the compilation, so the object depends
++    /// on the plugin's contents, not just on the path naming it.
++    #[test]
++    fn test_parse_arguments_fplugin_hashes_the_plugin() {
++        for args in [
++            stringvec!["-c", "foo.c", "-o", "foo.o", "-fplugin=./plugin.so"],
++            stringvec!["-c", "foo.c", "-o", "foo.o", "-fplugin", "./plugin.so"],
++            stringvec![
++                "-c",
++                "foo.c",
++                "-o",
++                "foo.o",
++                "-fplugin=scripts/gcc-plugins/structleak_plugin.so"
++            ],
++        ] {
++            let a = match parse_arguments_(args.clone(), false) {
++                CompilerArguments::Ok(a) => a,
++                o => panic!("Got unexpected parse result: {o:?} for {args:?}"),
++            };
++            assert_eq!(1, a.extra_hash_files.len(), "{args:?}");
++        }
++    }
++
++    /// A spec file rewrites the command line, so its contents are an input even
++    /// though the arguments we hash do not change with it.
++    #[test]
++    fn test_parse_arguments_specs_hashes_the_spec_file() {
++        for args in [
++            stringvec!["-c", "foo.c", "-o", "foo.o", "-specs=./hardened.spec"],
++            stringvec!["-c", "foo.c", "-o", "foo.o", "-specs", "./hardened.spec"],
++            stringvec![
++                "-c",
++                "foo.c",
++                "-o",
++                "foo.o",
++                "--specs=/usr/lib/rpm/cc1.spec"
++            ],
++        ] {
++            let a = match parse_arguments_(args.clone(), false) {
++                CompilerArguments::Ok(a) => a,
++                o => panic!("Got unexpected parse result: {o:?} for {args:?}"),
++            };
++            assert_eq!(1, a.extra_hash_files.len(), "{args:?}");
++        }
++    }
++
++    /// A plugin or spec file named without a path is resolved by the compiler
++    /// against a search path of its own, so there is nothing for us to hash.
++    /// libcc1plugin is one of these.
++    #[test]
++    fn test_parse_arguments_file_argument_without_path_refused() {
++        for arg in [
++            "-fplugin=libcc1plugin",
++            "-fplugin=structleak_plugin.so",
++            "-specs=hardened.spec",
++        ] {
++            let args = stringvec!["-c", "foo.c", "-o", "foo.o", arg];
++            match parse_arguments_(args, false) {
++                CompilerArguments::CannotCache(reason, None) => {
++                    assert_eq!(reason, "file argument without a path", "{arg}");
++                }
++                o => panic!("Got unexpected parse result: {o:?} for {arg}"),
++            }
++        }
++    }
++
+     #[test]
+     fn test_parse_arguments_too_hard() {
+         let too_hard_flags = stringvec![
+@@ -2698,14 +2792,14 @@ mod test {
+     #[test]
+     fn test_parse_arguments_fplugin() {
+         assert_eq!(
+-            CompilerArguments::CannotCache("-fplugin", None),
++            CompilerArguments::CannotCache("file argument without a path", None),
+             parse_arguments_(
+                 stringvec!["-c", "foo.c", "-fplugin=plugin.so", "-o", "foo.o"],
+                 false
+             )
+         );
+         assert_eq!(
+-            CompilerArguments::CannotCache("-fplugin", None),
++            CompilerArguments::CannotCache("file argument without a path", None),
+             parse_arguments_(
+                 stringvec!["-c", "foo.c", "-fplugin=libcc1plugin", "-o", "foo.o"],
+                 false
+diff --git a/src/compiler/msvc.rs b/src/compiler/msvc.rs
+index bf29547f..86daf35d 100644
+--- a/src/compiler/msvc.rs
++++ b/src/compiler/msvc.rs
+@@ -827,6 +827,7 @@ pub fn parse_arguments(
+                 | Some(ModuleOnlyFlag)
+                 | Some(IntegratedAs)
+                 | Some(NoIntegratedAs)
++                | Some(ExtraHashFileRequiringPath(_))
+                 | Some(TooHard(_)) => cannot_cache!(
+                     arg.flag_str()
+                         .unwrap_or("Can't handle complex arguments through clang",)
+diff --git a/tests/system.rs b/tests/system.rs
+index 4d0fcc4a..defd9a05 100644
+--- a/tests/system.rs
++++ b/tests/system.rs
+@@ -638,6 +638,83 @@ int main(int argc, char** argv) {
+     });
+ }
+ 
++/// The randstruct seed file decides struct field ordering. Nothing about it reaches
++/// the preprocessor, so two builds differing only in the seed preprocess to the same
++/// bytes, and so without hashing its contents they share an object and one of them gets a
++/// struct layout the compiler never chose for it, which Is Bad.
++fn test_randomize_layout_seed_file_changes(compiler: Compiler, tempdir: &Path) {
++    let Compiler {
++        name,
++        exe,
++        env_vars,
++    } = compiler;
++    println!("test_randomize_layout_seed_file_changes: {}", name);
++
++    const SRC: &str = "randlayout.c";
++    const SEED: &str = "randstruct.seed";
++    write_source(
++        tempdir,
++        SRC,
++        "struct __attribute__((randomize_layout)) S { int a; long b; char c; void *d; };
++int off(void) { return __builtin_offsetof(struct S, d); }
++int main(int argc, char** argv) {
++  return 0;
++}
++",
++    );
++    write_source(tempdir, SEED, "seed one aaaaaaaaaaaaaaaaaaaaaaaaaaaa\n");
++
++    // Older compilers do not support randstruct at all. Probe the compiler
++    // directly, so the probe does not populate the cache we are about to measure.
++    let probe = Command::new(&exe)
++        .args(["-fsyntax-only", SRC])
++        .arg(format!("-frandomize-layout-seed-file={}", SEED))
++        .current_dir(tempdir)
++        .envs(env_vars.clone())
++        .output()
++        .expect("Failed to probe for randstruct support");
++    if !probe.status.success() {
++        println!("  compiler does not support randstruct, skipping");
++        return;
++    }
++    zero_stats();
++
++    let mut args = compile_cmdline(name, exe, SRC, OUTPUT, Vec::new());
++    args.push(format!("-frandomize-layout-seed-file={}", SEED).into());
++
++    let compile = |env_vars: Vec<(OsString, OsString)>| {
++        sccache_command()
++            .args(&args)
++            .current_dir(tempdir)
++            .envs(env_vars)
++            .assert()
++            .success();
++    };
++
++    trace!("compile with the first seed");
++    compile(env_vars.clone());
++    get_stats(|info| {
++        assert_eq!(0, info.stats.cache_hits.all());
++        assert_eq!(1, info.stats.cache_misses.all());
++    });
++
++    trace!("compile again unchanged");
++    compile(env_vars.clone());
++    get_stats(|info| {
++        assert_eq!(1, info.stats.cache_hits.all());
++        assert_eq!(1, info.stats.cache_misses.all());
++    });
++
++    // The source is untouched, so only the seed distinguishes this compilation.
++    trace!("compile with a changed seed");
++    write_source(tempdir, SEED, "seed two bbbbbbbbbbbbbbbbbbbbbbbbbbbb\n");
++    compile(env_vars);
++    get_stats(|info| {
++        assert_eq!(1, info.stats.cache_hits.all());
++        assert_eq!(2, info.stats.cache_misses.all());
++    });
++}
++
+ /// `.include` pulls in assembly source, which is likewise absent from preprocessor
+ /// output, and which can name further files of its own. Every file reachable that
+ /// way has to reach the cache key, however deep.
+@@ -958,6 +1035,9 @@ fn run_sccache_command_tests(compiler: Compiler, tempdir: &Path, preprocessor_ca
+         test_include_transitive_dependency_changes(compiler.clone(), tempdir);
+         test_incbin_unresolvable_operand_not_cacheable(compiler.clone(), tempdir);
+     }
++    if compiler.name == "clang" {
++        test_randomize_layout_seed_file_changes(compiler.clone(), tempdir);
++    }
+     if compiler.name == "clang++" {
+         test_clang_multicall(compiler.clone(), tempdir);
+     }
 -- 
 Javier Tia
 

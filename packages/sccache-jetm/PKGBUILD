@@ -6,11 +6,17 @@
 # changes are applied on top as a patch in prepare(), so a release that no longer takes
 # the patch fails the build there instead of shipping a silently different sccache.
 #
-#   0001  jetm/sccache carry-cleanups: v0.19.0 plus 71 commits (the work behind
+#   0001  jetm/sccache carry-cleanups: v0.19.0 plus 72 commits (the work behind
 #         mozilla/sccache#2776 and #2777 and the scheduler, packaging and rust/gcc dist
 #         fixes not yet sent upstream, then the review and defect fixes on top of
 #         carry/0.19.0). Regenerate with
 #         git format-patch --stdout <release>..<rebased carry branch>
+#
+#         The last two commits are mozilla/sccache#2795 (open, by Benjamin Leggett), which
+#         makes sources with .incbin or .include directives hash the files they pull in:
+#         without it a kernel build is served the previous build's certs/system_certificates.o.
+#         They replace an earlier narrower carry fix. Drop both when #2795 or an equivalent
+#         lands in a release; the rebase then conflicts on src/compiler/c.rs, which is expected.
 #
 # On a new upstream release: rebase the carry branch onto it, regenerate 0001 and
 # rebuild. A patch that fails to apply stops the build, which is how to find out what
@@ -27,7 +33,7 @@ pkgname=sccache-jetm
 _upstream=sccache
 _target=x86_64-unknown-linux-gnu
 pkgver=0.19.0
-pkgrel=5
+pkgrel=6
 pkgdesc='Shared compilation cache - build with distributed-compile fixes'
 arch=(x86_64)
 url=https://github.com/mozilla/sccache
@@ -59,7 +65,7 @@ source=(
 # updpkgsums rewrites this array on every bump and drops any comment inside
 # it, so the labels live up here instead.
 sha256sums=('2da079033cd19fd8e2a09f56f9a7d9d1a72d591ff3acdc47d95b920145cf2671'
-            'a46f905946cb8b114394c6f4de91d06c6e3bfcda54cee7a7d0e074f7ebfa8c93')
+            'ce15bb4ccc19bbe99d2970c0688d953c76fc576ee6c5b5fa0bff74dc16de76a3')
 
 prepare() {
   cd "$_upstream-$pkgver"
