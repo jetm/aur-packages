@@ -17,6 +17,13 @@
 #
 # It also runs the mainline EEVDF scheduler; see _cpusched. pkgrel follows CachyOS's
 # numbering for a patch-only rebuild - see the note there.
+#
+# It also carries one local patch, kbuild-speedup.patch: a backport to 7.3 of the Linux
+# 7.4 build-speed work (kallsyms, mksysmap, Kconfig probe caching, modpost, objtool and
+# batched module finalisation). It touches the build scripts and objtool, and how module
+# metadata and symbol tables are emitted (include/linux/module.h, vermagic.h,
+# vmlinux.lds.h), not scheduler or driver code. The header of the patch lists its 33
+# commits and where each comes from. It is added for the 7.3 series only.
 
 ### BUILD OPTIONS
 # Set these variables to ANYTHING that is not null or choose proper variable to enable them
@@ -291,7 +298,7 @@ _tagrel=1
 # 7.3.0-2 -> 7.3.0-3). It is also kept at least one above the previous build at
 # the same kernel version, so a rebuild always installs as a new version
 # instead of reinstalling over the running kernel's module tree.
-pkgrel=1
+pkgrel=2
 _srcname=cachyos-${_major}.${_minor}-${_tagrel}
 # Kept short: the split packages append their own suffixes to this string
 # ("... kernel and modules", "Non-stripped vmlinux file for the ..."), so a long
@@ -348,9 +355,10 @@ source=(
     # Its fix, args->total in xfs_parent.c, landed upstream between 7.2.6 and
     # 7.2.7. The carried patches can be read back from this file's git history.
     #
-    # Apart from the BORE patch added by _cpusched below, the source is STOCK +
-    # DWARF debuginfo, so a crash on it differs from the distro kernel only by
-    # the debug build and the scheduler.
+    # Apart from the BORE patch added by _cpusched below and the kbuild speedup
+    # backport added in the LLVM block, the source is STOCK + DWARF debuginfo, so
+    # a crash on it differs from the distro kernel only by the debug build, the
+    # scheduler and that backport.
 )
 validpgpkeys=(
   E18447AC260021D31F3FF6C4C8A2A4774B8B63C4  # Eric Naim <dnaim@cachyos.org>
@@ -361,6 +369,16 @@ validpgpkeys=(
 if _is_lto_kernel; then
     makedepends+=(clang llvm lld)
     source+=("dkms-clang-${_major}.patch::${_patchsource}/misc/dkms-clang.patch")
+    # Build-speed backport of the 7.4 Kbuild work; its header lists the 33 commits. It is
+    # local to this package, so nothing fetches it and _purge_fetched_patches leaves it
+    # alone. It sits after dkms-clang because both edit scripts/Makefile.warn and the
+    # patch is made against the file as dkms-clang leaves it, and its b2sums entry directly
+    # follows dkms-clang's. 7.4 already carries most of it, so it applies to the 7.3 series
+    # only. Re-check that it applies on every 7.3.x bump: a hunk that no longer applies
+    # fails prepare().
+    if [ "$_major" = "7.3" ]; then
+        source+=("kbuild-speedup.patch")
+    fi
     BUILD_FLAGS=(
         CC=clang
         LD=ld.lld
@@ -1210,7 +1228,8 @@ b2sums=('b744477e1202ae7c63020645fdd923625da6edd2bde61d01d9c7755e6d9628fc3fb00e6
         'ec368517f0f5bbe7d61e2e82f5d6e19262d2c1739f3322691c973eb75d17d23db8d10c73c07aa38f419278acc2287f63ba1c09496dda97c77368e4470eb8db81'
         '4103183a51f761fcc79e38dd6c48560a1bc7e7bd952bdaa5c2fbe0bf5e1ed593f896c00cfa2ce031ce720654c2078ecdb37d6c586417c75db7356569f44cb850'
         '754c21da91745e0ee2992e1c1df53f5bd005dcdf076a2f5dce45c26c76f818768fc7123b652b73e7236c4fc3bcf2359bb0ff0d40e0d0b437613619ef5d768fc9'
-        'c992567bd7dd8553432be496ffa1c17e2f5ebe9c7edb51945cf977e1b742dd6517c210d8843bb82744ca705efd07f8027cd7dde41b50215ebd707a34aa81462e')
+        'c992567bd7dd8553432be496ffa1c17e2f5ebe9c7edb51945cf977e1b742dd6517c210d8843bb82744ca705efd07f8027cd7dde41b50215ebd707a34aa81462e'
+        '2033d4dcd3bc97aff7fb7d9e4dfa027b9efe1cda646080ab79ebf29d3b6e7ba70e5df246d24add3b44009074be1ff801b17d825e73e74bfc615f79f72a7287ef')
 
 # One entry per source, in source order. The BORE patch is the last source and is
 # fetched only for the bore family, so its sum is appended only then; a scheduler
