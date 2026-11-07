@@ -1045,7 +1045,11 @@ _package-headers() {
     provides=(LINUX-HEADERS)
 
     if _is_lto_kernel; then
-        depends+=(clang llvm lld)
+        # The 1.32-2 floor mirrors upstream CachyOS. The 7.3 source itself needs
+        # pahole 1.22 for BTF (lib/Kconfig.debug) and 1.31 for the layout feature
+        # (scripts/Makefile.btf); why upstream pins the exact build is not
+        # recorded here. DKMS builds against these headers run pahole per module.
+        depends+=(clang llvm lld 'pahole>=1:1.32-2')
     fi
 
     cd "${_srcname}"
