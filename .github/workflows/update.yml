@@ -19,6 +19,7 @@ jobs:
     outputs:
       matrix: ${{ steps.detect.outputs.matrix }}
       has_updates: ${{ steps.detect.outputs.has_updates }}
+      nvchecker_rc: ${{ steps.nvchecker.outputs.rc }}
     steps:
       # Ahead of the checkout on purpose. archlinux:base-devel ships no git,
       # and actions/checkout silently falls back to downloading a REST-API
@@ -33,11 +34,18 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Run nvchecker
+        id: nvchecker
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo -e "[keys]\ngithub = \"$GITHUB_TOKEN\"" > keyfile.toml
-          nvchecker --file nvchecker.toml --keyfile keyfile.toml
+          # --failures makes nvchecker exit 3 when any source errors; without it
+          # the exit status is 0 whatever happened. The status is recorded
+          # rather than failing this step, so the detect step still reports the
+          # packages that did resolve and the check-health job fails the run.
+          rc=0
+          nvchecker --file nvchecker.toml --keyfile keyfile.toml --failures || rc=$?
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
 
       - name: Detect outdated packages
         id: detect
@@ -61,6 +69,27 @@ jobs:
             echo "has_updates=true" >> "$GITHUB_OUTPUT"
             echo "Updates found: $matrix"
           fi
+
+  # nvchecker exits 0 when a version source fails, writes no entry for that
+  # package, and `nvcmp` then reports no update for it. Without this job a
+  # broken checker reads as "All packages up to date": check-cachyos-release.sh
+  # refused to run after the default scheduler changed, and the kernel stopped
+  # being reported with a green run. This job turns that into a red one.
+  #
+  # Separate from `check`, and `update` does not depend on it: one package's
+  # flaky check must not hold back every other package's update.
+  check-health:
+    name: Version checks ran cleanly
+    needs: check
+    if: always() && needs.check.result == 'success' && needs.check.outputs.nvchecker_rc != '0'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report the failed version check
+        env:
+          NVCHECKER_RC: ${{ needs.check.outputs.nvchecker_rc }}
+        run: |
+          echo "::error::nvchecker exited $NVCHECKER_RC, so at least one package's version check failed and 'All packages up to date' cannot be trusted. Search the Check for updates log for lines starting with [E."
+          exit 1
 
   update:
     name: Update ${{ matrix.pkg }}
@@ -202,12 +231,17 @@ jobs:
 
           Check while you are there:
 
-          - the BORE patch is fetched from cachyos/kernel-patches for the current
-            kernel series; if prepare() reports it no longer applies, wait for
-            CachyOS to refresh it or build with `_cpusched=cachyos`
+          - the patches applied to the new kernel source still apply. The package
+            fetches dkms-clang from cachyos/kernel-patches and carries
+            kbuild-speedup.patch (7.3 series only); if prepare() reports a hunk
+            that no longer applies, refresh that patch before building. The BORE
+            patch is fetched only with `_cpusched=bore`
           - `pkgrel` follows CachyOS's numbering for a patch-only rebuild but is not
             pinned to it; compare with `pacman -Si linux-cachyos` if the two
             should line up
+          - install kernel-modules-hook before the kernel: without it the install
+            deletes the running kernel's /usr/lib/modules tree and modules that
+            are not loaded yet fail until the reboot
           EOF
           )"
 

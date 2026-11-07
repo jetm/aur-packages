@@ -11,11 +11,12 @@ set -euo pipefail
 # CachyOS can publish a new package revision with no new release tag: linux-cachyos
 # went 7.3.0-2 -> 7.3.0-3 after its BORE patch changed, while the tarball stayed
 # cachyos-7.3.0-2 and the change was a commit in CachyOS/kernel-patches. This
-# package fetches the BORE and dkms-clang patches from there at build time, so
-# the release tag alone cannot say when a rebuild is due. Counting commits to
-# exactly the files this package fetches does, and unlike following the distro
-# package's revision it ignores patches this build never applies (nvidia,
-# prjc, handheld).
+# package fetches patches from there at build time (dkms-clang, plus the BORE
+# patch when built with _cpusched=bore), so the release tag alone cannot say when
+# a rebuild is due. Counting commits to exactly the files this build fetches does,
+# and unlike following the distro package's revision it ignores patches this
+# build never applies (nvidia, prjc, handheld). Which files those are is read
+# from the PKGBUILD, not modelled here.
 #
 # update-version.sh splits "<tagrel>.<n>" back apart, so the tarball tag it
 # writes into _srcname stays the real release tag.
@@ -26,14 +27,42 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 pkgbuild="$REPO_ROOT/packages/linux-cachyos-jetm/PKGBUILD"
 
-# The fetched patch set is derived from _cpusched. Only the BORE layout is
-# modelled here, so another default fails loudly instead of counting the wrong
-# files and never reporting a change.
-sched=$(grep -Po '^: "\$\{_cpusched:=\K[^}]+' "$pkgbuild" || true)
-if [[ "$sched" != bore ]]; then
-	echo "error: _cpusched default is '${sched:-<not found>}', but this script models only 'bore'; teach it the patch files for that scheduler" >&2
+# Ask the PKGBUILD which kernel-patches files this build fetches, rather than
+# modelling them here. The set depends on _cpusched (the BORE family adds the
+# BORE patch, eevdf adds none), on the LLVM block (dkms-clang) and on the
+# nvidia and hardened options, and a copy of that logic in this script went
+# stale as soon as the default scheduler changed: the script refused to run, and
+# because nvchecker exits 0 when a source fails, the kernel stopped being
+# reported without any visible error.
+#
+# The PKGBUILD is sourced in a subshell, as refresh-config.sh does. SRCDEST and
+# startdir are unset, which makes its _purge_fetched_patches a no-op, so nothing
+# in the package directory is deleted. Only lines shaped like a patch path are
+# kept, so anything the PKGBUILD prints while being sourced cannot leak into the
+# list.
+fetched_paths() {
+	(
+		set +eu
+		unset SRCDEST startdir
+		# Declared so a PKGBUILD that sets neither reads as empty, and so shellcheck
+		# sees an assignment: both are really set by the file sourced below.
+		source=()
+		_patchsource=
+		# shellcheck source=/dev/null
+		source "$pkgbuild" >/dev/null
+		[[ ${#source[@]} -gt 0 && -n ${_patchsource:-} ]] || exit 3
+		for entry in "${source[@]}"; do
+			url=${entry#*::}
+			[[ $url == "$_patchsource"/* ]] && printf '%s\n' "${url#"$_patchsource"/}"
+		done
+		exit 0
+	)
+}
+if ! patch_paths=$(fetched_paths); then
+	echo "error: could not read the fetched patch list from $pkgbuild" >&2
 	exit 1
 fi
+patch_paths=$(grep -E '^[A-Za-z0-9_./+-]+\.patch$' <<<"$patch_paths" | sort -u || true)
 
 auth=()
 if [[ -n "${GITHUB_TOKEN:-}" ]]; then
@@ -69,14 +98,18 @@ tagrel=${ver##*-}
 series=${kver%.*}
 
 shas=
-for path in "$series/sched/0001-bore-cachy.patch" "$series/misc/dkms-clang.patch"; do
+while IFS= read -r relpath; do
+	[[ -n $relpath ]] || continue
+	path="$series/$relpath"
 	# A series CachyOS has not published patches for yet would make the build
 	# fail in prepare(); fail here instead, before a bump is published.
 	api "https://api.github.com/repos/CachyOS/kernel-patches/contents/$path" >/dev/null
 	commits=$(api "https://api.github.com/repos/CachyOS/kernel-patches/commits?path=$path&since=$published&per_page=100")
 	shas+=$(python3 -I -c 'import json, sys; print("\n".join(c["sha"] for c in json.load(sys.stdin)))' <<<"$commits")$'\n'
-done
+done <<<"$patch_paths"
 n=$(printf '%s' "$shas" | sort -u | sed '/^$/d' | wc -l)
+nfiles=$(sed '/^$/d' <<<"$patch_paths" | wc -l)
+echo "tracking $nfiles kernel-patches file(s) for series $series: $(tr '\n' ' ' <<<"$patch_paths")- $n commit(s) since $published" >&2
 
 if ((n > 0)); then
 	out="$kver-$tagrel.$n"
