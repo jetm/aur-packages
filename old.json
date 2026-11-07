@@ -46,7 +46,7 @@
     "reproc": {
       "version": "14.2.8"
     },
-    "slack-desktop-wayland-jetm": {
+    "slack-desktop-wayland": {
       "version": "4.53.276"
     },
     "tio-fork-jetm": {
