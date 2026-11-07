@@ -284,20 +284,30 @@ _tagrel=1
 # 7.1.5-1-cachyos, which makes /var/crash/<ts>/uname.txt unambiguous about which
 # base a dump came from. Re-pin whenever the distro package's pkgrel moves.
 #
-# HAZARD, because the pin causes it: rebuilding without changing pkgrel means
-# installing REINSTALLS over the running kernel's own /usr/lib/modules/$(uname -r)
-# tree. The kernel in memory is then the old build while the modules on disk are
-# the new one, so anything not already loaded fails to load - which shows up as a
-# graphical login that will not start while root on a TTY still works. A normal
-# version bump is safe because the running kernel keeps its own directory; this
-# does not. Install only when the reboot follows immediately.
+# HAZARD, and a pkgrel bump does not remove it: installing ANY new build of this
+# kernel replaces or deletes the running kernel's own /usr/lib/modules/$(uname -r)
+# tree, so a module that is not already loaded fails to load until the reboot.
+# Both forms have been seen:
+#   - Equal pkgrel: the install REINSTALLS over the tree. The kernel in memory is
+#     the old build while the modules on disk are the new one, which showed up as
+#     a graphical login that would not start while root on a TTY still worked.
+#   - Higher pkgrel: pacman removes the old version's files, tree included.
+#     Measured 2026-11-06: upgrading 7.3.1-1 -> 7.3.1-2 under a running 7.3.1-1
+#     deleted /usr/lib/modules/7.3.1-1-cachyos-jetm, and mounting an exfat stick
+#     then failed with "Filesystem type exfat not configured in kernel".
+# Reboot straight after installing. Or install kernel-modules-hook (optdepends):
+# its pacman hooks copy the running kernel's tree aside before the transaction and
+# put it back after, and they trigger on usr/lib/modules/*/vmlinuz, which this
+# package ships, so the -cachyos-jetm suffix does not matter. That is from reading
+# its hook files; it has not been exercised on this package yet.
 #
 # pkgrel is set by update-version.sh to _tagrel plus the number of commits
 # CachyOS has made since that tag to the kernel-patches files this package
 # fetches, which matches how CachyOS numbered a patch-only rebuild (linux-cachyos
 # 7.3.0-2 -> 7.3.0-3). It is also kept at least one above the previous build at
-# the same kernel version, so a rebuild always installs as a new version
-# instead of reinstalling over the running kernel's module tree.
+# the same kernel version, so every build has its own `uname -r` and installs as a
+# visible upgrade. That is all it does: it does not protect the running kernel's
+# module tree, see the HAZARD above.
 pkgrel=3
 _srcname=cachyos-${_major}.${_minor}-${_tagrel}
 # Kept short: the split packages append their own suffixes to this string
@@ -991,7 +1001,8 @@ _package() {
     optdepends=('wireless-regdb: to set the correct wireless channels of your country'
                 'linux-firmware: firmware images needed for some devices'
                 'modprobed-db: Keeps track of EVERY kernel module that has ever been probed - useful for those of us who make localmodconfig'
-                'scx-scheds: to use sched-ext schedulers')
+                'scx-scheds: to use sched-ext schedulers'
+                "kernel-modules-hook: keeps the running kernel's /usr/lib/modules tree through an upgrade, so modules not yet loaded still load until the reboot")
     provides=(VIRTUALBOX-GUEST-MODULES WIREGUARD-MODULE KSMBD-MODULE V4L2LOOPBACK-MODULE NTSYNC-MODULE VHBA-MODULE ADIOS-MODULE)
     # No linux-cachyos-lto provides/replaces here: this package is meant to sit
     # permanently alongside stock linux-cachyos, not supersede it. The stock
