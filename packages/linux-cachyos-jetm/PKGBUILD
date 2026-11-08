@@ -965,7 +965,11 @@ build() {
     [ "${_launcher_effective}" != sccache ] || sccache --show-stats || true
 
     if ! _is_ci_build; then
-        make -C tools/bpf/bpftool vmlinux.h feature-clang-bpf-co-re=1
+        # With makepkg's CFLAGS exported (-Werror=format-security among them) this
+        # step printed "cc1: error: -Wformat-security ignored without -Wformat" in
+        # the 7.3.3-2 build log. The kernel's tools build brings its own flags, the
+        # same way the nvidia step below clears them.
+        CFLAGS= CXXFLAGS= LDFLAGS= make -C tools/bpf/bpftool vmlinux.h feature-clang-bpf-co-re=1
     fi
 
     local MODULE_FLAGS=(
