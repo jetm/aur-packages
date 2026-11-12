@@ -2,10 +2,10 @@
 # Contributor: Chris Speck <chris.speck(at)annalise(dot)ai>
 # Contributor: "Amhairghin" Oscar Garcia Amor (https://ogarcia.me)
 
-# Took over the `slack-desktop-wayland` name after the previous package was
-# removed from the AUR. It was published as `slack-desktop-wayland-jetm` while
-# the old package trailed upstream by several releases; `replaces` carries those
-# installs over.
+# Fork of the AUR `slack-desktop-wayland`, which trails upstream by several
+# releases and is now an orphan. The -jetm suffix stays until the adoption of
+# the unsuffixed name is granted: until then the AUR refuses a push to that
+# name, so this package cannot be published under it.
 #
 # Ships Slack's own bundled Electron and launches it as a native Wayland client.
 # An earlier revision ran the deb's app.asar under the system electron44 package
@@ -39,8 +39,8 @@ optdepends=('libappindicator-gtk3: Systray indicator support'
             'xdg-desktop-portal-wlr: portal backend for wlroots compositors')
 
 provides=("slack-desktop=${pkgver}")
-conflicts=('slack-desktop' 'slack-desktop-wayland-jetm' 'slack-electron')
-replaces=('slack-desktop-wayland-jetm')
+conflicts=('slack-desktop' 'slack-desktop-wayland' 'slack-electron')
+replaces=('slack-desktop-wayland')
 
 # Slack's own *.node native modules and its Electron binary are prebuilt vendor
 # binaries - stripping them can break them. Also suppresses the debug package

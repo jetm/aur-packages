@@ -24,9 +24,9 @@ pkgbase = slack-desktop-wayland-jetm
 	optdepends = xdg-desktop-portal-wlr: portal backend for wlroots compositors
 	provides = slack-desktop=4.53.287
 	conflicts = slack-desktop
-	conflicts = slack-desktop-wayland-jetm
+	conflicts = slack-desktop-wayland
 	conflicts = slack-electron
-	replaces = slack-desktop-wayland-jetm
+	replaces = slack-desktop-wayland
 	noextract = slack-desktop-4.53.287-amd64.deb
 	options = !strip
 	source = https://downloads.slack-edge.com/desktop-releases/linux/x64/4.53.287/slack-desktop-4.53.287-amd64.deb

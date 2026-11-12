@@ -26,7 +26,7 @@ AUR package automation with nvchecker + GitHub Actions.
 | yocto-uninative-tarball | [Arch glibc packaging](https://gitlab.archlinux.org/archlinux/packaging/packages/glibc) | Yes |
 | linux-cachyos-jetm | [CachyOS/linux](https://github.com/CachyOS/linux) releases and the [kernel-patches](https://github.com/CachyOS/kernel-patches) this package fetches | Yes |
 | reproc | [DaanDeMeyer/reproc](https://github.com/DaanDeMeyer/reproc) | Yes |
-| slack-desktop-wayland | AUR [slack-desktop](https://aur.archlinux.org/packages/slack-desktop) | Yes |
+| slack-desktop-wayland-jetm | AUR [slack-desktop](https://aur.archlinux.org/packages/slack-desktop) | Yes |
 | tio-fork-jetm | [jetm/tio](https://github.com/jetm/tio), fork of [tio/tio](https://github.com/tio/tio) | No (opens an issue on each tio release) |
 | pam_rssh-jetm | [z4yx/pam_rssh](https://github.com/z4yx/pam_rssh), commit-pinned build that rejects a security-key signature made without a touch | No (manual) |
 | whatsit-jetm | [devlinman/whatsit](https://github.com/devlinman/whatsit), pinned tag build in place of upstream's own `whatsit-git` | Yes |
