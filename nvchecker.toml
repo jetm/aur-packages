@@ -159,3 +159,17 @@ source = "github"
 github = "mozilla/sccache"
 use_max_tag = true
 prefix = "v"
+
+# Fork of the AUR ente-auth-bin, which trails upstream. ente/ente (formerly
+# ente-io/ente) is a monorepo tagging every app (auth-v*, photos-v*, cli-v* and
+# more), and its latest GitHub release is currently ente-cli-v0.4.4, so
+# use_latest_release would report the CLI's version. Reads the tags with
+# git ls-remote instead of the GitHub API, which needs no token: include_regex
+# keeps only stable auth-v<X>.<Y>.<Z> tags, dropping the -rc and -beta ones. The
+# .deb URL derives from pkgver, so the generic bump path (set pkgver, reset
+# pkgrel, updpkgsums) is sufficient.
+[ente-auth-bin-jetm]
+source = "git"
+git = "https://github.com/ente/ente"
+include_regex = '^auth-v\d+\.\d+\.\d+$'
+prefix = "auth-v"
