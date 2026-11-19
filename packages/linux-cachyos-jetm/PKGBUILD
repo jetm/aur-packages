@@ -929,6 +929,11 @@ prepare() {
     # XTABLES to built-in.
     echo "Enabling IP6_NF_IPTABLES for the IPv6 MARK target..."
     scripts/config -m IP6_NF_IPTABLES
+    # Turning that gate on exposes 13 IPv6 match and target options the config has
+    # never seen (IP6_NF_MATCH_*, IP6_NF_TARGET_*), and the `make prepare` below asks
+    # about each one on a terminal, which stops a build run from one (pikaur, makepkg
+    # in a shell). olddefconfig takes every default without asking; they are all n here.
+    make "${BUILD_FLAGS[@]}" olddefconfig
 
     ### Rewrite configuration
     echo "Rewrite configuration..."
