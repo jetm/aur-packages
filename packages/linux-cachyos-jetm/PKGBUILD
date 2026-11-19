@@ -308,7 +308,7 @@ _tagrel=2
 # the same kernel version, so every build has its own `uname -r` and installs as a
 # visible upgrade. That is all it does: it does not protect the running kernel's
 # module tree, see the HAZARD above.
-pkgrel=5
+pkgrel=6
 _srcname=cachyos-${_major}.${_minor}-${_tagrel}
 # Kept short: the split packages append their own suffixes to this string
 # ("... kernel and modules", "Non-stripped vmlinux file for the ..."), so a long
@@ -825,6 +825,16 @@ prepare() {
     # (see "Options localmodconfig would switch off" below).
     echo "Enabling the netfilter MARK target and match..."
     scripts/config -m NETFILTER_XT_MARK
+
+    # tailscaled's rp_filter workaround adds `-j CONNMARK --restore-mark` and
+    # `-m connmark` in mangle/PREROUTING. The base config has NETFILTER_XT_CONNMARK off,
+    # so with MARK in place tailscale status moved on to "Extension connmark revision 0
+    # not supported". It depends on NF_CONNTRACK (a module here) and selects
+    # NF_CONNTRACK_MARK (already built in). Listing xt_connmark in modules.always keeps
+    # localmodconfig from dropping it; the IPv6 CONNMARK target needs the
+    # IP6_NF_IPTABLES set below.
+    echo "Enabling the netfilter CONNMARK target and match..."
+    scripts/config -m NETFILTER_XT_CONNMARK
 
     ### CI-only stuff
     if _is_ci_build; then
