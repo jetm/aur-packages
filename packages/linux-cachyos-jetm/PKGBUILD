@@ -308,7 +308,7 @@ _tagrel=2
 # the same kernel version, so every build has its own `uname -r` and installs as a
 # visible upgrade. That is all it does: it does not protect the running kernel's
 # module tree, see the HAZARD above.
-pkgrel=4
+pkgrel=5
 _srcname=cachyos-${_major}.${_minor}-${_tagrel}
 # Kept short: the split packages append their own suffixes to this string
 # ("... kernel and modules", "Non-stripped vmlinux file for the ..."), so a long
@@ -821,16 +821,10 @@ prepare() {
     # health warning. NETFILTER_XT_TARGET_MARK is only a deprecated alias that
     # selects this option. Listing xt_mark in modules.always keeps localmodconfig
     # from dropping it, since PC1 does not load it until tailscaled asks.
-    #
-    # xt_mark.c registers the IPv4 MARK target unconditionally but the IPv6 one only
-    # under CONFIG_IP6_NF_IPTABLES, which the base config also leaves off. With
-    # NETFILTER_XT_MARK alone, iptables works and ip6tables still fails the same way
-    # (measured on 7.3.5-3 with the v4 rule loading and the v6 rule refused).
-    # IP6_NF_IPTABLES gates the v6 sub-options and selects only NETFILTER_XTABLES; its
-    # sub-options default off here (NETFILTER_ADVANCED=y). -m, not -e: =y would select
-    # XTABLES to built-in.
-    echo "Enabling the netfilter MARK target and match (IPv4 and IPv6)..."
-    scripts/config -m NETFILTER_XT_MARK -m IP6_NF_IPTABLES
+    # The IPv6 half needs IP6_NF_IPTABLES, which has to be set after localmodconfig
+    # (see "Options localmodconfig would switch off" below).
+    echo "Enabling the netfilter MARK target and match..."
+    scripts/config -m NETFILTER_XT_MARK
 
     ### CI-only stuff
     if _is_ci_build; then
@@ -920,6 +914,21 @@ prepare() {
             _die "No module list found at $_modlist"
         fi
     fi
+
+    ### Options localmodconfig would switch off
+    # xt_mark.c registers the IPv4 MARK target unconditionally but the IPv6 one only
+    # under CONFIG_IP6_NF_IPTABLES, which the base config leaves off. Without it
+    # ip6tables still fails to add tailscaled's MARK rule ("MARK: bad value for option
+    # --set-mark") while the same iptables rule loads. localmodconfig turns off every
+    # =m option it cannot tie to a module it keeps, and this one has no module of its
+    # own: xt_mark.c tests it with #if, not depends or select. Setting it earlier lost
+    # it (the 7.3.5-4 build ended with "# CONFIG_IP6_NF_IPTABLES is not set"), so it is
+    # set here, after localmodconfig, and the `make config` below resolves it.
+    # IP6_NF_IPTABLES gates the v6 sub-options and selects only NETFILTER_XTABLES; its
+    # sub-options default off here (NETFILTER_ADVANCED=y). -m, not -e: =y would select
+    # XTABLES to built-in.
+    echo "Enabling IP6_NF_IPTABLES for the IPv6 MARK target..."
+    scripts/config -m IP6_NF_IPTABLES
 
     ### Rewrite configuration
     echo "Rewrite configuration..."
