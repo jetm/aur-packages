@@ -5,10 +5,10 @@
       "version": "0.15.1"
     },
     "easy-conflict": {
-      "version": "0.4.3"
+      "version": "0.4.4"
     },
     "easy-conflict-bin": {
-      "version": "0.4.3"
+      "version": "0.4.4"
     },
     "include-what-you-use": {
       "version": "0.27"
@@ -29,7 +29,7 @@
       "version": "1.2.0"
     },
     "yocto-uninative-tarball": {
-      "version": "2.44+r78+gfcfb867c58ab"
+      "version": "2.44+r83+g625054f30f0e"
     },
     "linux-cachyos-jetm": {
       "version": "7.3.5-2"
