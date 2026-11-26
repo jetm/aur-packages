@@ -143,7 +143,7 @@ prefix = "v"
 # pkgver (_tag="v${pkgver}"), not stored separately, so the generic
 # update-version.sh bump path (set pkgver, reset pkgrel, updpkgsums) is
 # already sufficient - nothing else to resync.
-[whatsit-jetm]
+[whatsit]
 source = "github"
 github = "devlinman/whatsit"
 use_max_tag = true

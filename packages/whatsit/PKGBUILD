@@ -1,7 +1,8 @@
 # PKGBUILD
 # Maintainer: Javier Tia <floss@jetm.me>
 
-# Replaces upstream's own whatsit-git, which tracks the master branch head
+# Replaces upstream's own whatsit-git (and its earlier name here, whatsit-jetm),
+# which tracks the master branch head
 # through a pkgver() git-describe call. pikaur's --devel check re-evaluates
 # every -git package's pkgver() on every run regardless of whether upstream
 # has actually moved, so whatsit-git showed up as "up to date -- reinstalling"
@@ -19,7 +20,7 @@
 # To move to a newer upstream release: bump pkgver and _tag, reset pkgrel to
 # 1, run updpkgsums, then regenerate .SRCINFO.
 
-pkgname=whatsit-jetm
+pkgname=whatsit
 pkgver=5.0.3
 pkgrel=1
 _tag="v${pkgver}"
@@ -44,9 +45,8 @@ makedepends=(
   'ninja'
 )
 
-provides=("whatsit=$pkgver")
-conflicts=('whatsit' 'whatsit-git')
-replaces=('whatsit-git')
+conflicts=('whatsit-git')
+replaces=('whatsit-git' 'whatsit-jetm')
 
 source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/${_tag}.tar.gz")
 sha256sums=('b84664c745c5d2fdbb3f8ea241e90d9569ce75689000d1e01e0496b2542b63f7')
@@ -66,10 +66,4 @@ package() {
   cd "whatsit-${pkgver}"
 
   DESTDIR="$pkgdir" cmake --install build
-
-  # CMakeLists.txt hardcodes share/licenses/whatsit regardless of pkgname,
-  # which namcap flags as a missing license file under this package's own
-  # name - reinstall it where namcap (and pacman -Qi -L) expect to find it.
-  rm -rf "$pkgdir/usr/share/licenses/whatsit"
-  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }

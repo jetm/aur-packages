@@ -29,7 +29,7 @@ AUR package automation with nvchecker + GitHub Actions.
 | slack-desktop-wayland | AUR [slack-desktop](https://aur.archlinux.org/packages/slack-desktop) | Yes |
 | tio-fork-jetm | [jetm/tio](https://github.com/jetm/tio), fork of [tio/tio](https://github.com/tio/tio) | No (opens an issue on each tio release) |
 | pam_rssh-jetm | [z4yx/pam_rssh](https://github.com/z4yx/pam_rssh), commit-pinned build that rejects a security-key signature made without a touch | No (manual) |
-| whatsit-jetm | [devlinman/whatsit](https://github.com/devlinman/whatsit), pinned tag build in place of upstream's own `whatsit-git` | Yes |
+| whatsit | [devlinman/whatsit](https://github.com/devlinman/whatsit), pinned tag build in place of upstream's own `whatsit-git`; replaces the earlier `whatsit-jetm` | Yes |
 | ente-auth-bin-jetm | [ente/ente](https://github.com/ente/ente) `auth-v*` stable tags, fork of the AUR `ente-auth-bin` | Yes |
 
 ## Secrets required

@@ -52,7 +52,7 @@
     "tio-fork-jetm": {
       "version": "3.9"
     },
-    "whatsit-jetm": {
+    "whatsit": {
       "version": "5.0.3"
     },
     "sccache-jetm": {
